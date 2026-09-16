@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="ATLAS OSINT — tablero estratégico para seguir conflictos con evidencia, confianza y niebla de guerra.">
+  <title>ATLAS OSINT</title>
+  <link rel="icon" href="./favicon.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <div class="app-shell">
+    <header class="topbar">
+      <a class="brand" href="#" aria-label="ATLAS OSINT, inicio">
+        <span class="brand-mark">A</span>
+        <span><strong>ATLAS</strong><small>OSINT CONFLICT INTELLIGENCE</small></span>
+      </a>
+      <nav class="top-actions" aria-label="Controles principales">
+        <button class="ghost-button" id="methodButton"><span class="button-icon">◎</span> Metodología</button>
+        <button class="turn-pill" id="turnButton"><span class="pulse"></span><span>Turno activo</span><strong>16 SEP 2026</strong></button>
+      </nav>
+    </header>
+
+    <main>
+      <section class="briefing" aria-labelledby="briefing-title">
+        <div>
+          <p class="eyebrow">TEATRO · EUROPA ORIENTAL</p>
+          <h1 id="briefing-title">Guerra ruso-ucraniana</h1>
+          <p class="lede">Una vista estratégica de la situación, construida sobre afirmaciones trazables y niveles explícitos de confianza.</p>
+        </div>
+        <div class="status-strip" aria-label="Resumen del turno">
+          <article><span>INICIATIVA</span><strong>Disputada</strong><em class="trend up">↑ local UA</em></article>
+          <article><span>PRESIÓN AÉREA</span><strong>Alta</strong><em class="trend hot">intensa</em></article>
+          <article><span>DIPLOMACIA</span><strong>Estancada</strong><em class="trend neutral">sin tregua</em></article>
+          <article><span>COBERTURA</span><strong>68%</strong><em class="trend neutral">12 fuentes</em></article>
+        </div>
+      </section>
+
+      <section class="workspace">
+        <aside class="control-panel">
+          <div class="panel-heading">
+            <span class="eyebrow">CAPAS</span>
+            <button class="icon-button" id="resetFilters" aria-label="Restablecer filtros" title="Restablecer filtros">↺</button>
+          </div>
+          <div class="filter-group" aria-label="Tipo de evento">
+            <button class="filter-chip active" data-kind="all"><span class="chip-dot all"></span>Todo <b>5</b></button>
+            <button class="filter-chip" data-kind="ground"><span class="chip-dot ground"></span>Terreno <b>1</b></button>
+            <button class="filter-chip" data-kind="air"><span class="chip-dot air"></span>Ataque aéreo <b>3</b></button>
+            <button class="filter-chip" data-kind="diplomacy"><span class="chip-dot diplomacy"></span>Diplomacia <b>1</b></button>
+          </div>
+          <div class="divider"></div>
+          <label class="toggle-row" for="fogToggle">
+            <span><strong>Niebla de guerra</strong><small>Muestra incertidumbre visual</small></span>
+            <input id="fogToggle" type="checkbox" checked>
+            <i aria-hidden="true"></i>
+          </label>
+          <div class="confidence-key">
+            <span class="eyebrow">CONFIANZA</span>
+            <p><i class="conf high"></i> Alta <b>3</b></p>
+            <p><i class="conf medium"></i> Media <b>2</b></p>
+            <p><i class="conf low"></i> Baja <b>0</b></p>
+          </div>
+          <div class="analyst-note">
+            <span>NOTA DEL ANALISTA</span>
+            <p>La iniciativa ucraniana es localizada. No equivale a un cambio confirmado del equilibrio general.</p>
+          </div>
+        </aside>
+
+        <section class="map-card" aria-label="Mapa estratégico de eventos">
+          <div class="map-toolbar">
+            <div class="segmented" role="group" aria-label="Escala del mapa">
+              <button data-view="world">Mundo</button>
+              <button class="active" data-view="theater">Teatro</button>
+            </div>
+            <span id="visibleCount">5 eventos visibles</span>
+          </div>
+          <div id="map" class="map" role="img" aria-label="Mapa de Europa oriental con eventos seleccionables">
+            <div class="map-loading"><span></span>Cargando cartografía…</div>
+          </div>
+          <div class="map-legend"><span><i class="actor ua"></i>Ucrania</span><span><i class="actor ru"></i>Rusia</span><span><i class="halo"></i>Área aproximada</span></div>
+          <div class="map-disclaimer">Posiciones deliberadamente aproximadas · sin valor táctico en tiempo real</div>
+        </section>
+
+        <aside class="intel-panel" id="intelPanel" aria-live="polite">
+          <div class="event-header">
+            <div><span class="event-code" id="eventCode">EVT-0916-01</span><span class="confidence-badge high" id="eventConfidence">ALTA</span></div>
+            <button class="icon-button" id="closeIntel" aria-label="Cerrar ficha">×</button>
+          </div>
+          <p class="event-kind" id="eventKind">OPERACIÓN TERRESTRE</p>
+          <h2 id="eventTitle">Avance ucraniano en el eje de Limán</h2>
+          <p class="event-summary" id="eventSummary"></p>
+          <dl class="event-facts" id="eventFacts"></dl>
+          <div class="assessment">
+            <span>VALORACIÓN</span>
+            <p id="eventAssessment"></p>
+          </div>
+          <div class="evidence-block">
+            <div class="evidence-heading"><span>EVIDENCIA</span><b id="sourceCount">3 fuentes</b></div>
+            <div id="sourceList"></div>
+          </div>
+          <button class="full-button" id="traceButton">Ver cadena de evidencia <span>→</span></button>
+        </aside>
+      </section>
+
+      <section class="timeline-section" aria-labelledby="timeline-title">
+        <div class="timeline-heading">
+          <div><p class="eyebrow">REGISTRO DEL TURNO</p><h2 id="timeline-title">Secuencia de acontecimientos</h2></div>
+          <p>Selecciona un evento para inspeccionar sus fuentes y valoración.</p>
+        </div>
+        <div class="timeline" id="timeline"></div>
+      </section>
+
+      <footer>
+        <div><span class="brand-mark small">A</span><strong>ATLAS OSINT</strong></div>
+        <p>Prototipo editorial · Datos del turno 16 sep 2026 · No sustituye fuentes oficiales ni asesoramiento de seguridad.</p>
+        <button id="aboutButton">Principios editoriales</button>
+      </footer>
+    </main>
+  </div>
+
+  <dialog id="infoDialog">
+    <button class="dialog-close" id="dialogClose" aria-label="Cerrar">×</button>
+    <p class="eyebrow">CÓMO FUNCIONA</p>
+    <h2>Evidencia antes que espectáculo</h2>
+    <div class="dialog-grid">
+      <article><b>01</b><h3>Ingerir</h3><p>Se archiva cada documento con autor, fecha, procedencia y huella.</p></article>
+      <article><b>02</b><h3>Descomponer</h3><p>Las noticias se transforman en afirmaciones concretas y contrastables.</p></article>
+      <article><b>03</b><h3>Corroborar</h3><p>Fuentes independientes y evidencia visual elevan la confianza.</p></article>
+      <article><b>04</b><h3>Publicar</h3><p>Se difunden solo posiciones aproximadas, contexto y límites conocidos.</p></article>
+    </div>
+    <div class="confidence-scale"><span><i class="conf high"></i><b>Alta</b> corroboración múltiple</span><span><i class="conf medium"></i><b>Media</b> evidencia parcial</span><span><i class="conf low"></i><b>Baja</b> afirmación no confirmada</span></div>
+  </dialog>
+
+  <script src="https://cdn.jsdelivr.net/npm/d3@7/dist/d3.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/topojson-client@3/dist/topojson-client.min.js"></script>
+  <script src="./app.js"></script>
+</body>
+</html>
