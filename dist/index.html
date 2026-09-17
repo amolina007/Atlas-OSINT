@@ -25,12 +25,47 @@
       </nav>
     </header>
 
+    <section class="analysis-context" aria-label="Contexto de análisis">
+      <label class="context-field" for="conflictSelect">
+        <span id="conflictLabel">CONFLICTO</span>
+        <select id="conflictSelect" aria-describedby="conflictHelp">
+          <option value="russia-ukraine">Guerra ruso-ucraniana</option>
+          <option value="future" disabled>Más conflictos · próximamente</option>
+        </select>
+        <small id="conflictHelp">Selecciona el conflicto que quieres explorar.</small>
+      </label>
+      <fieldset class="perspective-field">
+        <legend id="perspectiveLabel">PERSPECTIVA EDITORIAL</legend>
+        <div class="perspective-switch" id="perspectiveSwitch">
+          <button class="active" type="button" data-perspective="neutral" aria-pressed="true">Neutra</button>
+          <button type="button" data-perspective="russian" aria-pressed="false">Visión rusa</button>
+          <button type="button" data-perspective="ukrainian" aria-pressed="false">Visión ucraniana</button>
+        </div>
+        <small id="perspectiveHelp">Compara énfasis y afirmaciones sin convertir una narrativa en hecho.</small>
+      </fieldset>
+      <label class="context-field language-field" for="languageSelect">
+        <span id="languageLabel">IDIOMA</span>
+        <select id="languageSelect">
+          <option value="es">Español</option>
+          <option value="uk">Українська</option>
+          <option value="ru">Русский</option>
+        </select>
+        <small id="languageHelp">La interfaz y el contenido disponible cambian de idioma.</small>
+      </label>
+      <article class="perspective-note" id="perspectiveNote" data-perspective-tone="neutral" aria-live="polite">
+        <span id="perspectiveKicker">VISTA NEUTRA</span>
+        <strong id="perspectiveTitle">Síntesis comparada y trazable</strong>
+        <p id="perspectiveDescription">Prioriza coincidencias entre fuentes independientes y separa hechos, declaraciones e inferencias.</p>
+        <small id="perspectiveDisclaimer">Cambiar de perspectiva no modifica los hechos verificados, la confianza ni la cadena de evidencia.</small>
+      </article>
+    </section>
+
     <main>
       <section class="briefing" aria-labelledby="briefing-title">
         <div>
-          <p class="eyebrow">TEATRO · EUROPA ORIENTAL</p>
+          <p class="eyebrow" id="theaterLabel">TEATRO · EUROPA ORIENTAL</p>
           <h1 id="briefing-title">Guerra ruso-ucraniana</h1>
-          <p class="lede">Una vista estratégica de la situación, construida sobre afirmaciones trazables y niveles explícitos de confianza.</p>
+          <p class="lede" id="briefingLede">Una vista estratégica de la situación, construida sobre afirmaciones trazables y niveles explícitos de confianza.</p>
         </div>
         <div class="status-strip" aria-label="Resumen del turno">
           <article><span>INICIATIVA</span><strong>Disputada</strong><em class="trend up">↑ local UA</em></article>

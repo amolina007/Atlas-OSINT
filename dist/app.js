@@ -60,6 +60,9 @@ const state = {
   selected: events[0].id,
   view: "theater",
   fog: true,
+  conflict: "russia-ukraine",
+  perspective: localStorage.getItem("atlas-perspective") || "neutral",
+  language: localStorage.getItem("atlas-language") || "es",
   layers: new Set(["control", "movements", "routes", "rail", "admin", "water", "terrain", "maritime", "aviation"])
 };
 const byId = (id) => document.getElementById(id);
@@ -185,6 +188,96 @@ const advisorContent = {
   }
 };
 
+const interfaceCopy = {
+  es: {
+    conflict: "CONFLICTO", conflictHelp: "Selecciona el conflicto que quieres explorar.", conflictName: "Guerra ruso-ucraniana", future: "Más conflictos · próximamente",
+    perspective: "PERSPECTIVA EDITORIAL", perspectiveHelp: "Compara énfasis y afirmaciones sin convertir una narrativa en hecho.",
+    language: "IDIOMA", languageHelp: "La interfaz y el contenido disponible cambian de idioma.",
+    neutralButton: "Neutra", russianButton: "Visión rusa", ukrainianButton: "Visión ucraniana",
+    theater: "TEATRO · EUROPA ORIENTAL", title: "Guerra ruso-ucraniana", lede: "Una vista estratégica de la situación, construida sobre afirmaciones trazables y niveles explícitos de confianza.",
+    sourceGapRussian: "Este registro no contiene una fuente rusa identificada; se mantiene visible la brecha de evidencia.",
+    sourceGapUkrainian: "Este registro no contiene una fuente ucraniana identificada; se mantiene visible la brecha de evidencia."
+  },
+  uk: {
+    conflict: "КОНФЛІКТ", conflictHelp: "Оберіть конфлікт для аналізу.", conflictName: "Російсько-українська війна", future: "Інші конфлікти · незабаром",
+    perspective: "РЕДАКЦІЙНА ПЕРСПЕКТИВА", perspectiveHelp: "Порівнюйте акценти й твердження, не перетворюючи наратив на факт.",
+    language: "МОВА", languageHelp: "Інтерфейс і доступний перекладений вміст змінюють мову.",
+    neutralButton: "Нейтральна", russianButton: "Російський погляд", ukrainianButton: "Український погляд",
+    theater: "ТЕАТР · СХІДНА ЄВРОПА", title: "Російсько-українська війна", lede: "Стратегічний огляд на основі простежуваних тверджень і чітко позначених рівнів довіри.",
+    sourceGapRussian: "У цьому записі немає ідентифікованого російського джерела; прогалина в доказах залишається видимою.",
+    sourceGapUkrainian: "У цьому записі немає ідентифікованого українського джерела; прогалина в доказах залишається видимою."
+  },
+  ru: {
+    conflict: "КОНФЛИКТ", conflictHelp: "Выберите конфликт для анализа.", conflictName: "Российско-украинская война", future: "Другие конфликты · скоро",
+    perspective: "РЕДАКЦИОННАЯ ПЕРСПЕКТИВА", perspectiveHelp: "Сравнивайте акценты и утверждения, не превращая нарратив в факт.",
+    language: "ЯЗЫК", languageHelp: "Интерфейс и доступный переведённый контент меняют язык.",
+    neutralButton: "Нейтральная", russianButton: "Российский взгляд", ukrainianButton: "Украинский взгляд",
+    theater: "ТЕАТР · ВОСТОЧНАЯ ЕВРОПА", title: "Российско-украинская война", lede: "Стратегический обзор на основе прослеживаемых утверждений и явно обозначенных уровней доверия.",
+    sourceGapRussian: "В этой записи нет идентифицированного российского источника; пробел в доказательствах остаётся видимым.",
+    sourceGapUkrainian: "В этой записи нет идентифицированного украинского источника; пробел в доказательствах остаётся видимым."
+  }
+};
+
+const perspectiveCopy = {
+  es: {
+    neutral: ["VISTA NEUTRA", "Síntesis comparada y trazable", "Prioriza coincidencias entre fuentes independientes y separa hechos, declaraciones e inferencias."],
+    russian: ["VISIÓN RUSA", "Narrativa rusa, siempre atribuida", "Prioriza fuentes y argumentos rusos, muestra contradicciones y conserva la evaluación independiente."],
+    ukrainian: ["VISIÓN UCRANIANA", "Narrativa ucraniana, siempre atribuida", "Prioriza fuentes y argumentos ucranianos, muestra contradicciones y conserva la evaluación independiente."],
+    disclaimer: "Cambiar de perspectiva no modifica los hechos verificados, la confianza ni la cadena de evidencia."
+  },
+  uk: {
+    neutral: ["НЕЙТРАЛЬНИЙ ОГЛЯД", "Порівняльний і простежуваний синтез", "Надає пріоритет збігам між незалежними джерелами та відокремлює факти, заяви й висновки."],
+    russian: ["РОСІЙСЬКИЙ ПОГЛЯД", "Російський наратив із чіткою атрибуцією", "Пріоритизує російські джерела й аргументи, показує суперечності та зберігає незалежну оцінку."],
+    ukrainian: ["УКРАЇНСЬКИЙ ПОГЛЯД", "Український наратив із чіткою атрибуцією", "Пріоритизує українські джерела й аргументи, показує суперечності та зберігає незалежну оцінку."],
+    disclaimer: "Зміна перспективи не змінює перевірені факти, рівень довіри чи ланцюг доказів."
+  },
+  ru: {
+    neutral: ["НЕЙТРАЛЬНЫЙ ОБЗОР", "Сопоставимый и прослеживаемый синтез", "Отдаёт приоритет совпадениям между независимыми источниками и разделяет факты, заявления и выводы."],
+    russian: ["РОССИЙСКИЙ ВЗГЛЯД", "Российский нарратив с явной атрибуцией", "Выдвигает российские источники и аргументы, показывает противоречия и сохраняет независимую оценку."],
+    ukrainian: ["УКРАИНСКИЙ ВЗГЛЯД", "Украинский нарратив с явной атрибуцией", "Выдвигает украинские источники и аргументы, показывает противоречия и сохраняет независимую оценку."],
+    disclaimer: "Смена перспективы не изменяет проверенные факты, уровень доверия или цепочку доказательств."
+  }
+};
+
+function hasActorSource(event, actor) {
+  const terms = actor === "russian" ? /rusi|mosc|kremlin|russian/i : /ucrani|kyiv|ukrain/i;
+  return event.sources.some(([name]) => terms.test(name));
+}
+
+function applyAnalysisContext() {
+  const copy = interfaceCopy[state.language] || interfaceCopy.es;
+  const lens = perspectiveCopy[state.language] || perspectiveCopy.es;
+  const currentLens = lens[state.perspective] || lens.neutral;
+  document.documentElement.lang = state.language;
+  byId("languageSelect").value = state.language;
+  byId("conflictLabel").textContent = copy.conflict;
+  byId("conflictHelp").textContent = copy.conflictHelp;
+  byId("conflictSelect").options[0].textContent = copy.conflictName;
+  byId("conflictSelect").options[1].textContent = copy.future;
+  byId("perspectiveLabel").textContent = copy.perspective;
+  byId("perspectiveHelp").textContent = copy.perspectiveHelp;
+  byId("languageLabel").textContent = copy.language;
+  byId("languageHelp").textContent = copy.languageHelp;
+  const perspectiveButtons = [...document.querySelectorAll("[data-perspective]")];
+  perspectiveButtons[0].textContent = copy.neutralButton;
+  perspectiveButtons[1].textContent = copy.russianButton;
+  perspectiveButtons[2].textContent = copy.ukrainianButton;
+  perspectiveButtons.forEach((button) => {
+    const active = button.dataset.perspective === state.perspective;
+    button.classList.toggle("active", active);
+    button.setAttribute("aria-pressed", String(active));
+  });
+  byId("perspectiveNote").dataset.perspectiveTone = state.perspective;
+  byId("perspectiveKicker").textContent = currentLens[0];
+  byId("perspectiveTitle").textContent = currentLens[1];
+  byId("perspectiveDescription").textContent = currentLens[2];
+  byId("perspectiveDisclaimer").textContent = lens.disclaimer;
+  byId("theaterLabel").textContent = copy.theater;
+  byId("briefing-title").textContent = copy.title;
+  byId("briefingLede").textContent = copy.lede;
+  document.title = `${copy.title} · ATLAS OSINT`;
+}
+
 function renderIntel(event) {
   state.selected = event.id;
   syncEventSelection();
@@ -197,8 +290,13 @@ function renderIntel(event) {
   badge.textContent = event.confidenceLabel;
   badge.className = `confidence-badge ${event.confidence}`;
   byId("eventFacts").innerHTML = event.facts.map(([term, value]) => `<div><dt>${term}</dt><dd>${value}</dd></div>`).join("");
+  const actorPattern = state.perspective === "russian" ? /rusi|mosc|kremlin|russian/i : /ucrani|kyiv|ukrain/i;
+  const sortedSources = state.perspective === "neutral" ? [...event.sources] : [...event.sources].sort((a, b) => Number(actorPattern.test(b[0])) - Number(actorPattern.test(a[0])));
+  const missingActorSource = state.perspective !== "neutral" && !hasActorSource(event, state.perspective);
+  const languageCopy = interfaceCopy[state.language] || interfaceCopy.es;
   byId("sourceCount").textContent = `${event.sources.length} fuentes`;
-  byId("sourceList").innerHTML = event.sources.map(([name, type, label], index) => `<div class="source-item"><span class="source-num">${String(index + 1).padStart(2, "0")}</span><div><strong>${name}</strong><small>${type}</small></div><em>${label}</em></div>`).join("");
+  byId("sourceList").innerHTML = sortedSources.map(([name, type, label], index) => `<div class="source-item"><span class="source-num">${String(index + 1).padStart(2, "0")}</span><div><strong>${name}</strong><small>${type}</small></div><em>${label}</em></div>`).join("")
+    + (missingActorSource ? `<div class="source-item source-gap"><span class="source-num">!</span><div><strong>${state.perspective === "russian" ? "RU" : "UA"}</strong><small>${state.perspective === "russian" ? languageCopy.sourceGapRussian : languageCopy.sourceGapUkrainian}</small></div><em>GAP</em></div>` : "");
   document.querySelectorAll(".event-marker, .timeline-card").forEach((node) => node.classList.toggle("selected", node.dataset.id === event.id));
   if (window.innerWidth < 901) byId("intelPanel").scrollIntoView({ behavior: "smooth", block: "start" });
 }
@@ -754,6 +852,22 @@ document.querySelectorAll(".advisor").forEach((button) => button.addEventListene
   byId("advisorSignal").textContent = content.signal;
 }));
 
+byId("conflictSelect").addEventListener("change", (event) => {
+  state.conflict = event.target.value;
+});
+byId("languageSelect").addEventListener("change", (event) => {
+  state.language = event.target.value;
+  localStorage.setItem("atlas-language", state.language);
+  applyAnalysisContext();
+  renderIntel(events.find((item) => item.id === state.selected) || events[0]);
+});
+document.querySelectorAll("[data-perspective]").forEach((button) => button.addEventListener("click", () => {
+  state.perspective = button.dataset.perspective;
+  localStorage.setItem("atlas-perspective", state.perspective);
+  applyAnalysisContext();
+  renderIntel(events.find((item) => item.id === state.selected) || events[0]);
+}));
+
 const dialog = byId("infoDialog");
 [byId("methodButton"), byId("aboutButton"), byId("traceButton")].forEach((button) => button.addEventListener("click", () => dialog.showModal()));
 byId("dialogClose").addEventListener("click", () => dialog.close());
@@ -761,6 +875,7 @@ dialog.addEventListener("click", (event) => { if (event.target === dialog) dialo
 byId("closeIntel").addEventListener("click", () => byId("intelPanel").classList.toggle("collapsed"));
 byId("turnButton").addEventListener("click", () => document.querySelector(".timeline-section").scrollIntoView({ behavior: "smooth" }));
 
+applyAnalysisContext();
 renderTimeline();
 renderIntel(events[0]);
 createMap();
