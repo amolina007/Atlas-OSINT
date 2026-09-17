@@ -459,8 +459,34 @@ function drawVectorControl(svg, projection) {
 
 function drawVectorAdministrative(svg, projection) {
   const path = d3.geoPath(projection);
-  svg.append("g").attr("class", "map-layer layer-admin").selectAll("path").data(administrativeLines).join("path")
-    .attr("class", "admin-line").attr("d", (coordinates) => path({ type: "LineString", coordinates }));
+  const group = svg.append("g").attr("class", "map-layer layer-admin");
+  group.append("g").attr("class", "admin-schematic").selectAll("path").data(administrativeLines).join("path")
+    .attr("class", "admin-line admin-line-schematic").attr("d", (coordinates) => path({ type: "LineString", coordinates }));
+
+  Promise.all([
+    d3.json("./data/ukraine-oblasts.geojson"),
+    d3.json("./data/ukraine-districts.geojson")
+  ]).then(([oblasts, districts]) => {
+    group.select(".admin-schematic").remove();
+    group.append("g").attr("class", "admin-oblasts zoom-regional").selectAll("path")
+      .data(oblasts.features).join("path")
+      .attr("class", "admin-line admin-line-oblast")
+      .attr("d", path);
+    group.append("g").attr("class", "admin-districts zoom-detail").selectAll("path")
+      .data(districts.features).join("path")
+      .attr("class", "admin-line admin-line-district")
+      .attr("d", path);
+    group.append("g").attr("class", "admin-labels zoom-regional").selectAll("text")
+      .data(oblasts.features).join("text")
+      .attr("class", "admin-label")
+      .attr("x", (feature) => path.centroid(feature)[0])
+      .attr("y", (feature) => path.centroid(feature)[1])
+      .text((feature) => feature.properties.shapeName.replace(/ Oblast$/i, ""));
+    updateVectorDetail(fallbackSvg?.property("__zoom")?.k || 1);
+    updateVectorTextScale(fallbackSvg?.property("__zoom")?.k || 1);
+  }).catch((error) => {
+    console.warn("Administrative boundary data unavailable; using schematic fallback.", error.message);
+  });
 }
 
 function drawVectorWater(svg, projection) {
@@ -525,7 +551,7 @@ function updateVectorDetail(scale) {
   document.querySelectorAll(".zoom-regional").forEach((node) => node.classList.toggle("zoom-visible", regional));
   document.querySelectorAll(".zoom-detail").forEach((node) => node.classList.toggle("zoom-visible", detailed));
   const status = byId("zoomDetailState");
-  if (status) status.textContent = detailed ? "DETALLE · SECTORES" : regional ? "DETALLE · REGIONAL" : "DETALLE · TEATRO";
+  if (status) status.textContent = detailed ? "DETALLE · RAIONES" : regional ? "DETALLE · ÓBLASTS" : "DETALLE · TEATRO";
 }
 
 function updateVectorTextScale(scale) {
