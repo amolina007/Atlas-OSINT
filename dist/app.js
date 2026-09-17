@@ -402,6 +402,7 @@ function createVectorFallback(container) {
     vectorZoomFrame = requestAnimationFrame(() => {
       updateVectorDetail(scale);
       updateVectorTextScale(scale);
+      updateVectorSymbolScale(scale);
       vectorZoomFrame = null;
     });
   });
@@ -426,6 +427,7 @@ function createVectorFallback(container) {
     syncMapLayers();
     updateVectorDetail(1);
     updateVectorTextScale(1);
+    updateVectorSymbolScale(1);
   };
   d3.json("https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json").then((world) => {
     const countries = topojson.feature(world, world.objects.countries).features;
@@ -521,6 +523,11 @@ function drawVectorTraffic(svg, projection) {
       .attr("x", (corridor) => projection(corridor.coordinates[Math.floor(corridor.coordinates.length / 2)])[0] + 5)
       .attr("y", (corridor) => projection(corridor.coordinates[Math.floor(corridor.coordinates.length / 2)])[1] - 5)
       .text((corridor) => corridor.label);
+    group.selectAll("text.traffic-symbol").data(corridors).join("text")
+      .attr("class", `traffic-symbol ${type} zoom-regional`)
+      .attr("x", (corridor) => projection(corridor.coordinates[Math.floor(corridor.coordinates.length / 2)])[0])
+      .attr("y", (corridor) => projection(corridor.coordinates[Math.floor(corridor.coordinates.length / 2)])[1])
+      .text(type === "aviation" ? "✈" : "◆");
   });
 }
 
@@ -573,6 +580,13 @@ function updateVectorTextScale(scale) {
     const y = Number(text.attr("y")) || 0;
     text.attr("transform", scale === 1 ? null : `translate(${x},${y}) scale(${1 / scale}) translate(${-x},${-y})`);
   });
+}
+
+function updateVectorSymbolScale(scale) {
+  if (!fallbackSvg) return;
+  const inverseScale = 1 / scale;
+  fallbackSvg.selectAll(".event-marker circle, .critical-zone circle, .capability-sector circle, .capability-sector path")
+    .attr("transform", scale === 1 ? null : `scale(${inverseScale})`);
 }
 
 function drawVectorStrategicLayers(svg, projection) {

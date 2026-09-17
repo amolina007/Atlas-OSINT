@@ -105,8 +105,8 @@
             <label><input type="checkbox" data-map-layer="admin" checked><i class="layer-symbol admin"></i><span>Divisiones administrativas<small>óblasts y raiones · según zoom</small></span></label>
             <label><input type="checkbox" data-map-layer="water" checked><i class="layer-symbol water"></i><span>Hidrografía<small>ríos, embalses y costa</small></span></label>
             <label><input type="checkbox" data-map-layer="terrain" checked><i class="layer-symbol terrain"></i><span>Relieve<small>altura relativa del terreno</small></span></label>
-            <label><input type="checkbox" data-map-layer="maritime" checked><i class="layer-symbol maritime"></i><span>Tráfico marítimo<small>corredores civiles agregados</small></span></label>
-            <label><input type="checkbox" data-map-layer="aviation" checked><i class="layer-symbol aviation"></i><span>Tráfico aéreo<small>rutas civiles regionales</small></span></label>
+            <label><input type="checkbox" data-map-layer="maritime" checked><i class="layer-symbol maritime"></i><span>Tráfico marítimo<small>AIS agregado · referencia GFW</small></span></label>
+            <label><input type="checkbox" data-map-layer="aviation" checked><i class="layer-symbol aviation"></i><span>Tráfico aéreo<small>civil agregado · OpenSky</small></span></label>
             <label><input type="checkbox" data-map-layer="energy"><i class="layer-symbol energy"></i><span>Energía<small>zonas generalizadas</small></span></label>
             <label><input type="checkbox" data-map-layer="civic"><i class="layer-symbol civic"></i><span>Servicios civiles<small>salud y ayuda</small></span></label>
             <label><input type="checkbox" data-map-layer="communications"><i class="layer-symbol communications"></i><span>Telecomunicaciones<small>áreas de resiliencia</small></span></label>
@@ -147,6 +147,11 @@
             <div class="map-loading"><span></span>Cargando cartografía…</div>
           </div>
           <div class="map-legend"><span><i class="actor ua"></i>Control UA</span><span><i class="actor ru"></i>Control RU</span><span><i class="contested-key"></i>Frente</span><span><i class="route-key"></i>Transporte</span><span><i class="halo"></i>Sector aproximado</span></div>
+          <div class="traffic-data-note">
+            <span><i class="aviation-key"></i>Aéreo civil · <a href="https://opensky-network.org/" target="_blank" rel="noreferrer">OpenSky</a></span>
+            <span><i class="maritime-key"></i>Marítimo/AIS · <a href="https://globalfishingwatch.org/" target="_blank" rel="noreferrer">Global Fishing Watch</a></span>
+            <b>Agregado · sin identificadores · no operacional</b>
+          </div>
           <div class="map-disclaimer">Capa editorial generalizada · límites: <a href="https://www.geoboundaries.org/" target="_blank" rel="noreferrer">geoBoundaries</a> · unidades visibles desde zoom regional</div>
         </section>
 
