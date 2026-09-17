@@ -188,3 +188,24 @@ dialog { width: min(760px, calc(100% - 32px)); color: var(--ink); background: #0
   .perspective-note { grid-column: auto; }
   .perspective-switch button { min-height: 38px; font-size: 8px; }
 }
+
+.resource-controls { display: grid; gap: 9px; margin: 4px 0 18px; padding: 13px; border: 1px solid rgba(231,181,103,.24); background: rgba(231,181,103,.045); }
+.resource-controls[hidden] { display: none; }
+.resource-controls label { color: var(--faint); font: 600 8px var(--mono); letter-spacing: .1em; text-transform: uppercase; }
+.resource-controls select { width: 100%; border: 1px solid var(--line); background: #0b1712; color: var(--ink); padding: 10px 9px; font: 600 10px var(--mono); }
+.resource-metric { display: grid; gap: 4px; padding-top: 4px; border-top: 1px solid var(--line); }
+.resource-metric span { color: var(--faint); font: 600 7px var(--mono); letter-spacing: .12em; }
+.resource-metric strong { color: var(--amber); font: 600 9px/1.45 var(--mono); }
+.resource-controls p { margin: 0; color: var(--muted); font-size: 9px; line-height: 1.55; }
+.resource-controls a { color: var(--green); font: 600 8px/1.45 var(--mono); text-underline-offset: 3px; }
+.segmented button:disabled { opacity: .35; cursor: not-allowed; }
+.resource-marker { cursor: pointer; }
+.resource-marker .resource-halo { opacity: .13; stroke: currentColor; stroke-width: 1; vector-effect: non-scaling-stroke; }
+.resource-marker .resource-core { stroke: #07100d; stroke-width: 1.8; vector-effect: non-scaling-stroke; }
+.resource-marker:hover .resource-halo, .resource-marker.selected .resource-halo { opacity: .34; stroke-width: 2; }
+.resource-label { fill: #eef4ef; font: 600 7px var(--mono); paint-order: stroke; stroke: #05090c; stroke-width: 3px; stroke-linejoin: round; }
+.resource-key { display: inline-block; border-radius: 50%; }
+.resource-key.major { width: 10px; height: 10px; background: var(--amber); box-shadow: 0 0 0 4px rgba(231,181,103,.14); }
+.resource-key.secondary { width: 7px; height: 7px; background: var(--green); }
+.resource-map-legend { max-width: calc(100% - 36px); }
+[hidden] { display: none !important; }

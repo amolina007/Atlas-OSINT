@@ -32,6 +32,7 @@
           <option value="russia-ukraine">Guerra ruso-ucraniana</option>
           <option value="middle-east">Oriente Medio ampliado</option>
           <option value="sudan">Guerra de Sudán</option>
+          <option value="world-resources">Materias primas mundiales</option>
         </select>
         <small id="conflictHelp">Selecciona el conflicto que quieres explorar.</small>
       </label>
@@ -82,7 +83,30 @@
             <span class="eyebrow">CAPAS</span>
             <button class="icon-button" id="resetFilters" aria-label="Restablecer filtros" title="Restablecer filtros">↺</button>
           </div>
-          <div class="filter-group" aria-label="Tipo de evento">
+          <div class="resource-controls" id="resourceControls" hidden>
+            <span class="eyebrow">MATERIA PRIMA</span>
+            <label for="resourceSelect">Recurso</label>
+            <select id="resourceSelect">
+              <optgroup label="Minerales">
+                <option value="copper">Cobre</option>
+                <option value="lithium">Litio</option>
+                <option value="iron">Hierro</option>
+              </optgroup>
+              <optgroup label="Energía">
+                <option value="oil">Petróleo</option>
+                <option value="gas">Gas natural</option>
+              </optgroup>
+              <optgroup label="Agricultura">
+                <option value="wheat">Trigo</option>
+                <option value="maize">Maíz</option>
+                <option value="rice">Arroz</option>
+              </optgroup>
+            </select>
+            <div class="resource-metric"><span>MEDIDA</span><strong id="resourceMetric">Reservas nacionales</strong></div>
+            <p id="resourceDescription">Concentración relativa de reservas y grandes distritos productores.</p>
+            <a id="resourceSource" href="https://www.usgs.gov/centers/national-minerals-information-center/mineral-commodity-summaries" target="_blank" rel="noreferrer">Fuente y metodología ↗</a>
+          </div>
+          <div class="filter-group" id="eventFilterGroup" aria-label="Tipo de evento">
             <button class="filter-chip active" data-kind="all"><span class="chip-dot all"></span>Todo <b>5</b></button>
             <button class="filter-chip" data-kind="ground"><span class="chip-dot ground"></span>Terreno <b>1</b></button>
             <button class="filter-chip" data-kind="air"><span class="chip-dot air"></span>Ataque aéreo <b>3</b></button>
@@ -95,7 +119,7 @@
             <i aria-hidden="true"></i>
           </label>
           <div class="divider"></div>
-          <div class="map-layer-group" aria-label="Capas cartográficas">
+          <div class="map-layer-group" id="conflictLayerControls" aria-label="Capas cartográficas">
             <span class="eyebrow">SITUACIÓN GENERAL</span>
             <label><input type="checkbox" data-map-layer="control" checked><i class="layer-symbol control"></i><span>Control territorial<small>áreas aproximadas</small></span></label>
             <label><input type="checkbox" data-map-layer="movements" checked><i class="layer-symbol movement"></i><span>Evolución del frente<small>flechas históricas agregadas</small></span></label>
@@ -112,7 +136,7 @@
             <label><input type="checkbox" data-map-layer="civic"><i class="layer-symbol civic"></i><span>Servicios civiles<small>salud y ayuda</small></span></label>
             <label><input type="checkbox" data-map-layer="communications"><i class="layer-symbol communications"></i><span>Telecomunicaciones<small>áreas de resiliencia</small></span></label>
           </div>
-          <div class="map-safety-note">
+          <div class="map-safety-note" id="mapSafetyNote">
             <strong>OSINT SEGURO</strong>
             <span>Sin identificadores ni posiciones exactas. Cada contacto representa una celda regional, nunca una trayectoria táctica.</span>
           </div>
@@ -147,7 +171,8 @@
           <div id="map" class="map" role="img" aria-label="Mapa de Europa oriental con eventos seleccionables">
             <div class="map-loading"><span></span>Cargando cartografía…</div>
           </div>
-          <div class="map-legend"><span><i class="actor ua"></i><b id="legendActorA">Control UA</b></span><span><i class="actor ru"></i><b id="legendActorB">Control RU</b></span><span><i class="contested-key"></i>Frente</span><span><i class="route-key"></i>Transporte</span><span><i class="halo"></i>Sector aproximado</span></div>
+          <div class="map-legend" id="conflictMapLegend"><span><i class="actor ua"></i><b id="legendActorA">Control UA</b></span><span><i class="actor ru"></i><b id="legendActorB">Control RU</b></span><span><i class="contested-key"></i>Frente</span><span><i class="route-key"></i>Transporte</span><span><i class="halo"></i>Sector aproximado</span></div>
+          <div class="map-legend resource-map-legend" id="resourceMapLegend" hidden><span><i class="resource-key major"></i>Concentración mayor</span><span><i class="resource-key secondary"></i>Concentración secundaria</span><span>● tamaño = intensidad relativa</span></div>
           <div class="traffic-data-note">
             <span><i class="aviation-key"></i>ADS-B · <a href="https://opensky-network.org/" target="_blank" rel="noreferrer">OpenSky</a></span>
             <span><i class="maritime-key"></i>AIS retrasado · <a href="https://globalfishingwatch.org/" target="_blank" rel="noreferrer">Global Fishing Watch</a></span>

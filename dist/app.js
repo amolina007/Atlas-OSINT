@@ -146,10 +146,11 @@ const state = {
   selected: events[0].id,
   view: "theater",
   fog: true,
-  conflict: ["russia-ukraine", "middle-east", "sudan"].includes(localStorage.getItem("atlas-conflict")) ? localStorage.getItem("atlas-conflict") : "russia-ukraine",
+  conflict: ["russia-ukraine", "middle-east", "sudan", "world-resources"].includes(localStorage.getItem("atlas-conflict")) ? localStorage.getItem("atlas-conflict") : "russia-ukraine",
+  resource: ["copper", "lithium", "iron", "oil", "gas", "wheat", "maize", "rice"].includes(localStorage.getItem("atlas-resource")) ? localStorage.getItem("atlas-resource") : "copper",
   perspective: localStorage.getItem("atlas-perspective") || "neutral",
   language: localStorage.getItem("atlas-language") || "es",
-  layers: new Set(["control", "movements", "routes", "rail", "admin", "water", "terrain", "maritime", "aviation"])
+  layers: new Set(["control", "movements", "routes", "rail", "admin", "water", "terrain", "maritime", "aviation", "resources"])
 };
 const byId = (id) => document.getElementById(id);
 let atlasMap = null;
@@ -159,6 +160,7 @@ let vectorZoomFrame = null;
 let vectorDetailLevel = "";
 let trafficProjection = null;
 let trafficRefreshTimer = null;
+let resourceMarkers = [];
 
 let strategicRoutes = [
   { type: "routes", label: "M06 / E40", coordinates: [[22.7, 48.6], [24.0, 49.8], [26.3, 50.6], [30.5, 50.4]] },
@@ -270,6 +272,71 @@ const ukraineTheaterData = {
   terrainBands, maritimeCorridors, aviationCorridors, editorialTrafficContacts, knownCapabilitySectors, infrastructureZones
 };
 
+const resourceCatalog = {
+  copper: {
+    name: "Cobre", category: "mineral", metric: "Reservas nacionales y grandes distritos", unit: "intensidad relativa", year: "USGS 2026", color: "#d98245",
+    description: "Ubica países con grandes reservas de cobre y sus principales cinturones mineros. No representa el contorno exacto de cada yacimiento.",
+    sourceName: "USGS · Mineral Commodity Summaries 2026", sourceUrl: "https://www.usgs.gov/centers/national-minerals-information-center/mineral-commodity-summaries",
+    entries: [["Chile","Andes centrales",-70.4,-24.0,100,"muy alta"],["Australia","Australia meridional y occidental",134,-25,58,"alta"],["Perú","Cinturón andino",-74,-10,52,"alta"],["R. D. del Congo","Copperbelt",26,-11,46,"alta"],["Rusia","Siberia y Urales",90,59,39,"media"],["México","Sierra Madre",-102,24,31,"media"],["Estados Unidos","Arizona y oeste",-112,34,28,"media"],["China","Distritos interiores",105,34,25,"media"]]
+  },
+  lithium: {
+    name: "Litio", category: "mineral", metric: "Reservas y recursos identificados", unit: "intensidad relativa", year: "USGS 2026", color: "#b493ff",
+    description: "Combina salares, pegmatitas y reservas nacionales conocidas; reservas y recursos geológicos no son conceptos intercambiables.",
+    sourceName: "USGS · Mineral Commodity Summaries 2026", sourceUrl: "https://www.usgs.gov/centers/national-minerals-information-center/mineral-commodity-summaries",
+    entries: [["Australia","Pegmatitas de Australia occidental",120,-25,100,"muy alta"],["Chile","Salar de Atacama",-69.3,-23.5,88,"muy alta"],["Argentina","Puna y salares",-67,-24,73,"alta"],["China","Qinghai, Sichuan y Tíbet",94,32,62,"alta"],["Bolivia","Salar de Uyuni",-67.5,-20.1,55,"alta"],["Zimbabue","Cinturones de pegmatita",30,-19,32,"media"],["Estados Unidos","Nevada",-117,39,24,"media"]]
+  },
+  iron: {
+    name: "Hierro", category: "mineral", metric: "Reservas de mineral de hierro", unit: "intensidad relativa", year: "USGS 2026", color: "#b66a55",
+    description: "Muestra grandes concentraciones nacionales de mineral de hierro y distritos extractivos representativos.",
+    sourceName: "USGS · Mineral Commodity Summaries 2026", sourceUrl: "https://www.usgs.gov/centers/national-minerals-information-center/mineral-commodity-summaries",
+    entries: [["Australia","Pilbara",119,-22,100,"muy alta"],["Brasil","Carajás y Minas Gerais",-52,-8,78,"muy alta"],["Rusia","Kursk y Urales",58,53,48,"alta"],["China","Norte y noreste",116,41,40,"media"],["India","Odisha y Chhattisgarh",82,21,36,"media"],["Ucrania","Kryvyi Rih",33.3,47.9,27,"media"],["Canadá","Labrador Trough",-67,54,24,"media"]]
+  },
+  oil: {
+    name: "Petróleo", category: "energy", metric: "Reservas probadas nacionales", unit: "intensidad relativa", year: "EIA · último dato disponible", color: "#e5bf63",
+    description: "Concentración relativa de reservas probadas. No equivale a producción diaria, capacidad exportadora ni petróleo inmediatamente recuperable.",
+    sourceName: "EIA · International Energy Data", sourceUrl: "https://www.eia.gov/international/data/world",
+    entries: [["Venezuela","Faja del Orinoco",-65,8,100,"muy alta"],["Arabia Saudita","Península arábiga",45,24,91,"muy alta"],["Irán","Zagros y golfo Pérsico",53,31,82,"muy alta"],["Canadá","Alberta",-114,56,76,"alta"],["Irak","Mesopotamia",44,33,66,"alta"],["Emiratos Árabes Unidos","Abu Dabi",54,24,56,"alta"],["Rusia","Siberia occidental",75,61,51,"alta"],["Kuwait","Burgan",47.6,29.3,47,"alta"],["Libia","Sirte",18,28,35,"media"],["Estados Unidos","Texas, Golfo y Alaska",-101,38,31,"media"]]
+  },
+  gas: {
+    name: "Gas natural", category: "energy", metric: "Reservas probadas nacionales", unit: "intensidad relativa", year: "EIA · último dato disponible", color: "#69cbd0",
+    description: "Reservas probadas de gas natural por país. Los marcadores no representan gasoductos ni flujos comerciales.",
+    sourceName: "EIA · International Energy Data", sourceUrl: "https://www.eia.gov/international/data/world",
+    entries: [["Rusia","Siberia occidental y Yamal",75,65,100,"muy alta"],["Irán","South Pars y Zagros",52,28,86,"muy alta"],["Qatar","North Field",51.2,25.4,71,"alta"],["Turkmenistán","Galkynysh",59,39,51,"alta"],["Estados Unidos","Grandes cuencas productoras",-100,38,43,"alta"],["China","Sichuan y noroeste",104,34,31,"media"],["Venezuela","Oriente y costa afuera",-65,9,26,"media"],["Arabia Saudita","Península arábiga",45,24,25,"media"]]
+  },
+  wheat: {
+    name: "Trigo", category: "agriculture", metric: "Producción nacional", unit: "intensidad relativa", year: "FAOSTAT · último año comparable", color: "#e8c96c",
+    description: "Principales productores de trigo. La intensidad es relativa dentro de esta capa y no representa superficie cultivada exacta.",
+    sourceName: "FAOSTAT · Crops and livestock products", sourceUrl: "https://www.fao.org/faostat/en/#data/QCL",
+    entries: [["China","Llanura del norte",114,35,100,"muy alta"],["India","Indo-Ganges",78,27,86,"muy alta"],["Rusia","Cinturón cerealero",45,52,71,"alta"],["Estados Unidos","Grandes Llanuras",-100,40,39,"alta"],["Francia","Cuenca de París",2,47,29,"media"],["Canadá","Praderas",-106,52,27,"media"],["Pakistán","Punjab",72,31,25,"media"],["Australia","Cinturones del sur",140,-32,24,"media"],["Ucrania","Estepa y centro",31,49,21,"media"]]
+  },
+  maize: {
+    name: "Maíz", category: "agriculture", metric: "Producción nacional", unit: "intensidad relativa", year: "FAOSTAT · último año comparable", color: "#f0a94b",
+    description: "Principales productores de maíz según producción nacional agregada; no muestra rendimiento ni exportaciones.",
+    sourceName: "FAOSTAT · Crops and livestock products", sourceUrl: "https://www.fao.org/faostat/en/#data/QCL",
+    entries: [["Estados Unidos","Corn Belt",-93,41,100,"muy alta"],["China","Noreste y llanuras",116,40,91,"muy alta"],["Brasil","Centro-oeste y sur",-52,-16,58,"alta"],["Argentina","Pampa",-62,-34,37,"alta"],["India","Centro y sur",78,22,22,"media"],["Ucrania","Centro y estepa",31,49,19,"media"],["México","Altiplano y occidente",-102,22,17,"media"]]
+  },
+  rice: {
+    name: "Arroz", category: "agriculture", metric: "Producción nacional", unit: "intensidad relativa", year: "FAOSTAT · último año comparable", color: "#90c97a",
+    description: "Principales productores de arroz; la capa resume producción nacional y no delimita arrozales.",
+    sourceName: "FAOSTAT · Crops and livestock products", sourceUrl: "https://www.fao.org/faostat/en/#data/QCL",
+    entries: [["China","Cuencas del Yangtsé y sur",113,29,100,"muy alta"],["India","Llanuras y deltas",79,23,95,"muy alta"],["Bangladés","Delta del Ganges",90,24,37,"alta"],["Indonesia","Java y Sumatra",113,-3,34,"alta"],["Vietnam","Deltas del Mekong y Rojo",106,16,27,"media"],["Tailandia","Llanura central",101,15,22,"media"],["Myanmar","Cuenca del Irawadi",96,20,17,"media"],["Filipinas","Luzón y Mindanao",122,12,15,"media"]]
+  }
+};
+
+function buildResourceEvents(resourceKey) {
+  const resource = resourceCatalog[resourceKey] || resourceCatalog.copper;
+  return resource.entries.map(([country, region, lon, lat, score, tier], index) => ({
+    id: `RES-${resourceKey.toUpperCase()}-${String(index + 1).padStart(2, "0")}`,
+    kind: "ground", kindLabel: resource.category === "agriculture" ? "PRODUCCIÓN AGRÍCOLA" : resource.category === "energy" ? "RESERVA ENERGÉTICA" : "RECURSO MINERAL",
+    time: resource.year, place: country, lon, lat, title: `${resource.name} · ${country}`, short: `${country} · ${tier}`,
+    summary: `${region}. Intensidad ${tier} dentro de la capa mundial de ${resource.name.toLowerCase()}.`,
+    confidence: "medium", confidenceLabel: "MEDIA",
+    facts: [["Recurso", resource.name], ["Medida", resource.metric], ["Zona representativa", region], ["Escala relativa", `${score}/100`]],
+    assessment: "La posición es representativa a escala nacional o regional. No delimita un yacimiento, cultivo o reserva exacta y no sustituye cartografía geológica o agrícola especializada.",
+    sources: [[resource.sourceName, resource.year, "INSTITUCIONAL"]]
+  }));
+}
+
 const theaterConfigs = {
   "russia-ukraine": {
     ...ukraineTheaterData,
@@ -337,6 +404,22 @@ const theaterConfigs = {
     editorialTrafficContacts: { aviation: [{ lon: 32.5, lat: 15.5, count: 3 }, { lon: 37.2, lat: 19.6, count: 5 }], maritime: [{ lon: 37.5, lat: 19.0, count: 6 }, { lon: 41, lat: 15, count: 8 }] },
     knownCapabilitySectors: [],
     infrastructureZones: [{ type: "energy", coordinates: [32.55,15.5] }, { type: "civic", coordinates: [24.9,13.2] }, { type: "civic", coordinates: [37.2,19.6] }, { type: "communications", coordinates: [32.55,15.5] }]
+  },
+  "world-resources": {
+    events: [], resources: true,
+    title: { es: "Materias primas mundiales", uk: "Світові сировинні ресурси", ru: "Мировые сырьевые ресурсы" },
+    theater: { es: "VISTA MUNDIAL · RECURSOS ESTRATÉGICOS", uk: "СВІТОВИЙ ОГЛЯД · СТРАТЕГІЧНІ РЕСУРСИ", ru: "МИРОВОЙ ОБЗОР · СТРАТЕГИЧЕСКИЕ РЕСУРСЫ" },
+    lede: { es: "Compara la concentración geográfica de minerales, energía y producción agrícola sin confundir reservas, extracción y cultivos.", uk: "Порівнює географічну концентрацію мінералів, енергії та сільськогосподарського виробництва.", ru: "Сравнивает географическую концентрацию минералов, энергии и сельскохозяйственного производства." },
+    center: [0, 20], scale: 1, focusCountryIds: [], adminGeoJSON: false, forceWorld: true,
+    adminLevels: ["MUNDO", "PAÍSES", "REGIONES"],
+    perspectiveLabels: { es: ["Datos comparables", "Reservas y oferta", "Producción y demanda"], uk: ["Порівняльні дані", "Запаси й пропозиція", "Виробництво й попит"], ru: ["Сопоставимые данные", "Запасы и предложение", "Производство и спрос"] },
+    perspectiveNames: ["OFERTA", "DEMANDA"], perspectivePatterns: [/.^/, /.^/],
+    status: [["COBERTURA", "Mundial", "8 recursos"], ["MINERALES", "3 capas", "reservas"], ["ENERGÍA", "2 capas", "reservas probadas"], ["AGRICULTURA", "3 capas", "producción"]],
+    analystNote: "Una gran reserva no implica producción inmediata; una gran producción no implica autosuficiencia ni capacidad exportadora.",
+    legend: ["Concentración mayor", "Concentración secundaria"], phase: ["Geografía de recursos y dependencias", "Cada capa usa una medida explícita. Las escalas relativas permiten comparar lugares dentro del mismo recurso, no recursos diferentes entre sí."],
+    controlLabels: [], fogPoints: [], liveTraffic: false,
+    strategicRoutes: [], controlZones: [], frontLine: [], movementArrows: [], waterways: [], administrativeLines: [], terrainBands: [], maritimeCorridors: [], aviationCorridors: [],
+    editorialTrafficContacts: { aviation: [], maritime: [] }, knownCapabilitySectors: [], infrastructureZones: []
   }
 };
 
@@ -429,7 +512,16 @@ function localized(value) {
 
 function applyTheaterData() {
   const config = currentTheater();
-  events = config.events;
+  const resourceMode = Boolean(config.resources);
+  if (resourceMode) {
+    const resource = resourceCatalog[state.resource] || resourceCatalog.copper;
+    events = buildResourceEvents(state.resource);
+    resourceMarkers = events.map((event, index) => ({ ...event, score: resource.entries[index][4], tier: resource.entries[index][5], color: resource.color }));
+    state.perspective = "neutral";
+  } else {
+    events = config.events;
+    resourceMarkers = [];
+  }
   strategicRoutes = config.strategicRoutes;
   controlZones = config.controlZones;
   frontLine = config.frontLine;
@@ -444,7 +536,10 @@ function applyTheaterData() {
   infrastructureZones = config.infrastructureZones;
   state.selected = events[0]?.id || null;
   state.kind = "all";
+  state.view = config.forceWorld ? "world" : "theater";
   byId("conflictSelect").value = state.conflict;
+  document.querySelectorAll(".segmented button").forEach((button) => button.classList.toggle("active", button.dataset.view === state.view));
+  document.querySelector('[data-view="theater"]').disabled = resourceMode;
   config.status.forEach(([label, value, trend], index) => {
     byId(`statusLabel${index + 1}`).textContent = label;
     byId(`statusValue${index + 1}`).textContent = value;
@@ -457,8 +552,29 @@ function applyTheaterData() {
   byId("strategyPhaseCopy").textContent = config.phase[1];
   byId("map").setAttribute("aria-label", `Mapa estratégico de ${localized(config.title)} con eventos seleccionables`);
   document.querySelector('[data-map-layer="admin"]').closest("label").querySelector("small").textContent = `${config.adminLevels[1].toLowerCase()} y ${config.adminLevels[2].toLowerCase()} · según zoom`;
+  byId("resourceControls").hidden = !resourceMode;
+  byId("eventFilterGroup").hidden = resourceMode;
+  byId("conflictLayerControls").hidden = resourceMode;
+  byId("mapSafetyNote").hidden = resourceMode;
+  byId("conflictMapLegend").hidden = resourceMode;
+  byId("resourceMapLegend").hidden = !resourceMode;
+  document.querySelector(".perspective-field").hidden = resourceMode;
+  byId("perspectiveNote").hidden = resourceMode;
+  document.querySelector(".traffic-data-note").hidden = resourceMode;
+  document.querySelector(".map-disclaimer").hidden = resourceMode;
+  document.querySelector(".strategy-console").hidden = resourceMode;
   document.querySelector(".force-compare").hidden = state.conflict !== "russia-ukraine";
-  byId("dataNotice").textContent = state.conflict === "russia-ukraine"
+  if (resourceMode) {
+    const resource = resourceCatalog[state.resource] || resourceCatalog.copper;
+    byId("resourceSelect").value = state.resource;
+    byId("resourceMetric").textContent = `${resource.metric} · ${resource.year}`;
+    byId("resourceDescription").textContent = resource.description;
+    byId("resourceSource").textContent = `${resource.sourceName} ↗`;
+    byId("resourceSource").href = resource.sourceUrl;
+  }
+  byId("dataNotice").textContent = resourceMode
+    ? "Vista mundial · Posiciones nacionales o regionales aproximadas · Selecciona un marcador para revisar medida y fuente."
+    : state.conflict === "russia-ukraine"
     ? "Prototipo editorial · Datos de demostración · No sustituye fuentes oficiales ni asesoramiento de seguridad."
     : "Cobertura base · Fichas editoriales de referencia · Pendiente de eventos publicados y verificados.";
 }
@@ -479,8 +595,8 @@ function applyAnalysisContext() {
   }
   document.documentElement.lang = state.language;
   byId("languageSelect").value = state.language;
-  byId("conflictLabel").textContent = copy.conflict;
-  byId("conflictHelp").textContent = copy.conflictHelp;
+  byId("conflictLabel").textContent = currentTheater().resources ? "VISTA" : copy.conflict;
+  byId("conflictHelp").textContent = currentTheater().resources ? "Explora la distribución mundial de recursos estratégicos." : copy.conflictHelp;
   [...byId("conflictSelect").options].forEach((option) => {
     const optionConfig = theaterConfigs[option.value];
     if (optionConfig) option.textContent = localized(optionConfig.title);
@@ -533,7 +649,7 @@ function renderIntel(event) {
     : `No hay una fuente identificada de ${currentTheater().perspectiveNames[perspectiveIndex]}; la brecha permanece visible.`;
   byId("sourceList").innerHTML = sortedSources.map(([name, type, label], index) => `<div class="source-item"><span class="source-num">${String(index + 1).padStart(2, "0")}</span><div><strong>${name}</strong><small>${type}</small></div><em>${label}</em></div>`).join("")
     + (missingActorSource ? `<div class="source-item source-gap"><span class="source-num">!</span><div><strong>${currentTheater().perspectiveNames[perspectiveIndex]}</strong><small>${gapText}</small></div><em>GAP</em></div>` : "");
-  document.querySelectorAll(".event-marker, .timeline-card").forEach((node) => node.classList.toggle("selected", node.dataset.id === event.id));
+  document.querySelectorAll(".event-marker, .resource-marker, .timeline-card").forEach((node) => node.classList.toggle("selected", node.dataset.id === event.id));
   if (window.innerWidth < 901) byId("intelPanel").scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
@@ -658,7 +774,8 @@ function createVectorFallback(container) {
     drawVectorMovements(viewport, projection);
     drawVectorCapabilities(viewport, projection);
     drawVectorFog(viewport, projection);
-    drawVectorEvents(viewport, projection);
+    if (currentTheater().resources) drawVectorResources(viewport, projection);
+    else drawVectorEvents(viewport, projection);
     syncMapLayers();
     updateVectorDetail(1);
     updateVectorTextScale(1);
@@ -893,7 +1010,7 @@ function updateVectorTextScale(scale) {
 function updateVectorSymbolScale(scale) {
   if (!fallbackSvg) return;
   const inverseScale = 1 / scale;
-  fallbackSvg.selectAll(".event-marker circle, .critical-zone circle, .capability-sector circle, .capability-sector path, .traffic-contact circle")
+  fallbackSvg.selectAll(".event-marker circle, .resource-marker circle, .critical-zone circle, .capability-sector circle, .capability-sector path, .traffic-contact circle")
     .attr("transform", scale === 1 ? null : `scale(${inverseScale})`);
 }
 
@@ -929,6 +1046,20 @@ function drawVectorFog(svg, projection) {
     const point = projection([lon, lat]);
     if (point) fog.append("circle").attr("cx", point[0]).attr("cy", point[1]).attr("r", radius).attr("fill", "rgba(152,174,159,.08)");
   });
+}
+
+function drawVectorResources(svg, projection) {
+  const group = svg.append("g").attr("class", "map-layer layer-resources");
+  const nodes = group.selectAll("g.resource-marker").data(resourceMarkers).join("g")
+    .attr("class", (item) => `resource-marker ${item.tier === "muy alta" ? "major" : "secondary"}`)
+    .attr("data-id", (item) => item.id)
+    .attr("transform", (item) => `translate(${projection([item.lon, item.lat]).join(",")})`)
+    .on("click", (_, item) => renderIntel(item));
+  nodes.append("circle").attr("class", "resource-halo").attr("r", (item) => 8 + Math.sqrt(item.score) * 1.25).attr("fill", (item) => item.color);
+  nodes.append("circle").attr("class", "resource-core").attr("r", (item) => 3 + Math.sqrt(item.score) * 0.38).attr("fill", (item) => item.color);
+  nodes.append("text").attr("class", "resource-label").attr("x", 12).attr("y", -8).text((item) => item.place);
+  nodes.append("title").text((item) => `${item.title} · ${item.facts[3][1]}`);
+  nodes.filter((item) => item.id === state.selected).classed("selected", true);
 }
 
 function drawVectorEvents(svg, projection) {
@@ -1076,7 +1207,7 @@ function syncEventFilter() {
 function syncEventSelection() {
   const source = atlasMap?.getSource("atlas-events");
   if (source) source.setData(eventGeoJSON());
-  document.querySelectorAll(".event-marker").forEach((node) => node.classList.toggle("selected", node.dataset.id === state.selected));
+  document.querySelectorAll(".event-marker, .resource-marker").forEach((node) => node.classList.toggle("selected", node.dataset.id === state.selected));
 }
 
 function fallbackMap(message) {
@@ -1120,6 +1251,7 @@ function normalizePublicEvent(event, index) {
 }
 
 async function loadPublishedEvents() {
+  if (currentTheater().resources) return;
   if (!window.supabase?.createClient || !window.ATLAS_SUPABASE) return;
 
   const client = window.supabase.createClient(
@@ -1220,7 +1352,16 @@ byId("conflictSelect").addEventListener("change", (event) => {
   renderTimeline();
   renderIntel(events[0]);
   createMap();
-  loadPublishedEvents();
+  if (!currentTheater().resources) loadPublishedEvents();
+});
+byId("resourceSelect").addEventListener("change", (event) => {
+  state.resource = event.target.value;
+  localStorage.setItem("atlas-resource", state.resource);
+  applyTheaterData();
+  applyAnalysisContext();
+  renderTimeline();
+  renderIntel(events[0]);
+  createMap();
 });
 byId("languageSelect").addEventListener("change", (event) => {
   state.language = event.target.value;
@@ -1247,5 +1388,5 @@ applyAnalysisContext();
 renderTimeline();
 renderIntel(events[0]);
 createMap();
-loadPublishedEvents();
+if (!currentTheater().resources) loadPublishedEvents();
 window.addEventListener("resize", () => { clearTimeout(window.mapResizeTimer); window.mapResizeTimer = setTimeout(() => atlasMap?.resize(), 180); });
