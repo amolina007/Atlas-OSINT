@@ -534,6 +534,18 @@ document.querySelectorAll("[data-strategy-view]").forEach((button) => button.add
   });
 }));
 
+document.querySelectorAll("[data-force-view]").forEach((button) => button.addEventListener("click", () => {
+  const selectedView = button.dataset.forceView;
+  document.querySelectorAll("[data-force-view]").forEach((tab) => {
+    const active = tab === button;
+    tab.classList.toggle("active", active);
+    tab.setAttribute("aria-selected", String(active));
+  });
+  document.querySelectorAll(".force-view").forEach((view) => {
+    view.hidden = view.id !== `${selectedView}View`;
+  });
+}));
+
 document.querySelectorAll(".advisor").forEach((button) => button.addEventListener("click", () => {
   const content = advisorContent[button.dataset.advisor];
   if (!content) return;

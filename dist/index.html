@@ -198,6 +198,67 @@
         <p class="model-disclaimer"><strong>Límite del modelo:</strong> los niveles, hitos y capacidades son recursos narrativos de esta maqueta. Deben validarse contra eventos y fuentes antes de usarse para análisis.</p>
       </section>
 
+      <section class="force-compare" aria-labelledby="force-title">
+        <div class="force-heading">
+          <div>
+            <p class="eyebrow">BALANCE DE FUERZAS · ESTIMACIONES ABIERTAS</p>
+            <h2 id="force-title">Capacidad militar comparada</h2>
+            <p>Inventario nacional estimado, no disponibilidad en el frente. Las cifras no descuentan mantenimiento, almacenamiento ni pérdidas recientes.</p>
+          </div>
+          <div class="force-tabs" role="tablist" aria-label="Tipo de comparación">
+            <button class="active" id="inventoryTab" role="tab" aria-selected="true" aria-controls="inventoryView" data-force-view="inventory">Inventario</button>
+            <button id="manpowerTab" role="tab" aria-selected="false" aria-controls="manpowerView" data-force-view="manpower">Personal y movilización</button>
+          </div>
+        </div>
+
+        <div class="force-view" id="inventoryView" role="tabpanel" aria-labelledby="inventoryTab">
+          <div class="force-summary">
+            <article><span>VENTAJA CUANTITATIVA</span><strong>Rusia</strong><small>en las 8 categorías comparadas</small></article>
+            <article><span>MAYOR BRECHA</span><strong>12,2×</strong><small>aeronaves militares totales</small></article>
+            <article><span>BASE COMPARABLE</span><strong>2026</strong><small>misma metodología anual</small></article>
+          </div>
+          <div class="comparison-table-wrap">
+            <table class="comparison-table">
+              <thead><tr><th>Capacidad</th><th>Rusia</th><th>Ucrania</th><th>Brecha RUS/UKR</th><th>Confianza</th></tr></thead>
+              <tbody>
+                <tr><th>Tanques</th><td>5.630</td><td>1.121</td><td><span class="ratio-bar"><i style="--ratio: 38%"></i></span><b>5,0×</b></td><td><em class="confidence-badge medium">MEDIA</em></td></tr>
+                <tr><th>Vehículos blindados <small>categoría amplia</small></th><td>126.512</td><td>45.458</td><td><span class="ratio-bar"><i style="--ratio: 21%"></i></span><b>2,8×</b></td><td><em class="confidence-badge medium">MEDIA</em></td></tr>
+                <tr><th>Artillería autopropulsada</th><td>3.603</td><td>682</td><td><span class="ratio-bar"><i style="--ratio: 40%"></i></span><b>5,3×</b></td><td><em class="confidence-badge medium">MEDIA</em></td></tr>
+                <tr><th>Artillería remolcada / obuses</th><td>5.920</td><td>625</td><td><span class="ratio-bar"><i style="--ratio: 71%"></i></span><b>9,5×</b></td><td><em class="confidence-badge medium">MEDIA</em></td></tr>
+                <tr><th>Lanzacohetes múltiples</th><td>2.486</td><td>288</td><td><span class="ratio-bar"><i style="--ratio: 65%"></i></span><b>8,6×</b></td><td><em class="confidence-badge medium">MEDIA</em></td></tr>
+                <tr><th>Aeronaves militares</th><td>4.237</td><td>347</td><td><span class="ratio-bar"><i style="--ratio: 100%"></i></span><b>12,2×</b></td><td><em class="confidence-badge medium">MEDIA</em></td></tr>
+                <tr><th>Cazas / interceptores</th><td>861</td><td>88</td><td><span class="ratio-bar"><i style="--ratio: 74%"></i></span><b>9,8×</b></td><td><em class="confidence-badge medium">MEDIA</em></td></tr>
+                <tr><th>Helicópteros</th><td>1.643</td><td>140</td><td><span class="ratio-bar"><i style="--ratio: 88%"></i></span><b>11,7×</b></td><td><em class="confidence-badge medium">MEDIA</em></td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="force-source">Fuente homogénea: <a href="https://www.globalfirepower.com/countries-comparison-detail.php?country1=ukraine&amp;country2=russia" target="_blank" rel="noreferrer">Global Firepower 2026</a>. Sus cifras son estimaciones de inventario nacional y no equivalen a material operativo o desplegado.</p>
+        </div>
+
+        <div class="force-view" id="manpowerView" role="tabpanel" aria-labelledby="manpowerTab" hidden>
+          <div class="manpower-grid">
+            <article class="manpower-card russia">
+              <p class="eyebrow">RUSIA</p><strong>1,1 M</strong><span>personal activo estimado</span>
+              <div><b>≈600.000</b><small>desplegados en o cerca de Ucrania</small></div>
+            </article>
+            <article class="manpower-card ukraine">
+              <p class="eyebrow">UCRANIA</p><strong>≈880.000</strong><span>personal activo declarado</span>
+              <div><b>No divulgado</b><small>total desplegado comparable</small></div>
+            </article>
+            <article class="mobilization-verdict">
+              <span>¿QUIÉN HA MOVILIZADO MÁS?</span>
+              <h3>No hay un total acumulado comparable</h3>
+              <p>Rusia informó la movilización de más de 300.000 reservistas en septiembre–octubre de 2022. Ucrania propuso sumar hasta 500.000 personas en 2024, pero redujo esa cifra y no publicó un total final equivalente. Comparar esos anuncios como si midieran lo mismo sería engañoso.</p>
+            </article>
+          </div>
+          <div class="manpower-notes">
+            <p><b>Conclusión útil:</b> Rusia mantiene la fuerza activa total más grande, aproximadamente 1,25 veces la estimación ucraniana.</p>
+            <p><b>Límite:</b> “activo”, “movilizado”, “reclutado por contrato” y “desplegado” son categorías distintas.</p>
+          </div>
+          <p class="force-source">Fuentes: <a href="https://www.cfr.org/articles/comparing-size-and-capabilities-russian-and-ukrainian-militaries" target="_blank" rel="noreferrer">CFR, 3 jun 2025</a> · <a href="https://www.reuters.com/world/europe/putin-orders-russian-army-grow-by-180000-soldiers-become-15-million-strong-2024-09-16/" target="_blank" rel="noreferrer">Reuters, 16 sep 2024</a> · <a href="https://www.reuters.com/world/europe/kyivs-top-general-says-ukraine-needs-fewer-troops-than-expected-2024-03-29/" target="_blank" rel="noreferrer">Reuters, 29 mar 2024</a>.</p>
+        </div>
+      </section>
+
       <section class="timeline-section" aria-labelledby="timeline-title">
         <div class="timeline-heading">
           <div><p class="eyebrow">REGISTRO DEL TURNO</p><h2 id="timeline-title">Secuencia de acontecimientos</h2></div>
