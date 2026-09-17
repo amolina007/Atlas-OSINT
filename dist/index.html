@@ -57,6 +57,15 @@
             <input id="fogToggle" type="checkbox" checked>
             <i aria-hidden="true"></i>
           </label>
+          <div class="divider"></div>
+          <div class="map-layer-group" aria-label="Capas cartográficas">
+            <span class="eyebrow">REDES ESTRATÉGICAS</span>
+            <label><input type="checkbox" data-map-layer="routes" checked><i class="layer-symbol route"></i><span>Carreteras troncales<small>corredores regionales</small></span></label>
+            <label><input type="checkbox" data-map-layer="rail" checked><i class="layer-symbol rail"></i><span>Ferrocarril<small>ejes interurbanos</small></span></label>
+            <label><input type="checkbox" data-map-layer="energy"><i class="layer-symbol energy"></i><span>Energía<small>zonas generalizadas</small></span></label>
+            <label><input type="checkbox" data-map-layer="civic"><i class="layer-symbol civic"></i><span>Servicios civiles<small>salud y ayuda</small></span></label>
+            <label><input type="checkbox" data-map-layer="communications"><i class="layer-symbol communications"></i><span>Telecomunicaciones<small>áreas de resiliencia</small></span></label>
+          </div>
           <div class="confidence-key">
             <span class="eyebrow">CONFIANZA</span>
             <p><i class="conf high"></i> Alta <b>3</b></p>
@@ -75,13 +84,20 @@
               <button data-view="world">Mundo</button>
               <button class="active" data-view="theater">Teatro</button>
             </div>
-            <span id="visibleCount">5 eventos visibles</span>
+            <div class="map-toolbar-status">
+              <span id="visibleCount">5 eventos visibles</span>
+              <div class="zoom-controls" role="group" aria-label="Controles de zoom">
+                <button id="zoomOut" aria-label="Alejar mapa" title="Alejar">−</button>
+                <button id="zoomReset" aria-label="Restablecer zoom" title="Restablecer zoom">⌂</button>
+                <button id="zoomIn" aria-label="Acercar mapa" title="Acercar">+</button>
+              </div>
+            </div>
           </div>
           <div id="map" class="map" role="img" aria-label="Mapa de Europa oriental con eventos seleccionables">
             <div class="map-loading"><span></span>Cargando cartografía…</div>
           </div>
-          <div class="map-legend"><span><i class="actor ua"></i>Ucrania</span><span><i class="actor ru"></i>Rusia</span><span><i class="halo"></i>Área aproximada</span></div>
-          <div class="map-disclaimer">Posiciones deliberadamente aproximadas · sin valor táctico en tiempo real</div>
+          <div class="map-legend"><span><i class="actor ua"></i>Ucrania</span><span><i class="actor ru"></i>Rusia</span><span><i class="route-key"></i>Corredor</span><span><i class="halo"></i>Zona aproximada</span></div>
+          <div class="map-disclaimer">Rutas y zonas generalizadas · sin estado operativo ni valor táctico en tiempo real</div>
         </section>
 
         <aside class="intel-panel" id="intelPanel" aria-live="polite">
