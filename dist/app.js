@@ -1,3 +1,5 @@
+import * as maplibregl from "https://cdn.jsdelivr.net/npm/maplibre-gl@6.10.0/dist/maplibre-gl.mjs";
+
 const demoEvents = [
   {
     id: "EVT-0916-01", kind: "ground", kindLabel: "OPERACIÓN TERRESTRE", time: "06:40 UTC", place: "Eje de Limán", lon: 37.8, lat: 49.0,
@@ -61,8 +63,9 @@ const state = {
   layers: new Set(["routes", "rail"])
 };
 const byId = (id) => document.getElementById(id);
-let mapSvg = null;
-let mapZoom = null;
+let atlasMap = null;
+let fallbackSvg = null;
+let fallbackZoom = null;
 
 const strategicRoutes = [
   { type: "routes", label: "Eje occidental", coordinates: [[22.7, 48.6], [24.0, 49.8], [26.3, 50.6], [30.5, 50.4]] },
@@ -110,6 +113,7 @@ const advisorContent = {
 
 function renderIntel(event) {
   state.selected = event.id;
+  syncEventSelection();
   byId("eventCode").textContent = event.id;
   byId("eventKind").textContent = event.kindLabel;
   byId("eventTitle").textContent = event.title;
@@ -136,66 +140,198 @@ function applyFilter(kind) {
   document.querySelectorAll("[data-kind].event-marker, .timeline-card").forEach((node) => node.classList.toggle("filtered", kind !== "all" && node.dataset.kind !== kind));
   const visible = events.filter((event) => kind === "all" || event.kind === kind);
   byId("visibleCount").textContent = `${visible.length} ${visible.length === 1 ? "evento visible" : "eventos visibles"}`;
+  syncEventFilter();
   if (!visible.some((event) => event.id === state.selected) && visible[0]) renderIntel(visible[0]);
 }
 
 function createMap() {
   const container = byId("map");
+  if (!maplibregl?.Map) return fallbackMap("Cartografía no disponible");
+  if (atlasMap) atlasMap.remove();
+  container.innerHTML = "";
+  fallbackSvg = null;
+  fallbackZoom = null;
+  if (!document.createElement("canvas").getContext("webgl2")) {
+    createVectorFallback(container);
+    return;
+  }
+
+  try {
+    atlasMap = new maplibregl.Map({
+      container,
+      center: state.view === "theater" ? [31.5, 49.1] : [20, 30],
+      zoom: state.view === "theater" ? 4.65 : 1.15,
+      minZoom: 1,
+      maxZoom: 9,
+      attributionControl: false,
+      style: {
+        version: 8,
+        sources: {
+          osm: {
+            type: "raster",
+            tiles: ["https://tile.openstreetmap.org/{z}/{x}/{y}.png"],
+            tileSize: 256,
+            attribution: "© OpenStreetMap contributors"
+          }
+        },
+        layers: [
+          { id: "atlas-background", type: "background", paint: { "background-color": "#07100d" } },
+          {
+            id: "osm-base",
+            type: "raster",
+            source: "osm",
+            paint: {
+              "raster-opacity": 0.42,
+              "raster-saturation": -0.78,
+              "raster-contrast": 0.22,
+              "raster-brightness-max": 0.58
+            }
+          }
+        ]
+      }
+    });
+  } catch (error) {
+    console.warn("MapLibre no está disponible; usando cartografía vectorial de respaldo.", error.message);
+    atlasMap = null;
+    createVectorFallback(container);
+    return;
+  }
+  atlasMap.addControl(new maplibregl.AttributionControl({ compact: true }), "bottom-right");
+  atlasMap.on("load", () => {
+    addStrategicLayers();
+    addFogLayer();
+    addEventLayers();
+    syncMapLayers();
+    syncEventFilter();
+  });
+  atlasMap.on("error", (event) => {
+    if (event?.error?.message) console.warn("ATLAS map warning:", event.error.message);
+  });
+}
+
+function createVectorFallback(container) {
   if (!window.d3 || !window.topojson) return fallbackMap("Cartografía no disponible");
   const width = Math.max(container.clientWidth, 500);
   const height = Math.max(container.clientHeight, 500);
-  const svg = d3.select(container).html("").append("svg").attr("viewBox", `0 0 ${width} ${height}`).attr("aria-hidden", "true");
+  const svg = d3.select(container).html("").append("svg").attr("viewBox", `0 0 ${width} ${height}`).attr("aria-label", "Mapa vectorial de respaldo");
   const viewport = svg.append("g").attr("class", "map-viewport");
-  mapSvg = svg;
-  mapZoom = d3.zoom().scaleExtent([1, 8]).on("zoom", (event) => viewport.attr("transform", event.transform));
-  svg.call(mapZoom).on("dblclick.zoom", null);
+  fallbackSvg = svg;
+  fallbackZoom = d3.zoom().scaleExtent([1, 8]).on("zoom", (event) => viewport.attr("transform", event.transform));
+  svg.call(fallbackZoom).on("dblclick.zoom", null);
   const projection = state.view === "theater"
     ? d3.geoMercator().center([35, 51]).scale(width * 2.25).translate([width / 2, height / 2])
     : d3.geoNaturalEarth1().scale(width / 6.35).translate([width / 2, height / 2]);
   const path = d3.geoPath(projection);
   viewport.append("path").datum(d3.geoGraticule10()).attr("class", "graticule").attr("d", path);
 
+  const finish = () => {
+    drawVectorStrategicLayers(viewport, projection);
+    drawVectorFog(viewport, projection);
+    drawVectorEvents(viewport, projection);
+    syncMapLayers();
+  };
   d3.json("https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json").then((world) => {
     const countries = topojson.feature(world, world.objects.countries).features;
-    viewport.insert("g", ":first-child").selectAll("path").data(countries).join("path").attr("class", (d) => `country${String(d.id) === "804" ? " focus-ua" : ""}${String(d.id) === "643" ? " focus-ru" : ""}`).attr("d", path);
-    drawStrategicLayers(viewport, projection);
-    drawFog(viewport, projection, width, height);
-    drawEvents(viewport, projection);
+    viewport.insert("g", ":first-child").selectAll("path").data(countries).join("path")
+      .attr("class", (country) => `country${String(country.id) === "804" ? " focus-ua" : ""}${String(country.id) === "643" ? " focus-ru" : ""}`).attr("d", path);
+    finish();
   }).catch(() => {
-    drawFallbackTerrain(viewport, projection);
-    drawStrategicLayers(viewport, projection);
-    drawFog(viewport, projection, width, height);
-    drawEvents(viewport, projection);
+    viewport.append("path").datum({ type: "Feature", geometry: { type: "Polygon", coordinates: [[[20,44],[48,44],[51,59],[22,61],[20,44]]] } }).attr("class", "country focus-ua").attr("d", path);
+    finish();
   });
 }
 
-function drawStrategicLayers(svg, projection) {
+function drawVectorStrategicLayers(svg, projection) {
   const path = d3.geoPath(projection);
   ["routes", "rail"].forEach((type) => {
     const routes = strategicRoutes.filter((route) => route.type === type);
     const group = svg.append("g").attr("class", `map-layer layer-${type}`);
-    group.selectAll("path").data(routes).join("path")
-      .attr("class", `strategic-route ${type}`)
+    group.selectAll("path").data(routes).join("path").attr("class", `strategic-route ${type}`)
       .attr("d", (route) => path({ type: "LineString", coordinates: route.coordinates }));
     if (type === "routes") {
-      group.selectAll("text").data(routes).join("text")
-        .attr("class", "route-label")
+      group.selectAll("text").data(routes).join("text").attr("class", "route-label")
         .attr("x", (route) => projection(route.coordinates[Math.floor(route.coordinates.length / 2)])[0])
-        .attr("y", (route) => projection(route.coordinates[Math.floor(route.coordinates.length / 2)])[1] - 7)
-        .text((route) => route.label);
+        .attr("y", (route) => projection(route.coordinates[Math.floor(route.coordinates.length / 2)])[1] - 7).text((route) => route.label);
+    }
+  });
+  ["energy", "civic", "communications"].forEach((type) => {
+    const group = svg.append("g").attr("class", `map-layer layer-${type}`);
+    const nodes = group.selectAll("g").data(infrastructureZones.filter((zone) => zone.type === type)).join("g")
+      .attr("class", `critical-zone ${type}`).attr("transform", (zone) => `translate(${projection(zone.coordinates).join(",")})`);
+    nodes.append("circle").attr("class", "zone-halo").attr("r", 17);
+    nodes.append("circle").attr("class", "zone-core").attr("r", 4);
+  });
+}
+
+function drawVectorFog(svg, projection) {
+  const fog = svg.append("g").attr("class", `fog-layer${state.fog ? "" : " hidden"}`);
+  [[27,54,60],[43,48,80],[45,56,68],[25,47,50]].forEach(([lon, lat, radius]) => {
+    const point = projection([lon, lat]);
+    if (point) fog.append("circle").attr("cx", point[0]).attr("cy", point[1]).attr("r", radius).attr("fill", "rgba(152,174,159,.08)");
+  });
+}
+
+function drawVectorEvents(svg, projection) {
+  const nodes = svg.append("g").selectAll("g").data(events).join("g")
+    .attr("class", (event) => `event-marker ${event.kind}`).attr("data-kind", (event) => event.kind).attr("data-id", (event) => event.id)
+    .attr("transform", (event) => `translate(${projection([event.lon, event.lat]).join(",")})`).on("click", (_, event) => renderIntel(event));
+  nodes.append("circle").attr("class", "marker-ring").attr("r", 13);
+  nodes.append("circle").attr("class", "marker-core").attr("r", 4.5);
+  nodes.append("text").attr("class", "marker-label").attr("x", 11).attr("y", -9).text((event) => event.place.split(" · ")[0]);
+  nodes.filter((event) => event.id === state.selected).classed("selected", true);
+  applyFilter(state.kind);
+}
+
+function addStrategicLayers() {
+  ["routes", "rail"].forEach((type) => {
+    const routes = strategicRoutes.filter((route) => route.type === type);
+    atlasMap.addSource(`atlas-${type}`, {
+      type: "geojson",
+      data: {
+        type: "FeatureCollection",
+        features: routes.map((route) => ({
+          type: "Feature",
+          properties: { label: route.label },
+          geometry: { type: "LineString", coordinates: route.coordinates }
+        }))
+      }
+    });
+    atlasMap.addLayer({
+      id: `atlas-${type}-line`,
+      type: "line",
+      source: `atlas-${type}`,
+      paint: type === "routes"
+        ? { "line-color": "#e7b567", "line-width": ["interpolate", ["linear"], ["zoom"], 3, 1.2, 7, 3], "line-opacity": 0.82 }
+        : { "line-color": "#71aee8", "line-width": ["interpolate", ["linear"], ["zoom"], 3, 1, 7, 2.4], "line-opacity": 0.76, "line-dasharray": [3, 2] }
+    });
+    if (type === "routes") {
+      atlasMap.addLayer({
+        id: "atlas-routes-label",
+        type: "symbol",
+        source: "atlas-routes",
+        minzoom: 4.2,
+        layout: { "symbol-placement": "line-center", "text-field": ["get", "label"], "text-size": 10, "text-allow-overlap": false },
+        paint: { "text-color": "#dce6de", "text-halo-color": "#07100d", "text-halo-width": 1.5 }
+      });
     }
   });
 
   ["energy", "civic", "communications"].forEach((type) => {
     const zones = infrastructureZones.filter((zone) => zone.type === type);
-    const group = svg.append("g").attr("class", `map-layer layer-${type}`);
-    const nodes = group.selectAll("g").data(zones).join("g")
-      .attr("class", `critical-zone ${type}`)
-      .attr("transform", (zone) => `translate(${projection(zone.coordinates).join(",")})`);
-    nodes.append("circle").attr("class", "zone-halo").attr("r", 17);
-    nodes.append("circle").attr("class", "zone-core").attr("r", 4);
+    const color = type === "energy" ? "#e7b567" : type === "civic" ? "#79d6a0" : "#ad8de3";
+    atlasMap.addSource(`atlas-${type}`, {
+      type: "geojson",
+      data: { type: "FeatureCollection", features: zones.map((zone) => ({ type: "Feature", properties: {}, geometry: { type: "Point", coordinates: zone.coordinates } })) }
+    });
+    atlasMap.addLayer({
+      id: `atlas-${type}-halo`, type: "circle", source: `atlas-${type}`,
+      paint: { "circle-radius": ["interpolate", ["linear"], ["zoom"], 3, 12, 7, 22], "circle-color": color, "circle-opacity": 0.08, "circle-stroke-color": color, "circle-stroke-width": 1.2, "circle-stroke-opacity": 0.8 }
+    });
+    atlasMap.addLayer({
+      id: `atlas-${type}-core`, type: "circle", source: `atlas-${type}`,
+      paint: { "circle-radius": 3.5, "circle-color": color, "circle-stroke-color": "#07100d", "circle-stroke-width": 1 }
+    });
   });
-  syncMapLayers();
 }
 
 function syncMapLayers() {
@@ -203,42 +339,84 @@ function syncMapLayers() {
     const name = [...layer.classList].find((className) => className.startsWith("layer-"))?.replace("layer-", "");
     layer.classList.toggle("hidden", !state.layers.has(name));
   });
-}
-
-function changeMapZoom(direction) {
-  if (!mapSvg || !mapZoom) return;
-  mapSvg.transition().duration(220).call(mapZoom.scaleBy, direction > 0 ? 1.5 : 1 / 1.5);
-}
-
-function resetMapZoom() {
-  if (!mapSvg || !mapZoom) return;
-  mapSvg.transition().duration(260).call(mapZoom.transform, d3.zoomIdentity);
-}
-
-function drawFallbackTerrain(svg, projection) {
-  const roughRegion = {type: "Feature", geometry: {type: "Polygon", coordinates: [[[20,44],[48,44],[51,59],[22,61],[20,44]]]}};
-  svg.append("path").datum(roughRegion).attr("class", "country focus-ua").attr("d", d3.geoPath(projection));
-}
-
-function drawFog(svg, projection, width, height) {
-  const defs = svg.append("defs");
-  const filter = defs.append("filter").attr("id", "blur");
-  filter.append("feGaussianBlur").attr("stdDeviation", 22);
-  const fog = svg.append("g").attr("class", `fog-layer${state.fog ? "" : " hidden"}`);
-  const fogPoints = [[27,54,70],[43,48,90],[45,56,75],[25,47,55]];
-  fogPoints.forEach(([lon, lat, radius]) => {
-    const point = projection([lon, lat]);
-    if (point) fog.append("circle").attr("cx", point[0]).attr("cy", point[1]).attr("r", radius).attr("fill", "rgba(152,174,159,.11)").attr("filter", "url(#blur)");
+  if (!atlasMap?.isStyleLoaded()) return;
+  const ids = {
+    routes: ["atlas-routes-line", "atlas-routes-label"], rail: ["atlas-rail-line"],
+    energy: ["atlas-energy-halo", "atlas-energy-core"], civic: ["atlas-civic-halo", "atlas-civic-core"],
+    communications: ["atlas-communications-halo", "atlas-communications-core"]
+  };
+  Object.entries(ids).forEach(([name, layerIds]) => {
+    layerIds.forEach((id) => { if (atlasMap.getLayer(id)) atlasMap.setLayoutProperty(id, "visibility", state.layers.has(name) ? "visible" : "none"); });
   });
 }
 
-function drawEvents(svg, projection) {
-  const nodes = svg.append("g").selectAll("g").data(events).join("g").attr("class", (event) => `event-marker ${event.kind}`).attr("data-kind", (event) => event.kind).attr("data-id", (event) => event.id).attr("transform", (event) => `translate(${projection([event.lon, event.lat]).join(",")})`).on("click", (_, event) => renderIntel(event));
-  nodes.append("circle").attr("class", "marker-ring").attr("r", 13);
-  nodes.append("circle").attr("class", "marker-core").attr("r", 4.5);
-  nodes.append("text").attr("class", "marker-label").attr("x", 11).attr("y", -9).text((event) => event.place.split(" · ")[0]);
-  nodes.filter((event) => event.id === state.selected).classed("selected", true);
-  applyFilter(state.kind);
+function changeMapZoom(direction) {
+  if (atlasMap) direction > 0 ? atlasMap.zoomIn({ duration: 220 }) : atlasMap.zoomOut({ duration: 220 });
+  else if (fallbackSvg && fallbackZoom) fallbackSvg.transition().duration(220).call(fallbackZoom.scaleBy, direction > 0 ? 1.5 : 1 / 1.5);
+}
+
+function resetMapZoom() {
+  if (atlasMap) atlasMap.easeTo({ center: state.view === "theater" ? [31.5, 49.1] : [20, 30], zoom: state.view === "theater" ? 4.65 : 1.15, bearing: 0, pitch: 0, duration: 300 });
+  else if (fallbackSvg && fallbackZoom) fallbackSvg.transition().duration(260).call(fallbackZoom.transform, d3.zoomIdentity);
+}
+
+function addFogLayer() {
+  atlasMap.addSource("atlas-fog", {
+    type: "geojson",
+    data: { type: "FeatureCollection", features: [[27,54],[43,48],[45,56],[25,47]].map((coordinates) => ({ type: "Feature", properties: {}, geometry: { type: "Point", coordinates } })) }
+  });
+  atlasMap.addLayer({
+    id: "atlas-fog-layer", type: "circle", source: "atlas-fog",
+    layout: { visibility: state.fog ? "visible" : "none" },
+    paint: { "circle-radius": ["interpolate", ["linear"], ["zoom"], 3, 32, 7, 80], "circle-color": "#9aae9f", "circle-opacity": 0.08, "circle-blur": 0.8 }
+  });
+}
+
+function eventGeoJSON() {
+  return {
+    type: "FeatureCollection",
+    features: events.map((event) => ({
+      type: "Feature",
+      properties: { id: event.id, kind: event.kind, place: event.place.split(" · ")[0], selected: event.id === state.selected },
+      geometry: { type: "Point", coordinates: [event.lon, event.lat] }
+    }))
+  };
+}
+
+function addEventLayers() {
+  atlasMap.addSource("atlas-events", { type: "geojson", data: eventGeoJSON() });
+  const eventColor = ["match", ["get", "kind"], "ground", "#79d6a0", "air", "#e77867", "diplomacy", "#ad8de3", "#d9f99d"];
+  atlasMap.addLayer({
+    id: "atlas-event-halo", type: "circle", source: "atlas-events",
+    paint: { "circle-radius": ["case", ["get", "selected"], 16, 12], "circle-color": eventColor, "circle-opacity": 0.12, "circle-stroke-color": eventColor, "circle-stroke-width": ["case", ["get", "selected"], 2.5, 1.2], "circle-stroke-opacity": 0.8 }
+  });
+  atlasMap.addLayer({
+    id: "atlas-event-core", type: "circle", source: "atlas-events",
+    paint: { "circle-radius": 5, "circle-color": eventColor, "circle-stroke-color": "#07100d", "circle-stroke-width": 2 }
+  });
+  atlasMap.addLayer({
+    id: "atlas-event-label", type: "symbol", source: "atlas-events",
+    layout: { "text-field": ["get", "place"], "text-size": 10, "text-offset": [1.1, -1], "text-anchor": "left", "text-allow-overlap": false },
+    paint: { "text-color": "#e9efe7", "text-halo-color": "#07100d", "text-halo-width": 2 }
+  });
+  atlasMap.on("click", "atlas-event-core", (event) => {
+    const selected = events.find((item) => item.id === event.features?.[0]?.properties?.id);
+    if (selected) renderIntel(selected);
+  });
+  atlasMap.on("mouseenter", "atlas-event-core", () => { atlasMap.getCanvas().style.cursor = "pointer"; });
+  atlasMap.on("mouseleave", "atlas-event-core", () => { atlasMap.getCanvas().style.cursor = ""; });
+}
+
+function syncEventFilter() {
+  if (!atlasMap?.isStyleLoaded()) return;
+  const filter = state.kind === "all" ? null : ["==", ["get", "kind"], state.kind];
+  ["atlas-event-halo", "atlas-event-core", "atlas-event-label"].forEach((id) => { if (atlasMap.getLayer(id)) atlasMap.setFilter(id, filter); });
+}
+
+function syncEventSelection() {
+  const source = atlasMap?.getSource("atlas-events");
+  if (source) source.setData(eventGeoJSON());
+  document.querySelectorAll(".event-marker").forEach((node) => node.classList.toggle("selected", node.dataset.id === state.selected));
 }
 
 function fallbackMap(message) {
@@ -320,6 +498,7 @@ document.querySelectorAll(".filter-chip").forEach((button) => button.addEventLis
 byId("resetFilters").addEventListener("click", () => applyFilter("all"));
 byId("fogToggle").addEventListener("change", (event) => {
   state.fog = event.target.checked;
+  if (atlasMap?.getLayer("atlas-fog-layer")) atlasMap.setLayoutProperty("atlas-fog-layer", "visibility", state.fog ? "visible" : "none");
   document.querySelector(".fog-layer")?.classList.toggle("hidden", !state.fog);
 });
 document.querySelectorAll("[data-map-layer]").forEach((input) => input.addEventListener("change", () => {
@@ -371,4 +550,4 @@ renderTimeline();
 renderIntel(events[0]);
 createMap();
 loadPublishedEvents();
-window.addEventListener("resize", () => { clearTimeout(window.mapResizeTimer); window.mapResizeTimer = setTimeout(createMap, 180); });
+window.addEventListener("resize", () => { clearTimeout(window.mapResizeTimer); window.mapResizeTimer = setTimeout(() => atlasMap?.resize(), 180); });
