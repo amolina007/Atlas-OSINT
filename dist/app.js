@@ -1,4 +1,4 @@
-const events = [
+const demoEvents = [
   {
     id: "EVT-0916-01", kind: "ground", kindLabel: "OPERACIÓN TERRESTRE", time: "06:40 UTC", place: "Eje de Limán", lon: 37.8, lat: 49.0,
     title: "Avance ucraniano en el eje de Limán",
@@ -50,6 +50,8 @@ const events = [
     sources: [["Presidencia ucraniana", "Declaración pública", "PRIMARIA"], ["Reuters", "Contexto diplomático", "PRENSA"]]
   }
 ];
+
+let events = demoEvents;
 
 const state = { kind: "all", selected: events[0].id, view: "theater", fog: true };
 const byId = (id) => document.getElementById(id);
@@ -139,6 +141,77 @@ function fallbackMap(message) {
   byId("map").innerHTML = `<div class="map-loading"><span></span>${message}</div>`;
 }
 
+function normalizePublicEvent(event, index) {
+  const rawKind = String(event.event_type || "").toLowerCase();
+  const kind = rawKind.includes("diplom") || rawKind.includes("negoti")
+    ? "diplomacy"
+    : rawKind.includes("air") || rawKind.includes("missile") || rawKind.includes("drone")
+      ? "air"
+      : "ground";
+  const confidenceScore = Number(event.confidence || 0);
+  const confidence = confidenceScore >= 4 ? "high" : confidenceScore >= 2 ? "medium" : "low";
+  const occurredAt = event.occurred_at ? new Date(event.occurred_at) : null;
+
+  return {
+    id: `EVT-${String(event.id).slice(0, 8).toUpperCase() || index + 1}`,
+    kind,
+    kindLabel: kind === "diplomacy" ? "DIPLOMACIA" : kind === "air" ? "ATAQUE AÉREO" : "OPERACIÓN TERRESTRE",
+    time: occurredAt && !Number.isNaN(occurredAt.valueOf())
+      ? `${occurredAt.toLocaleTimeString("es", { hour: "2-digit", minute: "2-digit", timeZone: "UTC" })} UTC`
+      : "HORA SIN CONFIRMAR",
+    place: event.location_name || "Ubicación aproximada",
+    lon: Number(event.longitude),
+    lat: Number(event.latitude),
+    title: event.title,
+    short: event.title,
+    summary: event.summary || "Resumen editorial pendiente.",
+    confidence,
+    confidenceLabel: confidence === "high" ? "ALTA" : confidence === "medium" ? "MEDIA" : "BAJA",
+    facts: [
+      ["Verificación", event.verification_status || "sin clasificar"],
+      ["Conflicto", event.conflict_slug || "sin asignar"],
+      ["Precisión", "Posición pública aproximada"]
+    ],
+    assessment: "Registro publicado desde la capa pública de ATLAS. Consulte la cadena de evidencia antes de extraer conclusiones.",
+    sources: []
+  };
+}
+
+async function loadPublishedEvents() {
+  if (!window.supabase?.createClient || !window.ATLAS_SUPABASE) return;
+
+  const client = window.supabase.createClient(
+    window.ATLAS_SUPABASE.url,
+    window.ATLAS_SUPABASE.publishableKey,
+    { auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false } }
+  );
+  const { data, error } = await client
+    .from("atlas_events")
+    .select("id, conflict_slug, occurred_at, event_type, title, summary, location_name, latitude, longitude, verification_status, confidence, created_at")
+    .order("occurred_at", { ascending: false, nullsFirst: false });
+
+  if (error) {
+    console.warn("ATLAS public feed unavailable; using editorial demo data.", error.message);
+    return;
+  }
+  if (!data?.length) {
+    byId("dataNotice").textContent = "Supabase conectado · Sin eventos publicados · Mostrando datos de demostración.";
+    return;
+  }
+
+  const published = data
+    .map(normalizePublicEvent)
+    .filter((event) => Number.isFinite(event.lon) && Number.isFinite(event.lat));
+  if (!published.length) return;
+
+  events = published;
+  state.selected = events[0].id;
+  byId("dataNotice").textContent = `Supabase conectado · ${events.length} eventos publicados · Posiciones aproximadas.`;
+  renderTimeline();
+  renderIntel(events[0]);
+  createMap();
+}
+
 document.querySelectorAll(".filter-chip").forEach((button) => button.addEventListener("click", () => applyFilter(button.dataset.kind)));
 byId("resetFilters").addEventListener("click", () => applyFilter("all"));
 byId("fogToggle").addEventListener("change", (event) => {
@@ -161,4 +234,5 @@ byId("turnButton").addEventListener("click", () => document.querySelector(".time
 renderTimeline();
 renderIntel(events[0]);
 createMap();
+loadPublishedEvents();
 window.addEventListener("resize", () => { clearTimeout(window.mapResizeTimer); window.mapResizeTimer = setTimeout(createMap, 180); });
