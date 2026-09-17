@@ -53,6 +53,92 @@ const demoEvents = [
   }
 ];
 
+const middleEastEvents = [
+  {
+    id: "MEA-REF-01", kind: "air", kindLabel: "VIGILANCIA AÉREA Y MISILÍSTICA", time: "REFERENCIA", place: "Levante", lon: 35.2, lat: 32.4,
+    title: "Actividad aérea regional bajo seguimiento",
+    short: "Actividad aérea regional",
+    summary: "Ficha editorial para organizar reportes sobre incursiones, interceptaciones y ataques de largo alcance. No representa una posición ni una operación en tiempo real.",
+    confidence: "medium", confidenceLabel: "MEDIA",
+    facts: [["Cobertura", "Israel, territorios palestinos, Líbano y Siria"], ["Dominio", "Aéreo y misilístico"], ["Estado", "Monitoreo estructural"], ["Precisión", "Regional"]],
+    assessment: "Las afirmaciones deben separarse por actor, hora, plataforma y evidencia visual o institucional antes de construir una secuencia operacional.",
+    sources: [["ONU / OCHA", "Contexto humanitario", "INSTITUCIONAL"], ["Autoridades nacionales", "Declaraciones atribuidas", "PRIMARIA"], ["Medios y verificadores OSINT", "Corroboración cruzada", "ANÁLISIS"]]
+  },
+  {
+    id: "MEA-REF-02", kind: "ground", kindLabel: "DINÁMICA TERRESTRE", time: "REFERENCIA", place: "Gaza · sur del Líbano", lon: 34.9, lat: 31.8,
+    title: "Frentes terrestres y acceso humanitario",
+    short: "Frentes y acceso",
+    summary: "Capa de referencia para contrastar cambios territoriales, restricciones de acceso y efectos sobre población e infraestructura civil.",
+    confidence: "medium", confidenceLabel: "MEDIA",
+    facts: [["Variable", "Control y acceso"], ["Escala", "Subregional"], ["Protección", "Datos civiles agregados"], ["Estado", "Requiere actualización por fuente"]],
+    assessment: "Los límites de control y evacuación son volátiles. Atlas no debe convertir anuncios de una parte en hechos cartográficos sin corroboración independiente.",
+    sources: [["ONU / OCHA", "Acceso y situación humanitaria", "INSTITUCIONAL"], ["CICR", "Protección y derecho humanitario", "INSTITUCIONAL"], ["Fuentes israelíes y palestinas", "Declaraciones atribuidas", "PRIMARIA"]]
+  },
+  {
+    id: "MEA-REF-03", kind: "diplomacy", kindLabel: "DIPLOMACIA REGIONAL", time: "REFERENCIA", place: "Teherán · Jerusalén · capitales regionales", lon: 43.0, lat: 33.0,
+    title: "Disuasión, mediación y actores asociados",
+    short: "Disuasión regional",
+    summary: "Marco para seguir negociaciones, amenazas, sanciones, mediadores y redes de actores estatales y no estatales sin fusionarlos en un solo bloque.",
+    confidence: "medium", confidenceLabel: "MEDIA",
+    facts: [["Ámbito", "Regional"], ["Actores", "Estatales y no estatales"], ["Variable", "Escalada y mediación"], ["Estado", "Síntesis atribuida"]],
+    assessment: "La causalidad regional requiere distinguir coordinación demostrada, afinidad política e inferencia. Cada vínculo debe conservar procedencia y confianza.",
+    sources: [["Naciones Unidas", "Diplomacia multilateral", "INSTITUCIONAL"], ["Gobiernos regionales", "Posiciones oficiales", "PRIMARIA"], ["Agencias internacionales", "Contraste periodístico", "PRENSA"]]
+  },
+  {
+    id: "MEA-REF-04", kind: "air", kindLabel: "SEGURIDAD MARÍTIMA", time: "REFERENCIA", place: "Mar Rojo · Bab el-Mandeb", lon: 42.7, lat: 15.0,
+    title: "Navegación comercial y riesgo regional",
+    short: "Corredor del mar Rojo",
+    summary: "Seguimiento agregado de incidentes y alteraciones de rutas comerciales. No expone identificadores ni posiciones exactas de embarcaciones.",
+    confidence: "medium", confidenceLabel: "MEDIA",
+    facts: [["Corredor", "Suez–Bab el-Mandeb"], ["Dominio", "Marítimo"], ["Datos", "Agregados y retrasados"], ["Uso", "Análisis estratégico"]],
+    assessment: "La navegación conecta el teatro militar con energía, seguros, comercio y cadenas logísticas globales.",
+    sources: [["UKMTO", "Avisos de seguridad marítima", "PRIMARIA"], ["IMO", "Marco marítimo", "INSTITUCIONAL"], ["Global Fishing Watch", "Presencia AIS retrasada", "OSINT"]]
+  }
+];
+
+const sudanEvents = [
+  {
+    id: "SDN-REF-01", kind: "ground", kindLabel: "CONTROL TERRITORIAL", time: "REFERENCIA", place: "Jartum y centro de Sudán", lon: 32.55, lat: 15.5,
+    title: "Control urbano y corredores logísticos",
+    short: "Jartum y eje central",
+    summary: "Ficha de referencia para registrar cambios de control, combates urbanos y continuidad de corredores sin asumir que una declaración equivale a dominio efectivo.",
+    confidence: "medium", confidenceLabel: "MEDIA",
+    facts: [["Actores", "SAF y RSF"], ["Escala", "Regional"], ["Variable", "Control efectivo"], ["Estado", "Verificación necesaria"]],
+    assessment: "En un frente fragmentado, el control de vías, puentes y nodos logísticos puede ser más informativo que colorear provincias completas.",
+    sources: [["SAF", "Declaraciones atribuidas", "PRIMARIA"], ["RSF", "Declaraciones atribuidas", "PRIMARIA"], ["ONU / OCHA", "Contexto humanitario", "INSTITUCIONAL"]]
+  },
+  {
+    id: "SDN-REF-02", kind: "ground", kindLabel: "CONFLICTO REGIONAL", time: "REFERENCIA", place: "Darfur", lon: 24.9, lat: 13.2,
+    title: "Darfur: violencia y acceso humanitario",
+    short: "Darfur y desplazamiento",
+    summary: "Capa editorial para relacionar violencia, desplazamientos, rutas de ayuda y afectación de comunidades sin publicar datos personales o trayectorias individuales.",
+    confidence: "medium", confidenceLabel: "MEDIA",
+    facts: [["Región", "Darfur"], ["Prioridad", "Protección civil"], ["Datos", "Agregados"], ["Estado", "Cobertura desigual"]],
+    assessment: "La escasez de comunicaciones y el acceso limitado exigen mostrar brechas de evidencia, no rellenarlas con inferencias cartográficas.",
+    sources: [["ONU / OCHA", "Situación humanitaria", "INSTITUCIONAL"], ["IOM", "Desplazamiento agregado", "INSTITUCIONAL"], ["Organizaciones locales", "Reportes atribuidos", "PRIMARIA"]]
+  },
+  {
+    id: "SDN-REF-03", kind: "diplomacy", kindLabel: "DIPLOMACIA Y ACTORES EXTERNOS", time: "REFERENCIA", place: "Sudán · región del mar Rojo", lon: 35.0, lat: 19.0,
+    title: "Mediación y apoyo externo",
+    short: "Mediación regional",
+    summary: "Marco para registrar iniciativas diplomáticas, sanciones y apoyo exterior con atribución separada para cada actor.",
+    confidence: "medium", confidenceLabel: "MEDIA",
+    facts: [["Variable", "Mediación"], ["Ámbito", "Regional e internacional"], ["Método", "Atribución por fuente"], ["Estado", "Seguimiento"]],
+    assessment: "Las relaciones externas deben modelarse como vínculos con distinto grado de evidencia, no como alianzas binarias presumidas.",
+    sources: [["Naciones Unidas", "Proceso diplomático", "INSTITUCIONAL"], ["Unión Africana", "Mediación regional", "INSTITUCIONAL"], ["Gobiernos involucrados", "Posiciones oficiales", "PRIMARIA"]]
+  },
+  {
+    id: "SDN-REF-04", kind: "air", kindLabel: "INFRAESTRUCTURA Y ABASTECIMIENTO", time: "REFERENCIA", place: "Puerto Sudán", lon: 37.2, lat: 19.6,
+    title: "Puerto, suministros y salida al mar",
+    short: "Puerto Sudán",
+    summary: "Seguimiento estratégico del principal corredor marítimo y de abastecimiento mediante datos públicos agregados y retrasados.",
+    confidence: "medium", confidenceLabel: "MEDIA",
+    facts: [["Nodo", "Puerto Sudán"], ["Dominio", "Marítimo y logístico"], ["Precisión", "Regional"], ["Datos", "Sin identificadores"]],
+    assessment: "La continuidad portuaria afecta ayuda, comercio, combustible y capacidad estatal; los contactos marítimos deben conservar retraso y agregación.",
+    sources: [["Autoridad portuaria", "Información operativa pública", "PRIMARIA"], ["ONU / OCHA", "Abastecimiento humanitario", "INSTITUCIONAL"], ["Global Fishing Watch", "Presencia AIS retrasada", "OSINT"]]
+  }
+];
+
 let events = demoEvents;
 
 const state = {
@@ -60,7 +146,7 @@ const state = {
   selected: events[0].id,
   view: "theater",
   fog: true,
-  conflict: "russia-ukraine",
+  conflict: ["russia-ukraine", "middle-east", "sudan"].includes(localStorage.getItem("atlas-conflict")) ? localStorage.getItem("atlas-conflict") : "russia-ukraine",
   perspective: localStorage.getItem("atlas-perspective") || "neutral",
   language: localStorage.getItem("atlas-language") || "es",
   layers: new Set(["control", "movements", "routes", "rail", "admin", "water", "terrain", "maritime", "aviation"])
@@ -74,7 +160,7 @@ let vectorDetailLevel = "";
 let trafficProjection = null;
 let trafficRefreshTimer = null;
 
-const strategicRoutes = [
+let strategicRoutes = [
   { type: "routes", label: "M06 / E40", coordinates: [[22.7, 48.6], [24.0, 49.8], [26.3, 50.6], [30.5, 50.4]] },
   { type: "routes", label: "M03 / E40", coordinates: [[30.5, 50.4], [32.1, 49.4], [35.0, 48.5], [36.2, 50.0], [37.8, 50.0]] },
   { type: "routes", label: "M05 / E95", coordinates: [[30.5, 50.4], [30.1, 49.2], [30.7, 48.5], [30.7, 46.5]] },
@@ -87,15 +173,15 @@ const strategicRoutes = [
   { type: "rail", label: "Corredor Donbás", coordinates: [[35.0, 48.5], [36.8, 48.0], [37.8, 48.0], [39.7, 48.0]] }
 ];
 
-const controlZones = [
+let controlZones = [
   { actor: "ru", label: "Control ruso reportado · este", coordinates: [[[37.0, 51.1], [40.1, 50.9], [40.3, 46.9], [37.2, 46.8], [36.3, 47.5], [37.0, 49.0], [37.0, 51.1]]] },
   { actor: "ru", label: "Control ruso reportado · sur", coordinates: [[[32.4, 46.2], [36.8, 46.3], [37.3, 47.4], [35.8, 47.6], [33.4, 47.1], [32.4, 46.2]]] },
   { actor: "ru", label: "Crimea ocupada", coordinates: [[[32.4, 46.2], [33.1, 45.2], [35.2, 44.4], [36.7, 45.0], [36.1, 45.8], [34.4, 46.2], [32.4, 46.2]]] }
 ];
 
-const frontLine = [[36.8, 51.0], [37.1, 50.2], [37.7, 49.4], [37.7, 48.4], [36.9, 47.7], [35.8, 47.4], [34.4, 47.1], [33.2, 46.8]];
+let frontLine = [[36.8, 51.0], [37.1, 50.2], [37.7, 49.4], [37.7, 48.4], [36.9, 47.7], [35.8, 47.4], [34.4, 47.1], [33.2, 46.8]];
 
-const movementArrows = [
+let movementArrows = [
   { actor: "ru", phase: "2022 · eje norte", coordinates: [[31.0, 53.0], [30.7, 51.8], [30.5, 50.7]] },
   { actor: "ru", phase: "2022–26 · presión oriental", coordinates: [[40.0, 49.8], [38.7, 49.5], [37.7, 49.2]] },
   { actor: "ru", phase: "2022 · eje meridional", coordinates: [[34.4, 45.3], [34.7, 46.4], [35.4, 47.1]] },
@@ -103,33 +189,33 @@ const movementArrows = [
   { actor: "ua", phase: "2022 · recuperación oeste del Dnipró", coordinates: [[32.6, 47.1], [32.1, 46.8], [31.6, 46.7]] }
 ];
 
-const waterways = [
+let waterways = [
   { label: "Dnipró", coordinates: [[32.6, 52.3], [30.5, 50.4], [32.0, 49.0], [34.6, 48.5], [35.2, 47.8], [33.4, 46.6]] },
   { label: "Dniéster", coordinates: [[24.0, 49.5], [26.1, 48.7], [28.8, 47.0], [30.2, 46.3]] },
   { label: "Bug Meridional", coordinates: [[27.0, 49.5], [29.3, 48.2], [31.9, 46.9]] },
   { label: "Donets", coordinates: [[36.0, 50.2], [37.5, 49.3], [39.4, 48.6]] }
 ];
 
-const administrativeLines = [
+let administrativeLines = [
   [[24.8, 51.4], [25.6, 48.9], [26.0, 47.8]], [[27.7, 52.0], [28.4, 49.8], [28.7, 47.4]],
   [[31.0, 52.2], [31.4, 49.4], [31.8, 46.7]], [[34.2, 51.3], [34.4, 49.0], [34.8, 46.6]],
   [[37.0, 50.8], [36.7, 48.5], [36.2, 46.7]], [[23.0, 49.2], [38.8, 49.1]],
   [[24.0, 50.6], [37.8, 50.5]], [[25.0, 47.8], [37.0, 47.8]]
 ];
 
-const terrainBands = [
+let terrainBands = [
   { level: "high", label: "Cárpatos", coordinates: [[[22.2, 47.7], [24.8, 47.9], [26.0, 49.2], [24.3, 50.0], [22.2, 49.2], [22.2, 47.7]]] },
   { level: "mid", label: "Altiplano central", coordinates: [[[27.0, 48.0], [33.5, 48.0], [34.5, 50.0], [30.0, 51.2], [27.0, 50.0], [27.0, 48.0]]] },
   { level: "mid", label: "Altos del Donets", coordinates: [[[35.2, 47.3], [39.2, 47.3], [39.6, 49.8], [36.7, 50.1], [35.2, 47.3]]] }
 ];
 
-const maritimeCorridors = [
+let maritimeCorridors = [
   { label: "Corredor civil del mar Negro", coordinates: [[30.7, 46.5], [29.9, 44.8], [28.9, 43.2], [29.0, 41.2]] },
   { label: "Constanța–Bósforo", coordinates: [[28.7, 44.2], [29.1, 42.8], [29.0, 41.2]] },
   { label: "Ruta caucásica", coordinates: [[29.0, 41.2], [33.5, 42.0], [38.7, 43.0]] }
 ];
 
-const aviationCorridors = [
+let aviationCorridors = [
   { label: "Corredor civil norte", coordinates: [[20.9, 52.2], [23.0, 51.8], [26.1, 50.9], [28.8, 47.0]] },
   { label: "Corredor civil occidental", coordinates: [[20.9, 52.2], [21.3, 49.9], [26.1, 47.0], [29.0, 41.2]] },
   { label: "Corredor civil mar Negro", coordinates: [[28.8, 47.0], [28.7, 44.2], [29.0, 41.2]] }
@@ -137,7 +223,7 @@ const aviationCorridors = [
 
 // Muestra editorial para que el estado sin credenciales siga siendo legible.
 // No representa observaciones reales ni posiciones de vehículos concretos.
-const editorialTrafficContacts = {
+let editorialTrafficContacts = {
   aviation: [
     { lon: 21.0, lat: 52.0, count: 7 }, { lon: 24.0, lat: 50.8, count: 4 },
     { lon: 27.0, lat: 48.5, count: 3 }, { lon: 28.5, lat: 44.0, count: 5 },
@@ -149,7 +235,7 @@ const editorialTrafficContacts = {
   ]
 };
 
-const knownCapabilitySectors = [
+let knownCapabilitySectors = [
   { actor: "ua", type: "Defensa aérea reportada", region: "centro-norte", coordinates: [30.4, 50.2] },
   { actor: "ua", type: "Sector defensivo", region: "noreste", coordinates: [36.0, 49.8] },
   { actor: "ua", type: "Artillería reportada", region: "eje oriental", coordinates: [36.1, 48.3] },
@@ -170,7 +256,7 @@ function normalizedPolygon(rings) {
   });
 }
 
-const infrastructureZones = [
+let infrastructureZones = [
   { type: "energy", coordinates: [24.8, 49.6] }, { type: "energy", coordinates: [30.4, 50.1] },
   { type: "energy", coordinates: [34.8, 48.5] }, { type: "energy", coordinates: [31.5, 47.1] },
   { type: "civic", coordinates: [24.1, 49.8] }, { type: "civic", coordinates: [30.5, 50.4] },
@@ -178,6 +264,81 @@ const infrastructureZones = [
   { type: "communications", coordinates: [25.8, 50.3] }, { type: "communications", coordinates: [30.7, 49.0] },
   { type: "communications", coordinates: [34.3, 49.5] }, { type: "communications", coordinates: [32.0, 47.0] }
 ];
+
+const ukraineTheaterData = {
+  events: demoEvents, strategicRoutes, controlZones, frontLine, movementArrows, waterways, administrativeLines,
+  terrainBands, maritimeCorridors, aviationCorridors, editorialTrafficContacts, knownCapabilitySectors, infrastructureZones
+};
+
+const theaterConfigs = {
+  "russia-ukraine": {
+    ...ukraineTheaterData,
+    title: { es: "Guerra ruso-ucraniana", uk: "Російсько-українська війна", ru: "Российско-украинская война" },
+    theater: { es: "TEATRO · EUROPA ORIENTAL", uk: "ТЕАТР · СХІДНА ЄВРОПА", ru: "ТЕАТР · ВОСТОЧНАЯ ЕВРОПА" },
+    lede: { es: "Una vista estratégica de la situación, construida sobre afirmaciones trazables y niveles explícitos de confianza.", uk: "Стратегічний огляд на основі простежуваних тверджень і чітко позначених рівнів довіри.", ru: "Стратегический обзор на основе прослеживаемых утверждений и явно обозначенных уровней доверия." },
+    center: [35, 51], scale: 2.25, focusCountryIds: [804, 643], adminGeoJSON: true,
+    adminLevels: ["TEATRO", "ÓBLASTS", "RAIONES"],
+    perspectiveLabels: { es: ["Neutra", "Visión rusa", "Visión ucraniana"], uk: ["Нейтральна", "Російський погляд", "Український погляд"], ru: ["Нейтральная", "Российский взгляд", "Украинский взгляд"] },
+    perspectiveNames: ["RU", "UA"], perspectivePatterns: [/rusi|mosc|kremlin|russian/i, /ucrani|kyiv|ukrain/i],
+    status: [["INICIATIVA", "Disputada", "↑ local UA"], ["PRESIÓN AÉREA", "Alta", "intensa"], ["DIPLOMACIA", "Estancada", "sin tregua"], ["COBERTURA", "68%", "12 fuentes"]],
+    analystNote: "La iniciativa ucraniana es localizada. No equivale a un cambio confirmado del equilibrio general.",
+    legend: ["Control UA", "Control RU"], phase: ["Desgaste, adaptación y sistemas no tripulados", "El turno se interpreta mediante cuatro fuerzas acumulativas. Cada nivel expresa una lectura editorial del prototipo, no una puntuación factual."],
+    controlLabels: [{ text: "CONTROL UCRANIANO", className: "ua", point: [29.0, 50.4] }, { text: "CONTROL RUSO · APROX.", className: "ru", point: [39.0, 48.0] }],
+    fogPoints: [[27,54,60],[43,48,80],[45,56,68],[25,47,50]], liveTraffic: true
+  },
+  "middle-east": {
+    events: middleEastEvents,
+    title: { es: "Oriente Medio ampliado", uk: "Розширений Близький Схід", ru: "Расширенный Ближний Восток" },
+    theater: { es: "TEATRO · ORIENTE MEDIO Y MAR ROJO", uk: "ТЕАТР · БЛИЗЬКИЙ СХІД І ЧЕРВОНЕ МОРЕ", ru: "ТЕАТР · БЛИЖНИЙ ВОСТОК И КРАСНОЕ МОРЕ" },
+    lede: { es: "Un teatro regional que separa frentes, actores asociados, navegación, diplomacia e impacto humanitario.", uk: "Регіональний театр із розділеним аналізом фронтів, акторів, навігації, дипломатії та гуманітарного впливу.", ru: "Региональный театр с раздельным анализом фронтов, акторов, навигации, дипломатии и гуманитарных последствий." },
+    center: [41, 28], scale: 1.25, focusCountryIds: [376, 364, 422, 760, 368, 887], adminGeoJSON: false,
+    adminLevels: ["TEATRO", "PAÍSES", "SUBREGIONES"],
+    perspectiveLabels: { es: ["Neutra", "Visión israelí-occidental", "Visión iraní y actores asociados"], uk: ["Нейтральна", "Ізраїльсько-західний погляд", "Іранський та союзний погляд"], ru: ["Нейтральная", "Израильско-западный взгляд", "Иранский и союзный взгляд"] },
+    perspectiveNames: ["ISR/OCC", "IRN/EJE"], perspectivePatterns: [/israel|idf|ee\. ?uu|estadounid|ukmto/i, /ir[aá]n|teher|hezbol|hut[ií]|houthi/i],
+    status: [["DINÁMICA", "Regionalizada", "varios frentes"], ["DOMINIO AÉREO", "Intenso", "misiles y drones"], ["DIPLOMACIA", "Fragmentada", "mediación activa"], ["COBERTURA", "Base", "4 fichas marco"]],
+    analystNote: "Oriente Medio no es un único frente. Atlas separa actores, escalas y cadenas de evidencia para evitar atribuciones por asociación.",
+    legend: ["Actor A / coalición", "Actor B / red asociada"], phase: ["Escalada regional, disuasión y presión sobre corredores", "El modelo observa frentes conectados sin tratarlos como una guerra única ni presumir coordinación entre actores."],
+    controlLabels: [], fogPoints: [[34,32,55],[43,34,65],[44,16,55]], liveTraffic: false,
+    strategicRoutes: [
+      { type: "routes", label: "Mediterráneo–Golfo", coordinates: [[34.8,31.8],[36.3,33.5],[44.4,33.3],[51.4,25.3]] },
+      { type: "routes", label: "Suez–mar Rojo", coordinates: [[32.5,30.0],[34.3,27.0],[39.0,20.0],[43.3,12.7]] },
+      { type: "rail", label: "Corredores terrestres regionales", coordinates: [[35.2,32.1],[36.3,33.5],[44.4,33.3],[46.7,24.7]] }
+    ],
+    controlZones: [], frontLine: [], movementArrows: [],
+    waterways: [{ label: "Éufrates", coordinates: [[38.0,37.0],[40.5,35.0],[44.0,33.0],[47.5,31.0]] }, { label: "Tigris", coordinates: [[42.0,37.0],[43.5,34.0],[46.5,31.0]] }, { label: "Nilo", coordinates: [[31.2,30.0],[31.0,27.0],[32.5,24.0]] }],
+    administrativeLines: [[[34.3,31.2],[35.8,33.3],[36.8,35.8]],[[39.0,32.0],[47.0,32.0]],[[44.0,28.0],[52.0,28.0]],[[38.0,20.0],[45.0,20.0]]],
+    terrainBands: [{ level: "high", label: "Montes Zagros", coordinates: [[[43,29],[49,29],[50,37],[45,39],[43,29]]] }, { level: "mid", label: "Alturas del Levante", coordinates: [[[34.5,30],[37,30],[38,36],[35,37],[34.5,30]]] }],
+    maritimeCorridors: [{ label: "Mediterráneo oriental", coordinates: [[29,34],[33,33],[35,32]] }, { label: "Suez–Bab el-Mandeb", coordinates: [[32.5,30],[36,24],[40,18],[43.3,12.7]] }, { label: "Hormuz", coordinates: [[43.3,12.7],[52,15],[56.5,26.3]] }],
+    aviationCorridors: [{ label: "Corredor mediterráneo", coordinates: [[28,35],[34,35],[40,36]] }, { label: "Corredor del Golfo", coordinates: [[39,30],[46,28],[52,26]] }],
+    editorialTrafficContacts: { aviation: [{ lon: 31, lat: 35, count: 8 }, { lon: 45, lat: 29, count: 11 }, { lon: 52, lat: 26, count: 9 }], maritime: [{ lon: 33, lat: 29, count: 7 }, { lon: 41, lat: 17, count: 10 }, { lon: 56, lat: 25, count: 12 }] },
+    knownCapabilitySectors: [],
+    infrastructureZones: [{ type: "energy", coordinates: [50.5,26.2] }, { type: "energy", coordinates: [44.5,31.0] }, { type: "civic", coordinates: [35.2,31.8] }, { type: "civic", coordinates: [36.3,33.5] }, { type: "communications", coordinates: [44.4,33.3] }]
+  },
+  sudan: {
+    events: sudanEvents,
+    title: { es: "Guerra de Sudán", uk: "Війна в Судані", ru: "Война в Судане" },
+    theater: { es: "TEATRO · SUDÁN Y MAR ROJO", uk: "ТЕАТР · СУДАН І ЧЕРВОНЕ МОРЕ", ru: "ТЕАТР · СУДАН И КРАСНОЕ МОРЕ" },
+    lede: { es: "Seguimiento de una guerra fragmentada mediante control efectivo, corredores, desplazamiento y acceso humanitario.", uk: "Моніторинг фрагментованої війни через фактичний контроль, коридори, переміщення та гуманітарний доступ.", ru: "Мониторинг фрагментированной войны через фактический контроль, коридоры, перемещение и гуманитарный доступ." },
+    center: [30, 15], scale: 1.75, focusCountryIds: [729], adminGeoJSON: false,
+    adminLevels: ["TEATRO", "ESTADOS", "CORREDORES"],
+    perspectiveLabels: { es: ["Neutra", "Visión SAF", "Visión RSF"], uk: ["Нейтральна", "Погляд SAF", "Погляд RSF"], ru: ["Нейтральная", "Взгляд SAF", "Взгляд RSF"] },
+    perspectiveNames: ["SAF", "RSF"], perspectivePatterns: [/\bSAF\b|fuerzas armadas|ej[eé]rcito sudan/i, /\bRSF\b|apoyo r[aá]pido/i],
+    status: [["CONTROL", "Fragmentado", "nodos y corredores"], ["ACCESO", "Restringido", "cobertura desigual"], ["DIPLOMACIA", "Intermitente", "múltiples mediadores"], ["COBERTURA", "Base", "4 fichas marco"]],
+    analystNote: "En Sudán, las zonas coloreadas pueden exagerar el control. La prioridad analítica son ciudades, rutas, puentes y acceso humanitario.",
+    legend: ["SAF", "RSF"], phase: ["Fragmentación territorial y crisis humanitaria", "El modelo prioriza nodos, corredores y brechas de evidencia por sobre fronteras de control excesivamente precisas."],
+    controlLabels: [], fogPoints: [[25,13,70],[32,15,60],[35,10,55]], liveTraffic: false,
+    strategicRoutes: [{ type: "routes", label: "Puerto Sudán–Jartum", coordinates: [[37.2,19.6],[34.0,18.0],[32.55,15.5]] }, { type: "routes", label: "Jartum–Darfur", coordinates: [[32.55,15.5],[29.0,14.0],[24.9,13.2]] }, { type: "rail", label: "Eje del Nilo", coordinates: [[31.8,21.8],[32.55,15.5],[33.6,12.0]] }],
+    controlZones: [], frontLine: [], movementArrows: [],
+    waterways: [{ label: "Nilo", coordinates: [[31.0,22.0],[32.0,18.0],[32.55,15.5],[33.6,12.0]] }, { label: "Nilo Azul", coordinates: [[35.2,11.5],[33.5,13.0],[32.55,15.5]] }],
+    administrativeLines: [[[22,16],[38,16]],[[24,12],[36,12]],[[29,9],[29,21]],[[34,9],[34,21]]],
+    terrainBands: [{ level: "high", label: "Macizo de Marra", coordinates: [[[23,11],[25.5,11],[25.8,14.5],[23.5,15],[23,11]]] }, { level: "mid", label: "Litoral del mar Rojo", coordinates: [[[35,9],[38,9],[38,22],[35.5,22],[35,9]]] }],
+    maritimeCorridors: [{ label: "Corredor del mar Rojo", coordinates: [[37.2,19.6],[39.5,16.0],[43.3,12.7],[44.0,20.0]] }],
+    aviationCorridors: [{ label: "Corredor regional", coordinates: [[30,22],[32.5,15.5],[38,15],[42,20]] }],
+    editorialTrafficContacts: { aviation: [{ lon: 32.5, lat: 15.5, count: 3 }, { lon: 37.2, lat: 19.6, count: 5 }], maritime: [{ lon: 37.5, lat: 19.0, count: 6 }, { lon: 41, lat: 15, count: 8 }] },
+    knownCapabilitySectors: [],
+    infrastructureZones: [{ type: "energy", coordinates: [32.55,15.5] }, { type: "civic", coordinates: [24.9,13.2] }, { type: "civic", coordinates: [37.2,19.6] }, { type: "communications", coordinates: [32.55,15.5] }]
+  }
+};
 
 const advisorContent = {
   security: {
@@ -257,29 +418,82 @@ const perspectiveCopy = {
   }
 };
 
+function currentTheater() {
+  return theaterConfigs[state.conflict] || theaterConfigs["russia-ukraine"];
+}
+
+function localized(value) {
+  if (typeof value === "string") return value;
+  return value?.[state.language] || value?.es || "";
+}
+
+function applyTheaterData() {
+  const config = currentTheater();
+  events = config.events;
+  strategicRoutes = config.strategicRoutes;
+  controlZones = config.controlZones;
+  frontLine = config.frontLine;
+  movementArrows = config.movementArrows;
+  waterways = config.waterways;
+  administrativeLines = config.administrativeLines;
+  terrainBands = config.terrainBands;
+  maritimeCorridors = config.maritimeCorridors;
+  aviationCorridors = config.aviationCorridors;
+  editorialTrafficContacts = config.editorialTrafficContacts;
+  knownCapabilitySectors = config.knownCapabilitySectors;
+  infrastructureZones = config.infrastructureZones;
+  state.selected = events[0]?.id || null;
+  state.kind = "all";
+  byId("conflictSelect").value = state.conflict;
+  config.status.forEach(([label, value, trend], index) => {
+    byId(`statusLabel${index + 1}`).textContent = label;
+    byId(`statusValue${index + 1}`).textContent = value;
+    byId(`statusTrend${index + 1}`).textContent = trend;
+  });
+  byId("analystNote").textContent = config.analystNote;
+  byId("legendActorA").textContent = config.legend[0];
+  byId("legendActorB").textContent = config.legend[1];
+  byId("strategyPhaseTitle").textContent = config.phase[0];
+  byId("strategyPhaseCopy").textContent = config.phase[1];
+  byId("map").setAttribute("aria-label", `Mapa estratégico de ${localized(config.title)} con eventos seleccionables`);
+  document.querySelector('[data-map-layer="admin"]').closest("label").querySelector("small").textContent = `${config.adminLevels[1].toLowerCase()} y ${config.adminLevels[2].toLowerCase()} · según zoom`;
+  document.querySelector(".force-compare").hidden = state.conflict !== "russia-ukraine";
+  byId("dataNotice").textContent = state.conflict === "russia-ukraine"
+    ? "Prototipo editorial · Datos de demostración · No sustituye fuentes oficiales ni asesoramiento de seguridad."
+    : "Cobertura base · Fichas editoriales de referencia · Pendiente de eventos publicados y verificados.";
+}
+
 function hasActorSource(event, actor) {
-  const terms = actor === "russian" ? /rusi|mosc|kremlin|russian/i : /ucrani|kyiv|ukrain/i;
+  const terms = actor === "russian" ? currentTheater().perspectivePatterns[0] : currentTheater().perspectivePatterns[1];
   return event.sources.some(([name]) => terms.test(name));
 }
 
 function applyAnalysisContext() {
   const copy = interfaceCopy[state.language] || interfaceCopy.es;
   const lens = perspectiveCopy[state.language] || perspectiveCopy.es;
-  const currentLens = lens[state.perspective] || lens.neutral;
+  let currentLens = lens[state.perspective] || lens.neutral;
+  if (state.conflict !== "russia-ukraine" && state.perspective !== "neutral") {
+    const labels = currentTheater().perspectiveLabels[state.language] || currentTheater().perspectiveLabels.es;
+    const index = state.perspective === "russian" ? 1 : 2;
+    currentLens = [labels[index].toUpperCase(), `${labels[index]}, siempre atribuida`, "Prioriza las fuentes de esta perspectiva, conserva contradicciones y no altera la evaluación independiente."];
+  }
   document.documentElement.lang = state.language;
   byId("languageSelect").value = state.language;
   byId("conflictLabel").textContent = copy.conflict;
   byId("conflictHelp").textContent = copy.conflictHelp;
-  byId("conflictSelect").options[0].textContent = copy.conflictName;
-  byId("conflictSelect").options[1].textContent = copy.future;
+  [...byId("conflictSelect").options].forEach((option) => {
+    const optionConfig = theaterConfigs[option.value];
+    if (optionConfig) option.textContent = localized(optionConfig.title);
+  });
   byId("perspectiveLabel").textContent = copy.perspective;
   byId("perspectiveHelp").textContent = copy.perspectiveHelp;
   byId("languageLabel").textContent = copy.language;
   byId("languageHelp").textContent = copy.languageHelp;
   const perspectiveButtons = [...document.querySelectorAll("[data-perspective]")];
-  perspectiveButtons[0].textContent = copy.neutralButton;
-  perspectiveButtons[1].textContent = copy.russianButton;
-  perspectiveButtons[2].textContent = copy.ukrainianButton;
+  const perspectiveLabels = currentTheater().perspectiveLabels[state.language] || currentTheater().perspectiveLabels.es;
+  perspectiveButtons[0].textContent = perspectiveLabels[0];
+  perspectiveButtons[1].textContent = perspectiveLabels[1];
+  perspectiveButtons[2].textContent = perspectiveLabels[2];
   perspectiveButtons.forEach((button) => {
     const active = button.dataset.perspective === state.perspective;
     button.classList.toggle("active", active);
@@ -290,10 +504,10 @@ function applyAnalysisContext() {
   byId("perspectiveTitle").textContent = currentLens[1];
   byId("perspectiveDescription").textContent = currentLens[2];
   byId("perspectiveDisclaimer").textContent = lens.disclaimer;
-  byId("theaterLabel").textContent = copy.theater;
-  byId("briefing-title").textContent = copy.title;
-  byId("briefingLede").textContent = copy.lede;
-  document.title = `${copy.title} · ATLAS OSINT`;
+  byId("theaterLabel").textContent = localized(currentTheater().theater);
+  byId("briefing-title").textContent = localized(currentTheater().title);
+  byId("briefingLede").textContent = localized(currentTheater().lede);
+  document.title = `${localized(currentTheater().title)} · ATLAS OSINT`;
 }
 
 function renderIntel(event) {
@@ -308,13 +522,17 @@ function renderIntel(event) {
   badge.textContent = event.confidenceLabel;
   badge.className = `confidence-badge ${event.confidence}`;
   byId("eventFacts").innerHTML = event.facts.map(([term, value]) => `<div><dt>${term}</dt><dd>${value}</dd></div>`).join("");
-  const actorPattern = state.perspective === "russian" ? /rusi|mosc|kremlin|russian/i : /ucrani|kyiv|ukrain/i;
+  const actorPattern = state.perspective === "russian" ? currentTheater().perspectivePatterns[0] : currentTheater().perspectivePatterns[1];
   const sortedSources = state.perspective === "neutral" ? [...event.sources] : [...event.sources].sort((a, b) => Number(actorPattern.test(b[0])) - Number(actorPattern.test(a[0])));
   const missingActorSource = state.perspective !== "neutral" && !hasActorSource(event, state.perspective);
   const languageCopy = interfaceCopy[state.language] || interfaceCopy.es;
   byId("sourceCount").textContent = `${event.sources.length} fuentes`;
+  const perspectiveIndex = state.perspective === "russian" ? 0 : 1;
+  const gapText = state.conflict === "russia-ukraine"
+    ? (state.perspective === "russian" ? languageCopy.sourceGapRussian : languageCopy.sourceGapUkrainian)
+    : `No hay una fuente identificada de ${currentTheater().perspectiveNames[perspectiveIndex]}; la brecha permanece visible.`;
   byId("sourceList").innerHTML = sortedSources.map(([name, type, label], index) => `<div class="source-item"><span class="source-num">${String(index + 1).padStart(2, "0")}</span><div><strong>${name}</strong><small>${type}</small></div><em>${label}</em></div>`).join("")
-    + (missingActorSource ? `<div class="source-item source-gap"><span class="source-num">!</span><div><strong>${state.perspective === "russian" ? "RU" : "UA"}</strong><small>${state.perspective === "russian" ? languageCopy.sourceGapRussian : languageCopy.sourceGapUkrainian}</small></div><em>GAP</em></div>` : "");
+    + (missingActorSource ? `<div class="source-item source-gap"><span class="source-num">!</span><div><strong>${currentTheater().perspectiveNames[perspectiveIndex]}</strong><small>${gapText}</small></div><em>GAP</em></div>` : "");
   document.querySelectorAll(".event-marker, .timeline-card").forEach((node) => node.classList.toggle("selected", node.dataset.id === event.id));
   if (window.innerWidth < 901) byId("intelPanel").scrollIntoView({ behavior: "smooth", block: "start" });
 }
@@ -423,8 +641,9 @@ function createVectorFallback(container) {
     });
   });
   svg.call(fallbackZoom).on("dblclick.zoom", null);
+  const config = currentTheater();
   const projection = state.view === "theater"
-    ? d3.geoMercator().center([35, 51]).scale(width * 2.25).translate([width / 2, height / 2])
+    ? d3.geoMercator().center(config.center).scale(width * config.scale).translate([width / 2, height / 2])
     : d3.geoNaturalEarth1().scale(width / 6.35).translate([width / 2, height / 2]);
   const path = d3.geoPath(projection);
   viewport.append("path").datum(d3.geoGraticule10()).attr("class", "graticule").attr("d", path);
@@ -448,7 +667,7 @@ function createVectorFallback(container) {
   d3.json("https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json").then((world) => {
     const countries = topojson.feature(world, world.objects.countries).features;
     viewport.insert("g", ":first-child").selectAll("path").data(countries).join("path")
-      .attr("class", (country) => `country${String(country.id) === "804" ? " focus-ua" : ""}${String(country.id) === "643" ? " focus-ru" : ""}`).attr("d", path);
+      .attr("class", (country) => `country${config.focusCountryIds.includes(Number(country.id)) ? " focus-ua" : ""}`).attr("d", path);
     finish();
   }).catch(() => {
     viewport.append("path").datum({ type: "Feature", geometry: { type: "Polygon", coordinates: [[[20,44],[48,44],[51,59],[22,61],[20,44]]] } }).attr("class", "country focus-ua").attr("d", path);
@@ -474,12 +693,14 @@ function drawVectorControl(svg, projection) {
   group.selectAll("path.control-zone").data(controlZones).join("path")
     .attr("class", (zone) => `control-zone ${zone.actor}`)
     .attr("d", (zone) => path({ type: "Polygon", coordinates: normalizedPolygon(zone.coordinates) }));
-  group.append("path").datum({ type: "LineString", coordinates: frontLine }).attr("class", "front-buffer").attr("d", path);
-  group.append("path").datum({ type: "LineString", coordinates: frontLine }).attr("class", "front-line").attr("d", path);
-  const uaLabel = projection([29.0, 50.4]);
-  const ruLabel = projection([39.0, 48.0]);
-  if (uaLabel) group.append("text").attr("class", "control-label ua").attr("x", uaLabel[0]).attr("y", uaLabel[1]).text("CONTROL UCRANIANO");
-  if (ruLabel) group.append("text").attr("class", "control-label ru").attr("x", ruLabel[0]).attr("y", ruLabel[1]).text("CONTROL RUSO · APROX.");
+  if (frontLine.length > 1) {
+    group.append("path").datum({ type: "LineString", coordinates: frontLine }).attr("class", "front-buffer").attr("d", path);
+    group.append("path").datum({ type: "LineString", coordinates: frontLine }).attr("class", "front-line").attr("d", path);
+  }
+  currentTheater().controlLabels.forEach((label) => {
+    const point = projection(label.point);
+    if (point) group.append("text").attr("class", `control-label ${label.className}`).attr("x", point[0]).attr("y", point[1]).text(label.text);
+  });
 }
 
 function drawVectorAdministrative(svg, projection) {
@@ -487,6 +708,8 @@ function drawVectorAdministrative(svg, projection) {
   const group = svg.append("g").attr("class", "map-layer layer-admin");
   group.append("g").attr("class", "admin-schematic").selectAll("path").data(administrativeLines).join("path")
     .attr("class", "admin-line admin-line-schematic").attr("d", (coordinates) => path({ type: "LineString", coordinates }));
+
+  if (!currentTheater().adminGeoJSON) return;
 
   Promise.all([
     d3.json("./data/ukraine-oblasts.geojson"),
@@ -577,6 +800,11 @@ function renderTrafficContacts(contacts, editorial = false) {
 
 async function loadTrafficContacts() {
   const status = byId("trafficStatus");
+  if (!currentTheater().liveTraffic) {
+    status.textContent = "MUESTRA EDITORIAL · tráfico agregado pendiente de fuente regional";
+    status.classList.remove("live");
+    return;
+  }
   try {
     const response = await fetch("/.netlify/functions/traffic", { headers: { accept: "application/json" } });
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
@@ -607,7 +835,7 @@ async function loadTrafficContacts() {
 function scheduleTrafficRefresh() {
   clearInterval(trafficRefreshTimer);
   loadTrafficContacts();
-  trafficRefreshTimer = setInterval(loadTrafficContacts, 5 * 60 * 1000);
+  if (currentTheater().liveTraffic) trafficRefreshTimer = setInterval(loadTrafficContacts, 5 * 60 * 1000);
 }
 
 function drawVectorMovements(svg, projection) {
@@ -648,7 +876,8 @@ function updateVectorDetail(scale) {
   document.querySelectorAll(".zoom-regional").forEach((node) => node.classList.toggle("zoom-visible", regional));
   document.querySelectorAll(".zoom-detail").forEach((node) => node.classList.toggle("zoom-visible", detailed));
   const status = byId("zoomDetailState");
-  if (status) status.textContent = detailed ? "DETALLE · RAIONES" : regional ? "DETALLE · ÓBLASTS" : "DETALLE · TEATRO";
+  const levels = currentTheater().adminLevels;
+  if (status) status.textContent = `DETALLE · ${detailed ? levels[2] : regional ? levels[1] : levels[0]}`;
 }
 
 function updateVectorTextScale(scale) {
@@ -664,7 +893,7 @@ function updateVectorTextScale(scale) {
 function updateVectorSymbolScale(scale) {
   if (!fallbackSvg) return;
   const inverseScale = 1 / scale;
-  fallbackSvg.selectAll(".event-marker circle, .critical-zone circle, .capability-sector circle, .capability-sector path")
+  fallbackSvg.selectAll(".event-marker circle, .critical-zone circle, .capability-sector circle, .capability-sector path, .traffic-contact circle")
     .attr("transform", scale === 1 ? null : `scale(${inverseScale})`);
 }
 
@@ -696,7 +925,7 @@ function drawVectorStrategicLayers(svg, projection) {
 
 function drawVectorFog(svg, projection) {
   const fog = svg.append("g").attr("class", `fog-layer${state.fog ? "" : " hidden"}`);
-  [[27,54,60],[43,48,80],[45,56,68],[25,47,50]].forEach(([lon, lat, radius]) => {
+  currentTheater().fogPoints.forEach(([lon, lat, radius]) => {
     const point = projection([lon, lat]);
     if (point) fog.append("circle").attr("cx", point[0]).attr("cy", point[1]).attr("r", radius).attr("fill", "rgba(152,174,159,.08)");
   });
@@ -787,14 +1016,14 @@ function changeMapZoom(direction) {
 }
 
 function resetMapZoom() {
-  if (atlasMap) atlasMap.easeTo({ center: state.view === "theater" ? [31.5, 49.1] : [20, 30], zoom: state.view === "theater" ? 4.65 : 1.15, bearing: 0, pitch: 0, duration: 300 });
+  if (atlasMap) atlasMap.easeTo({ center: state.view === "theater" ? currentTheater().center : [20, 30], zoom: state.view === "theater" ? 4.65 : 1.15, bearing: 0, pitch: 0, duration: 300 });
   else if (fallbackSvg && fallbackZoom) fallbackSvg.transition().duration(260).call(fallbackZoom.transform, d3.zoomIdentity);
 }
 
 function addFogLayer() {
   atlasMap.addSource("atlas-fog", {
     type: "geojson",
-    data: { type: "FeatureCollection", features: [[27,54],[43,48],[45,56],[25,47]].map((coordinates) => ({ type: "Feature", properties: {}, geometry: { type: "Point", coordinates } })) }
+    data: { type: "FeatureCollection", features: currentTheater().fogPoints.map(([lon, lat]) => ({ type: "Feature", properties: {}, geometry: { type: "Point", coordinates: [lon, lat] } })) }
   });
   atlasMap.addLayer({
     id: "atlas-fog-layer", type: "circle", source: "atlas-fog",
@@ -913,6 +1142,7 @@ async function loadPublishedEvents() {
   }
 
   const published = data
+    .filter((event) => event.conflict_slug === state.conflict)
     .map(normalizePublicEvent)
     .filter((event) => Number.isFinite(event.lon) && Number.isFinite(event.lat));
   if (!published.length) return;
@@ -984,6 +1214,13 @@ document.querySelectorAll(".advisor").forEach((button) => button.addEventListene
 
 byId("conflictSelect").addEventListener("change", (event) => {
   state.conflict = event.target.value;
+  localStorage.setItem("atlas-conflict", state.conflict);
+  applyTheaterData();
+  applyAnalysisContext();
+  renderTimeline();
+  renderIntel(events[0]);
+  createMap();
+  loadPublishedEvents();
 });
 byId("languageSelect").addEventListener("change", (event) => {
   state.language = event.target.value;
@@ -1005,6 +1242,7 @@ dialog.addEventListener("click", (event) => { if (event.target === dialog) dialo
 byId("closeIntel").addEventListener("click", () => byId("intelPanel").classList.toggle("collapsed"));
 byId("turnButton").addEventListener("click", () => document.querySelector(".timeline-section").scrollIntoView({ behavior: "smooth" }));
 
+applyTheaterData();
 applyAnalysisContext();
 renderTimeline();
 renderIntel(events[0]);
