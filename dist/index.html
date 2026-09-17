@@ -30,7 +30,8 @@
         <span id="conflictLabel">CONFLICTO</span>
         <select id="conflictSelect" aria-describedby="conflictHelp">
           <option value="russia-ukraine">Guerra ruso-ucraniana</option>
-          <option value="future" disabled>Más conflictos · próximamente</option>
+          <option value="middle-east">Oriente Medio ampliado</option>
+          <option value="sudan">Guerra de Sudán</option>
         </select>
         <small id="conflictHelp">Selecciona el conflicto que quieres explorar.</small>
       </label>
@@ -67,11 +68,11 @@
           <h1 id="briefing-title">Guerra ruso-ucraniana</h1>
           <p class="lede" id="briefingLede">Una vista estratégica de la situación, construida sobre afirmaciones trazables y niveles explícitos de confianza.</p>
         </div>
-        <div class="status-strip" aria-label="Resumen del turno">
-          <article><span>INICIATIVA</span><strong>Disputada</strong><em class="trend up">↑ local UA</em></article>
-          <article><span>PRESIÓN AÉREA</span><strong>Alta</strong><em class="trend hot">intensa</em></article>
-          <article><span>DIPLOMACIA</span><strong>Estancada</strong><em class="trend neutral">sin tregua</em></article>
-          <article><span>COBERTURA</span><strong>68%</strong><em class="trend neutral">12 fuentes</em></article>
+        <div class="status-strip" id="statusStrip" aria-label="Resumen del turno">
+          <article><span id="statusLabel1">INICIATIVA</span><strong id="statusValue1">Disputada</strong><em class="trend up" id="statusTrend1">↑ local UA</em></article>
+          <article><span id="statusLabel2">PRESIÓN AÉREA</span><strong id="statusValue2">Alta</strong><em class="trend hot" id="statusTrend2">intensa</em></article>
+          <article><span id="statusLabel3">DIPLOMACIA</span><strong id="statusValue3">Estancada</strong><em class="trend neutral" id="statusTrend3">sin tregua</em></article>
+          <article><span id="statusLabel4">COBERTURA</span><strong id="statusValue4">68%</strong><em class="trend neutral" id="statusTrend4">12 fuentes</em></article>
         </div>
       </section>
 
@@ -123,7 +124,7 @@
           </div>
           <div class="analyst-note">
             <span>NOTA DEL ANALISTA</span>
-            <p>La iniciativa ucraniana es localizada. No equivale a un cambio confirmado del equilibrio general.</p>
+            <p id="analystNote">La iniciativa ucraniana es localizada. No equivale a un cambio confirmado del equilibrio general.</p>
           </div>
         </aside>
 
@@ -146,7 +147,7 @@
           <div id="map" class="map" role="img" aria-label="Mapa de Europa oriental con eventos seleccionables">
             <div class="map-loading"><span></span>Cargando cartografía…</div>
           </div>
-          <div class="map-legend"><span><i class="actor ua"></i>Control UA</span><span><i class="actor ru"></i>Control RU</span><span><i class="contested-key"></i>Frente</span><span><i class="route-key"></i>Transporte</span><span><i class="halo"></i>Sector aproximado</span></div>
+          <div class="map-legend"><span><i class="actor ua"></i><b id="legendActorA">Control UA</b></span><span><i class="actor ru"></i><b id="legendActorB">Control RU</b></span><span><i class="contested-key"></i>Frente</span><span><i class="route-key"></i>Transporte</span><span><i class="halo"></i>Sector aproximado</span></div>
           <div class="traffic-data-note">
             <span><i class="aviation-key"></i>ADS-B · <a href="https://opensky-network.org/" target="_blank" rel="noreferrer">OpenSky</a></span>
             <span><i class="maritime-key"></i>AIS retrasado · <a href="https://globalfishingwatch.org/" target="_blank" rel="noreferrer">Global Fishing Watch</a></span>
@@ -194,8 +195,8 @@
             <div class="era-index"><span>CICLO</span><strong>04</strong><small>marco ilustrativo</small></div>
             <div>
               <p class="eyebrow">FASE ESTRATÉGICA</p>
-              <h3>Desgaste, adaptación y sistemas no tripulados</h3>
-              <p>El turno se interpreta mediante cuatro fuerzas acumulativas. Cada nivel expresa una lectura editorial del prototipo, no una puntuación factual.</p>
+              <h3 id="strategyPhaseTitle">Desgaste, adaptación y sistemas no tripulados</h3>
+              <p id="strategyPhaseCopy">El turno se interpreta mediante cuatro fuerzas acumulativas. Cada nivel expresa una lectura editorial del prototipo, no una puntuación factual.</p>
             </div>
           </div>
           <div class="pressure-grid" aria-label="Indicadores editoriales de presión">
