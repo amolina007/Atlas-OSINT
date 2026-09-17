@@ -69,6 +69,8 @@ const byId = (id) => document.getElementById(id);
 let atlasMap = null;
 let fallbackSvg = null;
 let fallbackZoom = null;
+let vectorZoomFrame = null;
+let vectorDetailLevel = "";
 
 const strategicRoutes = [
   { type: "routes", label: "M06 / E40", coordinates: [[22.7, 48.6], [24.0, 49.8], [26.3, 50.6], [30.5, 50.4]] },
@@ -395,8 +397,13 @@ function createVectorFallback(container) {
   fallbackSvg = svg;
   fallbackZoom = d3.zoom().scaleExtent([1, 8]).on("zoom", (event) => {
     viewport.attr("transform", event.transform);
-    updateVectorDetail(event.transform.k);
-    updateVectorTextScale(event.transform.k);
+    const scale = event.transform.k;
+    if (vectorZoomFrame) cancelAnimationFrame(vectorZoomFrame);
+    vectorZoomFrame = requestAnimationFrame(() => {
+      updateVectorDetail(scale);
+      updateVectorTextScale(scale);
+      vectorZoomFrame = null;
+    });
   });
   svg.call(fallbackZoom).on("dblclick.zoom", null);
   const projection = state.view === "theater"
@@ -468,12 +475,12 @@ function drawVectorAdministrative(svg, projection) {
     d3.json("./data/ukraine-districts.geojson")
   ]).then(([oblasts, districts]) => {
     group.select(".admin-schematic").remove();
-    group.append("g").attr("class", "admin-oblasts zoom-regional").selectAll("path")
-      .data(oblasts.features).join("path")
+    group.append("g").attr("class", "admin-oblasts zoom-regional").append("path")
+      .datum(oblasts)
       .attr("class", "admin-line admin-line-oblast")
       .attr("d", path);
-    group.append("g").attr("class", "admin-districts zoom-detail").selectAll("path")
-      .data(districts.features).join("path")
+    group.append("g").attr("class", "admin-districts zoom-detail").append("path")
+      .datum(districts)
       .attr("class", "admin-line admin-line-district")
       .attr("d", path);
     group.append("g").attr("class", "admin-labels zoom-regional").selectAll("text")
@@ -482,6 +489,7 @@ function drawVectorAdministrative(svg, projection) {
       .attr("x", (feature) => path.centroid(feature)[0])
       .attr("y", (feature) => path.centroid(feature)[1])
       .text((feature) => feature.properties.shapeName.replace(/ Oblast$/i, ""));
+    vectorDetailLevel = "";
     updateVectorDetail(fallbackSvg?.property("__zoom")?.k || 1);
     updateVectorTextScale(fallbackSvg?.property("__zoom")?.k || 1);
   }).catch((error) => {
@@ -548,6 +556,9 @@ function drawVectorCapabilities(svg, projection) {
 function updateVectorDetail(scale) {
   const regional = scale >= 1.55;
   const detailed = scale >= 2.35;
+  const level = detailed ? "district" : regional ? "oblast" : "theater";
+  if (level === vectorDetailLevel) return;
+  vectorDetailLevel = level;
   document.querySelectorAll(".zoom-regional").forEach((node) => node.classList.toggle("zoom-visible", regional));
   document.querySelectorAll(".zoom-detail").forEach((node) => node.classList.toggle("zoom-visible", detailed));
   const status = byId("zoomDetailState");
