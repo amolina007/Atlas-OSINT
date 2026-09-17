@@ -208,6 +208,8 @@
           <div class="force-tabs" role="tablist" aria-label="Tipo de comparación">
             <button class="active" id="inventoryTab" role="tab" aria-selected="true" aria-controls="inventoryView" data-force-view="inventory">Inventario</button>
             <button id="manpowerTab" role="tab" aria-selected="false" aria-controls="manpowerView" data-force-view="manpower">Personal y movilización</button>
+            <button id="dronesTab" role="tab" aria-selected="false" aria-controls="dronesView" data-force-view="drones">Drones</button>
+            <button id="attritionTab" role="tab" aria-selected="false" aria-controls="attritionView" data-force-view="attrition">Pérdidas / KDA</button>
           </div>
         </div>
 
@@ -256,6 +258,63 @@
             <p><b>Límite:</b> “activo”, “movilizado”, “reclutado por contrato” y “desplegado” son categorías distintas.</p>
           </div>
           <p class="force-source">Fuentes: <a href="https://www.cfr.org/articles/comparing-size-and-capabilities-russian-and-ukrainian-militaries" target="_blank" rel="noreferrer">CFR, 3 jun 2025</a> · <a href="https://www.reuters.com/world/europe/putin-orders-russian-army-grow-by-180000-soldiers-become-15-million-strong-2024-09-16/" target="_blank" rel="noreferrer">Reuters, 16 sep 2024</a> · <a href="https://www.reuters.com/world/europe/kyivs-top-general-says-ukraine-needs-fewer-troops-than-expected-2024-03-29/" target="_blank" rel="noreferrer">Reuters, 29 mar 2024</a>.</p>
+        </div>
+
+        <div class="force-view" id="dronesView" role="tabpanel" aria-labelledby="dronesTab" hidden>
+          <div class="drone-grid">
+            <article class="drone-card ukraine">
+              <div class="drone-card-head"><span>UCRANIA · PRODUCCIÓN</span><em class="confidence-badge medium">MEDIA</em></div>
+              <strong>&gt;8 M/año</strong><p>Capacidad industrial declarada para drones FPV en 2026. Es capacidad potencial, no entregas confirmadas.</p>
+            </article>
+            <article class="drone-card russia">
+              <div class="drone-card-head"><span>RUSIA · PRODUCCIÓN</span><em class="confidence-badge medium">MEDIA</em></div>
+              <strong>≈3.000/mes</strong><p>Producción atribuida de drones a reacción en septiembre de 2026; no incluye todo el universo FPV ni señuelos.</p>
+            </article>
+            <article class="drone-card russia">
+              <div class="drone-card-head"><span>RUSIA · LANZAMIENTOS</span><em class="confidence-badge medium">MEDIA</em></div>
+              <strong>≈2.850</strong><p>Drones a reacción lanzados durante agosto de 2026, según fuentes ucranianas citadas por Reuters.</p>
+            </article>
+            <article class="drone-card ukraine">
+              <div class="drone-card-head"><span>UCRANIA · NEUTRALIZACIÓN</span><em class="confidence-badge medium">MEDIA</em></div>
+              <strong>≈90%</strong><p>Tasa indicada contra Shahed de hélice; un ataque del 15 de septiembre de 2026 alcanzó 93%. No se extrapola a nuevos drones a reacción.</p>
+            </article>
+          </div>
+          <div class="drone-flow" aria-label="Cadena de medición de drones">
+            <article><span>01</span><b>Capacidad</b><small>lo que una industria podría fabricar</small></article>
+            <i>→</i><article><span>02</span><b>Producción</b><small>unidades fabricadas o entregadas</small></article>
+            <i>→</i><article><span>03</span><b>Lanzamientos</b><small>vectores empleados en un periodo</small></article>
+            <i>→</i><article><span>04</span><b>Neutralización</b><small>derribados, desviados o suprimidos</small></article>
+          </div>
+          <div class="drone-caveat">
+            <span>DATO AUSENTE</span>
+            <p>No existe un total público, acumulado y metodológicamente equivalente de drones lanzados y neutralizados por ambos bandos. Rusia afirmó haber interceptado más de 27.000 drones ucranianos durante 2025, pero esa cifra no permite inferir cuántos lanzó Ucrania y se mantiene como declaración unilateral.</p>
+          </div>
+          <p class="force-source">Fuentes: <a href="https://www.rnbo.gov.ua/" target="_blank" rel="noreferrer">Consejo de Seguridad y Defensa de Ucrania, ene 2026</a> · <a href="https://www.reuters.com/business/aerospace-defense/ukraine-races-counter-russias-jet-powered-drone-attacks-2026-09-15/" target="_blank" rel="noreferrer">Reuters, 15 sep 2026</a> · <a href="https://www.reuters.com/business/aerospace-defense/ukraines-zelenskiy-says-new-anti-drone-weapon-being-tested-2026-09-15/" target="_blank" rel="noreferrer">Reuters, 15 sep 2026</a>.</p>
+        </div>
+
+        <div class="force-view" id="attritionView" role="tabpanel" aria-labelledby="attritionTab" hidden>
+          <div class="kda-hero">
+            <div><span>RATIO DE DESGASTE MATERIAL</span><strong>1,98 : 1</strong><small>pérdidas rusas por cada pérdida ucraniana</small></div>
+            <div><span>“K/D” MATERIAL · DESTRUIDO</span><strong>2,00 : 1</strong><small>19.065 RUS frente a 9.551 UKR</small></div>
+            <p><b>No es un KDA humano.</b> Es una razón acumulada de equipos con evidencia visual. “Asistencias” no tiene un equivalente medible y las bajas personales carecen de una serie pública simétrica.</p>
+          </div>
+          <div class="comparison-table-wrap loss-table-wrap">
+            <table class="comparison-table loss-table">
+              <thead><tr><th>Capacidad perdida</th><th>Rusia</th><th>Ucrania</th><th>Ratio RUS/UKR</th><th>Lectura</th></tr></thead>
+              <tbody>
+                <tr><th>Total de equipos <small>destruidos, dañados, abandonados o capturados</small></th><td>24.098</td><td>12.143</td><td><b>1,98 : 1</b></td><td><em class="confidence-badge high">ALTA OSINT</em></td></tr>
+                <tr><th>Equipos destruidos</th><td>19.065</td><td>9.551</td><td><b>2,00 : 1</b></td><td><em class="confidence-badge high">ALTA OSINT</em></td></tr>
+                <tr><th>Blindados de combate</th><td>14.170</td><td>6.116</td><td><b>2,32 : 1</b></td><td><em class="confidence-badge high">ALTA OSINT</em></td></tr>
+                <tr><th>Tanques</th><td>4.447</td><td>1.462</td><td><b>3,04 : 1</b></td><td><em class="confidence-badge high">ALTA OSINT</em></td></tr>
+                <tr><th>Artillería autopropulsada</th><td>1.055</td><td>963</td><td><b>1,10 : 1</b></td><td><em class="confidence-badge high">ALTA OSINT</em></td></tr>
+                <tr><th>Aeronaves</th><td>194</td><td>121</td><td><b>1,60 : 1</b></td><td><em class="confidence-badge high">ALTA OSINT</em></td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="loss-legend">
+            <p><b>Destruido:</b> evidencia visual de pérdida irreversible.</p><p><b>Dañado:</b> condición observada, recuperación desconocida.</p><p><b>Abandonado/capturado:</b> pérdida de control, no necesariamente destrucción.</p>
+          </div>
+          <p class="force-source">Fuente: <a href="https://www.oryxspioenkop.com/2022/02/attack-on-europe-documenting-equipment.html" target="_blank" rel="noreferrer">Oryx · pérdidas rusas</a> y <a href="https://www.oryxspioenkop.com/2022/02/attack-on-europe-documenting-ukrainian.html" target="_blank" rel="noreferrer">Oryx · pérdidas ucranianas</a>, consulta 17 sep 2026. Son mínimos confirmados visualmente; las pérdidas reales son mayores y el sesgo de disponibilidad de imágenes no es uniforme.</p>
         </div>
       </section>
 
