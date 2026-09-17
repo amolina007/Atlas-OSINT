@@ -137,6 +137,18 @@ const knownCapabilitySectors = [
   { actor: "ru", type: "Sector defensivo", region: "litoral sur", coordinates: [35.2, 46.7] }
 ];
 
+// D3 interpreta los anillos esféricos en sentido horario. Normalizamos los
+// polígonos editoriales para impedir que se rellene el complemento del área.
+function normalizedPolygon(rings) {
+  return rings.map((ring) => {
+    const signedArea = ring.slice(0, -1).reduce((sum, point, index) => {
+      const next = ring[index + 1];
+      return sum + point[0] * next[1] - next[0] * point[1];
+    }, 0) / 2;
+    return signedArea > 0 ? [...ring].reverse() : ring;
+  });
+}
+
 const infrastructureZones = [
   { type: "energy", coordinates: [24.8, 49.6] }, { type: "energy", coordinates: [30.4, 50.1] },
   { type: "energy", coordinates: [34.8, 48.5] }, { type: "energy", coordinates: [31.5, 47.1] },
@@ -324,7 +336,7 @@ function drawVectorTerrain(svg, projection) {
   const group = svg.append("g").attr("class", "map-layer layer-terrain");
   group.selectAll("path").data(terrainBands).join("path")
     .attr("class", (band) => `terrain-band ${band.level}`)
-    .attr("d", (band) => path({ type: "Polygon", coordinates: band.coordinates }));
+    .attr("d", (band) => path({ type: "Polygon", coordinates: normalizedPolygon(band.coordinates) }));
   group.selectAll("text").data(terrainBands).join("text").attr("class", "terrain-label")
     .attr("x", (band) => projection(band.coordinates[0][Math.floor(band.coordinates[0].length / 2)])[0])
     .attr("y", (band) => projection(band.coordinates[0][Math.floor(band.coordinates[0].length / 2)])[1])
@@ -336,7 +348,7 @@ function drawVectorControl(svg, projection) {
   const group = svg.append("g").attr("class", "map-layer layer-control");
   group.selectAll("path.control-zone").data(controlZones).join("path")
     .attr("class", (zone) => `control-zone ${zone.actor}`)
-    .attr("d", (zone) => path({ type: "Polygon", coordinates: zone.coordinates }));
+    .attr("d", (zone) => path({ type: "Polygon", coordinates: normalizedPolygon(zone.coordinates) }));
   group.append("path").datum({ type: "LineString", coordinates: frontLine }).attr("class", "front-line").attr("d", path);
   const uaLabel = projection([29.0, 50.4]);
   const ruLabel = projection([39.0, 48.0]);
