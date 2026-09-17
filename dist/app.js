@@ -71,6 +71,8 @@ let fallbackSvg = null;
 let fallbackZoom = null;
 let vectorZoomFrame = null;
 let vectorDetailLevel = "";
+let trafficProjection = null;
+let trafficRefreshTimer = null;
 
 const strategicRoutes = [
   { type: "routes", label: "M06 / E40", coordinates: [[22.7, 48.6], [24.0, 49.8], [26.3, 50.6], [30.5, 50.4]] },
@@ -132,6 +134,20 @@ const aviationCorridors = [
   { label: "Corredor civil occidental", coordinates: [[20.9, 52.2], [21.3, 49.9], [26.1, 47.0], [29.0, 41.2]] },
   { label: "Corredor civil mar Negro", coordinates: [[28.8, 47.0], [28.7, 44.2], [29.0, 41.2]] }
 ];
+
+// Muestra editorial para que el estado sin credenciales siga siendo legible.
+// No representa observaciones reales ni posiciones de vehículos concretos.
+const editorialTrafficContacts = {
+  aviation: [
+    { lon: 21.0, lat: 52.0, count: 7 }, { lon: 24.0, lat: 50.8, count: 4 },
+    { lon: 27.0, lat: 48.5, count: 3 }, { lon: 28.5, lat: 44.0, count: 5 },
+    { lon: 31.5, lat: 42.0, count: 6 }
+  ],
+  maritime: [
+    { lon: 29.0, lat: 44.0, count: 8 }, { lon: 29.5, lat: 42.2, count: 11 },
+    { lon: 32.5, lat: 42.0, count: 5 }, { lon: 37.5, lat: 43.0, count: 7 }
+  ]
+};
 
 const knownCapabilitySectors = [
   { actor: "ua", type: "Defensa aérea reportada", region: "centro-norte", coordinates: [30.4, 50.2] },
@@ -511,6 +527,7 @@ function drawVectorWater(svg, projection) {
 }
 
 function drawVectorTraffic(svg, projection) {
+  trafficProjection = projection;
   const path = d3.geoPath(projection);
   [
     ["maritime", maritimeCorridors],
@@ -529,6 +546,68 @@ function drawVectorTraffic(svg, projection) {
       .attr("y", (corridor) => projection(corridor.coordinates[Math.floor(corridor.coordinates.length / 2)])[1])
       .text(type === "aviation" ? "✈" : "◆");
   });
+  renderTrafficContacts(editorialTrafficContacts, true);
+  scheduleTrafficRefresh();
+}
+
+function renderTrafficContacts(contacts, editorial = false) {
+  if (!fallbackSvg || !trafficProjection) return;
+  ["aviation", "maritime"].forEach((type) => {
+    const group = fallbackSvg.select(`.layer-${type}`);
+    if (group.empty()) return;
+    const nodes = group.selectAll(`g.traffic-contact.${type}`).data(contacts[type] || [], (_, index) => `${type}-${index}`)
+      .join((enter) => {
+        const node = enter.append("g");
+        node.append("circle").attr("class", "contact-pulse").attr("r", 7);
+        node.append("circle").attr("class", "contact-core").attr("r", type === "aviation" ? 2.4 : 2.8);
+        node.append("text").attr("x", 5).attr("y", -5);
+        node.append("title");
+        return node;
+      })
+      .attr("class", `traffic-contact ${type} zoom-regional${editorial ? " editorial" : ""}`)
+      .attr("transform", (contact) => `translate(${trafficProjection([contact.lon, contact.lat]).join(",")})`);
+    nodes.select("text").text((contact) => contact.count > 1 ? contact.count : "");
+    nodes.select("title").text((contact) => editorial
+      ? `Muestra editorial de ${type === "aviation" ? "tráfico aéreo" : "presencia marítima"}; no es una observación real.`
+      : `${contact.count} señales agrupadas en una celda regional; sin identificadores ni posición exacta.`);
+    nodes.classed("zoom-visible", vectorDetailLevel !== "theater");
+  });
+  syncMapLayers();
+}
+
+async function loadTrafficContacts() {
+  const status = byId("trafficStatus");
+  try {
+    const response = await fetch("/.netlify/functions/traffic", { headers: { accept: "application/json" } });
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    const payload = await response.json();
+    const contacts = {
+      aviation: payload.aviation?.contacts || [],
+      maritime: payload.maritime?.contacts || []
+    };
+    if (contacts.aviation.length || contacts.maritime.length) {
+      renderTrafficContacts(contacts, false);
+      const observed = payload.aviation?.observedAt ? new Date(payload.aviation.observedAt) : null;
+      const time = observed && !Number.isNaN(observed.valueOf())
+        ? observed.toLocaleTimeString("es", { hour: "2-digit", minute: "2-digit", timeZone: "UTC" })
+        : "reciente";
+      status.textContent = `ACTUALIZADO ${time} UTC · cuadrícula regional · sin identificadores`;
+      status.classList.add("live");
+      return;
+    }
+    status.textContent = "MUESTRA EDITORIAL · configura OpenSky para actualización agregada";
+    status.classList.remove("live");
+  } catch (error) {
+    console.warn("ATLAS traffic feed unavailable; keeping editorial sample.", error.message);
+    status.textContent = "FUENTE NO DISPONIBLE · mostrando muestra editorial";
+    status.classList.remove("live");
+  }
+}
+
+function scheduleTrafficRefresh() {
+  clearInterval(trafficRefreshTimer);
+  loadTrafficContacts();
+  trafficRefreshTimer = setInterval(loadTrafficContacts, 5 * 60 * 1000);
 }
 
 function drawVectorMovements(svg, projection) {
