@@ -105,6 +105,82 @@
         </aside>
       </section>
 
+      <section class="strategy-console" aria-labelledby="strategy-title">
+        <div class="strategy-heading">
+          <div>
+            <p class="eyebrow">MODELO ESTRATÉGICO · DEMOSTRACIÓN</p>
+            <h2 id="strategy-title">Lectura del turno</h2>
+            <p>Una capa editorial inspirada en juegos de estrategia y gestión urbana. Resume presiones; no representa mediciones oficiales.</p>
+          </div>
+          <div class="strategy-tabs" role="tablist" aria-label="Perspectiva de análisis">
+            <button class="active" id="dynamicsTab" role="tab" aria-selected="true" aria-controls="dynamicsView" data-strategy-view="dynamics">Dinámica del conflicto</button>
+            <button id="systemsTab" role="tab" aria-selected="false" aria-controls="systemsView" data-strategy-view="systems">Sistemas e infraestructura</button>
+          </div>
+        </div>
+
+        <div class="strategy-view active" id="dynamicsView" role="tabpanel" aria-labelledby="dynamicsTab">
+          <div class="era-card">
+            <div class="era-index"><span>CICLO</span><strong>04</strong><small>marco ilustrativo</small></div>
+            <div>
+              <p class="eyebrow">FASE ESTRATÉGICA</p>
+              <h3>Desgaste, adaptación y sistemas no tripulados</h3>
+              <p>El turno se interpreta mediante cuatro fuerzas acumulativas. Cada nivel expresa una lectura editorial del prototipo, no una puntuación factual.</p>
+            </div>
+          </div>
+          <div class="pressure-grid" aria-label="Indicadores editoriales de presión">
+            <article><span>APOYO BÉLICO</span><strong>Sostenido</strong><div class="meter"><i style="--level: 72%"></i></div><small>capacidad de mantener el esfuerzo</small></article>
+            <article><span>ESTABILIDAD</span><strong>Bajo presión</strong><div class="meter amber"><i style="--level: 54%"></i></div><small>resiliencia institucional y social</small></article>
+            <article><span>INFLUENCIA</span><strong>Disputada</strong><div class="meter purple"><i style="--level: 63%"></i></div><small>apoyo y margen diplomático</small></article>
+            <article><span>INICIATIVA</span><strong>Localizada</strong><div class="meter blue"><i style="--level: 47%"></i></div><small>capacidad de imponer el ritmo</small></article>
+          </div>
+          <div class="milestone-board">
+            <div class="section-label"><span>HITOS DEL CICLO</span><small>análogos a “estrellas de era” · modelo demo</small></div>
+            <div class="milestone-track">
+              <article class="reached"><i>01</i><strong>Adaptación</strong><span>Innovación operativa visible</span></article>
+              <article class="reached"><i>02</i><strong>Logística</strong><span>Redes sostienen el esfuerzo</span></article>
+              <article><i>03</i><strong>Territorio</strong><span>Cambios aún localizados</span></article>
+              <article><i>04</i><strong>Diplomacia</strong><span>Sin avance verificable</span></article>
+            </div>
+          </div>
+        </div>
+
+        <div class="strategy-view" id="systemsView" role="tabpanel" aria-labelledby="systemsTab" hidden>
+          <div class="systems-layout">
+            <div class="advisor-board">
+              <div class="section-label"><span>CONSEJO DE SISTEMAS</span><small>selecciona un sector</small></div>
+              <div class="advisor-list" role="list">
+                <button class="advisor active" data-advisor="security"><i class="advisor-icon security">S</i><span><b>Seguridad</b><small>Presión alta</small></span><em>ALERTA</em></button>
+                <button class="advisor" data-advisor="humanitarian"><i class="advisor-icon humanitarian">H</i><span><b>Población y ayuda</b><small>Servicios tensionados</small></span><em>VIGILAR</em></button>
+                <button class="advisor" data-advisor="infrastructure"><i class="advisor-icon infrastructure">I</i><span><b>Infraestructura</b><small>Redes expuestas</small></span><em>RIESGO</em></button>
+                <button class="advisor" data-advisor="diplomacy"><i class="advisor-icon diplomacy">D</i><span><b>Diplomacia</b><small>Canales limitados</small></span><em>ESTABLE</em></button>
+              </div>
+            </div>
+            <article class="advisor-brief" aria-live="polite">
+              <p class="eyebrow" id="advisorKicker">ASESORÍA · SEGURIDAD</p>
+              <h3 id="advisorTitle">Priorizar continuidad y protección civil</h3>
+              <p id="advisorCopy">La presión aérea y la exposición de nodos logísticos elevan la necesidad de redundancia, alerta temprana y protección de servicios esenciales.</p>
+              <div class="recommendation"><span>SEÑAL A OBSERVAR</span><strong id="advisorSignal">Ritmo de ataques y recuperación de redes</strong></div>
+            </article>
+            <div class="capacity-board">
+              <div class="section-label"><span>CAPACIDAD DEL ESCENARIO</span><small>distribución ilustrativa · no presupuestaria</small></div>
+              <div class="capacity-row"><span>Defensa y alerta</span><div><i style="--level: 78%"></i></div><b>prioridad</b></div>
+              <div class="capacity-row"><span>Infraestructura</span><div><i style="--level: 62%"></i></div><b>alta</b></div>
+              <div class="capacity-row"><span>Ayuda civil</span><div><i style="--level: 55%"></i></div><b>sostenida</b></div>
+              <div class="capacity-row"><span>Diplomacia</span><div><i style="--level: 34%"></i></div><b>limitada</b></div>
+            </div>
+          </div>
+          <div class="network-status" aria-label="Estado ilustrativo de redes urbanas">
+            <article><span>ENERGÍA</span><strong>Tensionada</strong><small>redundancia desigual</small></article>
+            <article><span>FERROCARRIL</span><strong>Operativo</strong><small>interrupciones locales</small></article>
+            <article><span>SALUD</span><strong>Exigida</strong><small>capacidad bajo vigilancia</small></article>
+            <article><span>TELECOM.</span><strong>Resiliente</strong><small>riesgo persistente</small></article>
+            <article><span>AYUDA</span><strong>Activa</strong><small>acceso variable</small></article>
+          </div>
+        </div>
+
+        <p class="model-disclaimer"><strong>Límite del modelo:</strong> los niveles, hitos y capacidades son recursos narrativos de esta maqueta. Deben validarse contra eventos y fuentes antes de usarse para análisis.</p>
+      </section>
+
       <section class="timeline-section" aria-labelledby="timeline-title">
         <div class="timeline-heading">
           <div><p class="eyebrow">REGISTRO DEL TURNO</p><h2 id="timeline-title">Secuencia de acontecimientos</h2></div>
@@ -132,6 +208,7 @@
       <article><b>04</b><h3>Publicar</h3><p>Se difunden solo posiciones aproximadas, contexto y límites conocidos.</p></article>
     </div>
     <div class="confidence-scale"><span><i class="conf high"></i><b>Alta</b> corroboración múltiple</span><span><i class="conf medium"></i><b>Media</b> evidencia parcial</span><span><i class="conf low"></i><b>Baja</b> afirmación no confirmada</span></div>
+    <p class="method-note"><strong>Modelos estratégicos:</strong> la consola de dinámica y sistemas emplea metáforas visuales inspiradas en videojuegos. Sus índices son demostrativos y nunca sustituyen la cadena de evidencia.</p>
   </dialog>
 
   <script src="https://cdn.jsdelivr.net/npm/d3@7/dist/d3.min.js"></script>

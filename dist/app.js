@@ -56,6 +56,33 @@ let events = demoEvents;
 const state = { kind: "all", selected: events[0].id, view: "theater", fog: true };
 const byId = (id) => document.getElementById(id);
 
+const advisorContent = {
+  security: {
+    kicker: "ASESORÍA · SEGURIDAD",
+    title: "Priorizar continuidad y protección civil",
+    copy: "La presión aérea y la exposición de nodos logísticos elevan la necesidad de redundancia, alerta temprana y protección de servicios esenciales.",
+    signal: "Ritmo de ataques y recuperación de redes"
+  },
+  humanitarian: {
+    kicker: "ASESORÍA · POBLACIÓN Y AYUDA",
+    title: "Mantener acceso y capacidad de respuesta",
+    copy: "Los eventos con impacto civil deben leerse junto a desplazamiento, acceso sanitario y continuidad del transporte. El tablero evita inferir cifras no corroboradas.",
+    signal: "Acceso humanitario y presión sobre servicios"
+  },
+  infrastructure: {
+    kicker: "ASESORÍA · INFRAESTRUCTURA",
+    title: "Seguir fallos en cascada y redundancia",
+    copy: "Energía, ferrocarril y telecomunicaciones forman una red interdependiente. Una interrupción local puede amplificar efectos logísticos y civiles.",
+    signal: "Tiempo de reparación y alcance de interrupciones"
+  },
+  diplomacy: {
+    kicker: "ASESORÍA · DIPLOMACIA",
+    title: "Distinguir señales de compromisos verificables",
+    copy: "Las declaraciones públicas indican intención, pero solo acuerdos recíprocos, mecanismos de control y cambios observables reducen el riesgo de escalada.",
+    signal: "Reciprocidad, verificación y cumplimiento"
+  }
+};
+
 function renderIntel(event) {
   state.selected = event.id;
   byId("eventCode").textContent = event.id;
@@ -222,6 +249,30 @@ document.querySelectorAll(".segmented button").forEach((button) => button.addEve
   state.view = button.dataset.view;
   document.querySelectorAll(".segmented button").forEach((item) => item.classList.toggle("active", item === button));
   createMap();
+}));
+
+document.querySelectorAll("[data-strategy-view]").forEach((button) => button.addEventListener("click", () => {
+  const selectedView = button.dataset.strategyView;
+  document.querySelectorAll("[data-strategy-view]").forEach((tab) => {
+    const active = tab === button;
+    tab.classList.toggle("active", active);
+    tab.setAttribute("aria-selected", String(active));
+  });
+  document.querySelectorAll(".strategy-view").forEach((view) => {
+    const active = view.id === `${selectedView}View`;
+    view.classList.toggle("active", active);
+    view.hidden = !active;
+  });
+}));
+
+document.querySelectorAll(".advisor").forEach((button) => button.addEventListener("click", () => {
+  const content = advisorContent[button.dataset.advisor];
+  if (!content) return;
+  document.querySelectorAll(".advisor").forEach((item) => item.classList.toggle("active", item === button));
+  byId("advisorKicker").textContent = content.kicker;
+  byId("advisorTitle").textContent = content.title;
+  byId("advisorCopy").textContent = content.copy;
+  byId("advisorSignal").textContent = content.signal;
 }));
 
 const dialog = byId("infoDialog");
