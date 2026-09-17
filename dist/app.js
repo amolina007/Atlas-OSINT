@@ -298,6 +298,7 @@ function createVectorFallback(container) {
   fallbackZoom = d3.zoom().scaleExtent([1, 8]).on("zoom", (event) => {
     viewport.attr("transform", event.transform);
     updateVectorDetail(event.transform.k);
+    updateVectorTextScale(event.transform.k);
   });
   svg.call(fallbackZoom).on("dblclick.zoom", null);
   const projection = state.view === "theater"
@@ -319,6 +320,7 @@ function createVectorFallback(container) {
     drawVectorEvents(viewport, projection);
     syncMapLayers();
     updateVectorDetail(1);
+    updateVectorTextScale(1);
   };
   d3.json("https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json").then((world) => {
     const countries = topojson.feature(world, world.objects.countries).features;
@@ -349,6 +351,7 @@ function drawVectorControl(svg, projection) {
   group.selectAll("path.control-zone").data(controlZones).join("path")
     .attr("class", (zone) => `control-zone ${zone.actor}`)
     .attr("d", (zone) => path({ type: "Polygon", coordinates: normalizedPolygon(zone.coordinates) }));
+  group.append("path").datum({ type: "LineString", coordinates: frontLine }).attr("class", "front-buffer").attr("d", path);
   group.append("path").datum({ type: "LineString", coordinates: frontLine }).attr("class", "front-line").attr("d", path);
   const uaLabel = projection([29.0, 50.4]);
   const ruLabel = projection([39.0, 48.0]);
@@ -425,6 +428,16 @@ function updateVectorDetail(scale) {
   document.querySelectorAll(".zoom-detail").forEach((node) => node.classList.toggle("zoom-visible", detailed));
   const status = byId("zoomDetailState");
   if (status) status.textContent = detailed ? "DETALLE · SECTORES" : regional ? "DETALLE · REGIONAL" : "DETALLE · TEATRO";
+}
+
+function updateVectorTextScale(scale) {
+  if (!fallbackSvg) return;
+  fallbackSvg.selectAll(".map-viewport text").each(function () {
+    const text = d3.select(this);
+    const x = Number(text.attr("x")) || 0;
+    const y = Number(text.attr("y")) || 0;
+    text.attr("transform", scale === 1 ? null : `translate(${x},${y}) scale(${1 / scale}) translate(${-x},${-y})`);
+  });
 }
 
 function drawVectorStrategicLayers(svg, projection) {
