@@ -2,6 +2,7 @@
   publish = "dist"
 
 [dev]
+  targetPort = 3998
   framework = "#static"
   publish = "dist"
   port = 8888
