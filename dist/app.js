@@ -151,6 +151,11 @@ function createMap() {
   container.innerHTML = "";
   fallbackSvg = null;
   fallbackZoom = null;
+  // MapLibre queda desactivado temporalmente: algunos navegadores mostraban
+  // un lienzo WebGL negro aunque declararan compatibilidad. Priorizamos el
+  // mapa vectorial probado hasta migrar la base OSM a un motor sin WebGL.
+  createVectorFallback(container);
+  return;
   if (!document.createElement("canvas").getContext("webgl2")) {
     createVectorFallback(container);
     return;
