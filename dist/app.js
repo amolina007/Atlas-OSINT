@@ -60,7 +60,7 @@ const state = {
   selected: events[0].id,
   view: "theater",
   fog: true,
-  layers: new Set(["routes", "rail"])
+  layers: new Set(["control", "movements", "routes", "rail", "admin", "water", "terrain", "maritime", "aviation"])
 };
 const byId = (id) => document.getElementById(id);
 let atlasMap = null;
@@ -68,11 +68,73 @@ let fallbackSvg = null;
 let fallbackZoom = null;
 
 const strategicRoutes = [
-  { type: "routes", label: "Eje occidental", coordinates: [[22.7, 48.6], [24.0, 49.8], [26.3, 50.6], [30.5, 50.4]] },
-  { type: "routes", label: "Eje central", coordinates: [[30.5, 50.4], [32.1, 49.4], [35.0, 48.5], [36.2, 50.0]] },
-  { type: "routes", label: "Eje meridional", coordinates: [[30.5, 50.4], [30.7, 48.5], [30.7, 46.5]] },
-  { type: "rail", label: "Red ferroviaria oeste–este", coordinates: [[23.2, 49.6], [24.0, 49.8], [28.5, 49.2], [30.5, 50.4], [34.6, 49.6], [36.2, 50.0]] },
-  { type: "rail", label: "Red ferroviaria centro–sur", coordinates: [[30.5, 50.4], [32.0, 48.5], [35.1, 48.5], [35.2, 47.8], [32.0, 47.0]] }
+  { type: "routes", label: "M06 / E40", coordinates: [[22.7, 48.6], [24.0, 49.8], [26.3, 50.6], [30.5, 50.4]] },
+  { type: "routes", label: "M03 / E40", coordinates: [[30.5, 50.4], [32.1, 49.4], [35.0, 48.5], [36.2, 50.0], [37.8, 50.0]] },
+  { type: "routes", label: "M05 / E95", coordinates: [[30.5, 50.4], [30.1, 49.2], [30.7, 48.5], [30.7, 46.5]] },
+  { type: "routes", label: "M14 / E58", coordinates: [[30.7, 46.5], [32.0, 46.9], [35.1, 47.8], [36.8, 47.2], [38.0, 47.1]] },
+  { type: "routes", label: "H08 · Dnipró", coordinates: [[30.5, 50.4], [32.0, 49.4], [34.6, 48.5], [35.2, 47.8]] },
+  { type: "routes", label: "H20 · Donbás", coordinates: [[36.2, 50.0], [37.4, 49.3], [37.8, 48.0], [37.8, 47.1]] },
+  { type: "rail", label: "Corredor Lviv–Kyiv–Járkiv", coordinates: [[23.2, 49.6], [24.0, 49.8], [28.5, 49.2], [30.5, 50.4], [34.6, 49.6], [36.2, 50.0]] },
+  { type: "rail", label: "Corredor Kyiv–Dnipro–Zaporiyia", coordinates: [[30.5, 50.4], [32.0, 48.5], [34.9, 48.5], [35.2, 47.8]] },
+  { type: "rail", label: "Corredor meridional", coordinates: [[24.0, 49.8], [26.2, 48.3], [30.7, 46.5], [32.0, 46.9], [35.2, 47.8]] },
+  { type: "rail", label: "Corredor Donbás", coordinates: [[35.0, 48.5], [36.8, 48.0], [37.8, 48.0], [39.7, 48.0]] }
+];
+
+const controlZones = [
+  { actor: "ru", label: "Control ruso reportado · este", coordinates: [[[37.0, 51.1], [40.1, 50.9], [40.3, 46.9], [37.2, 46.8], [36.3, 47.5], [37.0, 49.0], [37.0, 51.1]]] },
+  { actor: "ru", label: "Control ruso reportado · sur", coordinates: [[[32.4, 46.2], [36.8, 46.3], [37.3, 47.4], [35.8, 47.6], [33.4, 47.1], [32.4, 46.2]]] },
+  { actor: "ru", label: "Crimea ocupada", coordinates: [[[32.4, 46.2], [33.1, 45.2], [35.2, 44.4], [36.7, 45.0], [36.1, 45.8], [34.4, 46.2], [32.4, 46.2]]] }
+];
+
+const frontLine = [[36.8, 51.0], [37.1, 50.2], [37.7, 49.4], [37.7, 48.4], [36.9, 47.7], [35.8, 47.4], [34.4, 47.1], [33.2, 46.8]];
+
+const movementArrows = [
+  { actor: "ru", phase: "2022 · eje norte", coordinates: [[31.0, 53.0], [30.7, 51.8], [30.5, 50.7]] },
+  { actor: "ru", phase: "2022–26 · presión oriental", coordinates: [[40.0, 49.8], [38.7, 49.5], [37.7, 49.2]] },
+  { actor: "ru", phase: "2022 · eje meridional", coordinates: [[34.4, 45.3], [34.7, 46.4], [35.4, 47.1]] },
+  { actor: "ua", phase: "2022 · recuperación noreste", coordinates: [[35.8, 49.4], [37.0, 49.8], [37.7, 50.2]] },
+  { actor: "ua", phase: "2022 · recuperación oeste del Dnipró", coordinates: [[32.6, 47.1], [32.1, 46.8], [31.6, 46.7]] }
+];
+
+const waterways = [
+  { label: "Dnipró", coordinates: [[32.6, 52.3], [30.5, 50.4], [32.0, 49.0], [34.6, 48.5], [35.2, 47.8], [33.4, 46.6]] },
+  { label: "Dniéster", coordinates: [[24.0, 49.5], [26.1, 48.7], [28.8, 47.0], [30.2, 46.3]] },
+  { label: "Bug Meridional", coordinates: [[27.0, 49.5], [29.3, 48.2], [31.9, 46.9]] },
+  { label: "Donets", coordinates: [[36.0, 50.2], [37.5, 49.3], [39.4, 48.6]] }
+];
+
+const administrativeLines = [
+  [[24.8, 51.4], [25.6, 48.9], [26.0, 47.8]], [[27.7, 52.0], [28.4, 49.8], [28.7, 47.4]],
+  [[31.0, 52.2], [31.4, 49.4], [31.8, 46.7]], [[34.2, 51.3], [34.4, 49.0], [34.8, 46.6]],
+  [[37.0, 50.8], [36.7, 48.5], [36.2, 46.7]], [[23.0, 49.2], [38.8, 49.1]],
+  [[24.0, 50.6], [37.8, 50.5]], [[25.0, 47.8], [37.0, 47.8]]
+];
+
+const terrainBands = [
+  { level: "high", label: "Cárpatos", coordinates: [[[22.2, 47.7], [24.8, 47.9], [26.0, 49.2], [24.3, 50.0], [22.2, 49.2], [22.2, 47.7]]] },
+  { level: "mid", label: "Altiplano central", coordinates: [[[27.0, 48.0], [33.5, 48.0], [34.5, 50.0], [30.0, 51.2], [27.0, 50.0], [27.0, 48.0]]] },
+  { level: "mid", label: "Altos del Donets", coordinates: [[[35.2, 47.3], [39.2, 47.3], [39.6, 49.8], [36.7, 50.1], [35.2, 47.3]]] }
+];
+
+const maritimeCorridors = [
+  { label: "Corredor civil del mar Negro", coordinates: [[30.7, 46.5], [29.9, 44.8], [28.9, 43.2], [29.0, 41.2]] },
+  { label: "Constanța–Bósforo", coordinates: [[28.7, 44.2], [29.1, 42.8], [29.0, 41.2]] },
+  { label: "Ruta caucásica", coordinates: [[29.0, 41.2], [33.5, 42.0], [38.7, 43.0]] }
+];
+
+const aviationCorridors = [
+  { label: "Corredor civil norte", coordinates: [[20.9, 52.2], [23.0, 51.8], [26.1, 50.9], [28.8, 47.0]] },
+  { label: "Corredor civil occidental", coordinates: [[20.9, 52.2], [21.3, 49.9], [26.1, 47.0], [29.0, 41.2]] },
+  { label: "Corredor civil mar Negro", coordinates: [[28.8, 47.0], [28.7, 44.2], [29.0, 41.2]] }
+];
+
+const knownCapabilitySectors = [
+  { actor: "ua", type: "Defensa aérea reportada", region: "centro-norte", coordinates: [30.4, 50.2] },
+  { actor: "ua", type: "Sector defensivo", region: "noreste", coordinates: [36.0, 49.8] },
+  { actor: "ua", type: "Artillería reportada", region: "eje oriental", coordinates: [36.1, 48.3] },
+  { actor: "ru", type: "Concentración blindada reportada", region: "sector oriental", coordinates: [38.4, 49.2] },
+  { actor: "ru", type: "Defensa aérea reportada", region: "Crimea", coordinates: [34.2, 45.3] },
+  { actor: "ru", type: "Sector defensivo", region: "litoral sur", coordinates: [35.2, 46.7] }
 ];
 
 const infrastructureZones = [
@@ -221,7 +283,10 @@ function createVectorFallback(container) {
   const svg = d3.select(container).html("").append("svg").attr("viewBox", `0 0 ${width} ${height}`).attr("aria-label", "Mapa vectorial de respaldo");
   const viewport = svg.append("g").attr("class", "map-viewport");
   fallbackSvg = svg;
-  fallbackZoom = d3.zoom().scaleExtent([1, 8]).on("zoom", (event) => viewport.attr("transform", event.transform));
+  fallbackZoom = d3.zoom().scaleExtent([1, 8]).on("zoom", (event) => {
+    viewport.attr("transform", event.transform);
+    updateVectorDetail(event.transform.k);
+  });
   svg.call(fallbackZoom).on("dblclick.zoom", null);
   const projection = state.view === "theater"
     ? d3.geoMercator().center([35, 51]).scale(width * 2.25).translate([width / 2, height / 2])
@@ -230,10 +295,18 @@ function createVectorFallback(container) {
   viewport.append("path").datum(d3.geoGraticule10()).attr("class", "graticule").attr("d", path);
 
   const finish = () => {
+    drawVectorTerrain(viewport, projection);
+    drawVectorControl(viewport, projection);
+    drawVectorAdministrative(viewport, projection);
+    drawVectorWater(viewport, projection);
     drawVectorStrategicLayers(viewport, projection);
+    drawVectorTraffic(viewport, projection);
+    drawVectorMovements(viewport, projection);
+    drawVectorCapabilities(viewport, projection);
     drawVectorFog(viewport, projection);
     drawVectorEvents(viewport, projection);
     syncMapLayers();
+    updateVectorDetail(1);
   };
   d3.json("https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json").then((world) => {
     const countries = topojson.feature(world, world.objects.countries).features;
@@ -246,6 +319,102 @@ function createVectorFallback(container) {
   });
 }
 
+function drawVectorTerrain(svg, projection) {
+  const path = d3.geoPath(projection);
+  const group = svg.append("g").attr("class", "map-layer layer-terrain");
+  group.selectAll("path").data(terrainBands).join("path")
+    .attr("class", (band) => `terrain-band ${band.level}`)
+    .attr("d", (band) => path({ type: "Polygon", coordinates: band.coordinates }));
+  group.selectAll("text").data(terrainBands).join("text").attr("class", "terrain-label")
+    .attr("x", (band) => projection(band.coordinates[0][Math.floor(band.coordinates[0].length / 2)])[0])
+    .attr("y", (band) => projection(band.coordinates[0][Math.floor(band.coordinates[0].length / 2)])[1])
+    .text((band) => band.label);
+}
+
+function drawVectorControl(svg, projection) {
+  const path = d3.geoPath(projection);
+  const group = svg.append("g").attr("class", "map-layer layer-control");
+  group.selectAll("path.control-zone").data(controlZones).join("path")
+    .attr("class", (zone) => `control-zone ${zone.actor}`)
+    .attr("d", (zone) => path({ type: "Polygon", coordinates: zone.coordinates }));
+  group.append("path").datum({ type: "LineString", coordinates: frontLine }).attr("class", "front-line").attr("d", path);
+  const uaLabel = projection([29.0, 50.4]);
+  const ruLabel = projection([39.0, 48.0]);
+  if (uaLabel) group.append("text").attr("class", "control-label ua").attr("x", uaLabel[0]).attr("y", uaLabel[1]).text("CONTROL UCRANIANO");
+  if (ruLabel) group.append("text").attr("class", "control-label ru").attr("x", ruLabel[0]).attr("y", ruLabel[1]).text("CONTROL RUSO · APROX.");
+}
+
+function drawVectorAdministrative(svg, projection) {
+  const path = d3.geoPath(projection);
+  svg.append("g").attr("class", "map-layer layer-admin").selectAll("path").data(administrativeLines).join("path")
+    .attr("class", "admin-line").attr("d", (coordinates) => path({ type: "LineString", coordinates }));
+}
+
+function drawVectorWater(svg, projection) {
+  const path = d3.geoPath(projection);
+  const group = svg.append("g").attr("class", "map-layer layer-water");
+  group.selectAll("path").data(waterways).join("path").attr("class", "waterway")
+    .attr("d", (river) => path({ type: "LineString", coordinates: river.coordinates }));
+  group.selectAll("text").data(waterways).join("text").attr("class", "water-label zoom-regional")
+    .attr("x", (river) => projection(river.coordinates[Math.floor(river.coordinates.length / 2)])[0] + 4)
+    .attr("y", (river) => projection(river.coordinates[Math.floor(river.coordinates.length / 2)])[1] - 4)
+    .text((river) => river.label);
+}
+
+function drawVectorTraffic(svg, projection) {
+  const path = d3.geoPath(projection);
+  [
+    ["maritime", maritimeCorridors],
+    ["aviation", aviationCorridors]
+  ].forEach(([type, corridors]) => {
+    const group = svg.append("g").attr("class", `map-layer layer-${type}`);
+    group.selectAll("path").data(corridors).join("path").attr("class", `traffic-corridor ${type}`)
+      .attr("d", (corridor) => path({ type: "LineString", coordinates: corridor.coordinates }));
+    group.selectAll("text").data(corridors).join("text").attr("class", "traffic-label zoom-regional")
+      .attr("x", (corridor) => projection(corridor.coordinates[Math.floor(corridor.coordinates.length / 2)])[0] + 5)
+      .attr("y", (corridor) => projection(corridor.coordinates[Math.floor(corridor.coordinates.length / 2)])[1] - 5)
+      .text((corridor) => corridor.label);
+  });
+}
+
+function drawVectorMovements(svg, projection) {
+  const path = d3.geoPath(projection);
+  const defs = svg.append("defs");
+  [["ru", "#e77867"], ["ua", "#71aee8"]].forEach(([actor, color]) => {
+    defs.append("marker").attr("id", `arrow-${actor}`).attr("viewBox", "0 0 10 10").attr("refX", 8).attr("refY", 5)
+      .attr("markerWidth", 5).attr("markerHeight", 5).attr("orient", "auto-start-reverse")
+      .append("path").attr("d", "M 0 0 L 10 5 L 0 10 z").attr("fill", color);
+  });
+  const group = svg.append("g").attr("class", "map-layer layer-movements");
+  group.selectAll("path").data(movementArrows).join("path").attr("class", (arrow) => `movement-arrow ${arrow.actor}`)
+    .attr("marker-end", (arrow) => `url(#arrow-${arrow.actor})`)
+    .attr("d", (arrow) => path({ type: "LineString", coordinates: arrow.coordinates }));
+  group.selectAll("text").data(movementArrows).join("text").attr("class", "movement-label zoom-regional")
+    .attr("x", (arrow) => projection(arrow.coordinates[1])[0] + 6)
+    .attr("y", (arrow) => projection(arrow.coordinates[1])[1] - 6)
+    .text((arrow) => arrow.phase);
+}
+
+function drawVectorCapabilities(svg, projection) {
+  const group = svg.append("g").attr("class", "map-layer layer-units zoom-detail");
+  const nodes = group.selectAll("g").data(knownCapabilitySectors).join("g")
+    .attr("class", (item) => `capability-sector ${item.actor}`)
+    .attr("transform", (item) => `translate(${projection(item.coordinates).join(",")})`);
+  nodes.append("circle").attr("class", "capability-uncertainty").attr("r", 24);
+  nodes.append("path").attr("class", "capability-symbol").attr("d", "M-4,-4 H4 V4 H-4 Z M-7,0 H7 M0,-7 V7");
+  nodes.append("text").attr("x", 11).attr("y", -4).text((item) => item.type);
+  nodes.append("text").attr("class", "capability-region").attr("x", 11).attr("y", 7).text((item) => `${item.region} · área ≥50 km`);
+}
+
+function updateVectorDetail(scale) {
+  const regional = scale >= 1.55;
+  const detailed = scale >= 2.35;
+  document.querySelectorAll(".zoom-regional").forEach((node) => node.classList.toggle("zoom-visible", regional));
+  document.querySelectorAll(".zoom-detail").forEach((node) => node.classList.toggle("zoom-visible", detailed));
+  const status = byId("zoomDetailState");
+  if (status) status.textContent = detailed ? "DETALLE · SECTORES" : regional ? "DETALLE · REGIONAL" : "DETALLE · TEATRO";
+}
+
 function drawVectorStrategicLayers(svg, projection) {
   const path = d3.geoPath(projection);
   ["routes", "rail"].forEach((type) => {
@@ -254,9 +423,13 @@ function drawVectorStrategicLayers(svg, projection) {
     group.selectAll("path").data(routes).join("path").attr("class", `strategic-route ${type}`)
       .attr("d", (route) => path({ type: "LineString", coordinates: route.coordinates }));
     if (type === "routes") {
-      group.selectAll("text").data(routes).join("text").attr("class", "route-label")
+      group.selectAll("text").data(routes).join("text").attr("class", "route-label zoom-regional")
         .attr("x", (route) => projection(route.coordinates[Math.floor(route.coordinates.length / 2)])[0])
         .attr("y", (route) => projection(route.coordinates[Math.floor(route.coordinates.length / 2)])[1] - 7).text((route) => route.label);
+    } else {
+      group.selectAll("text").data(routes).join("text").attr("class", "route-label rail-label zoom-regional")
+        .attr("x", (route) => projection(route.coordinates[Math.floor(route.coordinates.length / 2)])[0])
+        .attr("y", (route) => projection(route.coordinates[Math.floor(route.coordinates.length / 2)])[1] + 9).text((route) => route.label);
     }
   });
   ["energy", "civic", "communications"].forEach((type) => {

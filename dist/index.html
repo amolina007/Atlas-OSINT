@@ -60,12 +60,25 @@
           </label>
           <div class="divider"></div>
           <div class="map-layer-group" aria-label="Capas cartográficas">
-            <span class="eyebrow">REDES ESTRATÉGICAS</span>
+            <span class="eyebrow">SITUACIÓN GENERAL</span>
+            <label><input type="checkbox" data-map-layer="control" checked><i class="layer-symbol control"></i><span>Control territorial<small>áreas aproximadas</small></span></label>
+            <label><input type="checkbox" data-map-layer="movements" checked><i class="layer-symbol movement"></i><span>Evolución del frente<small>flechas históricas agregadas</small></span></label>
+            <label><input type="checkbox" data-map-layer="units"><i class="layer-symbol units"></i><span>Capacidades conocidas<small>solo al acercar · sectores ≥50 km</small></span></label>
+            <span class="eyebrow layer-subhead">TERRITORIO Y REDES</span>
             <label><input type="checkbox" data-map-layer="routes" checked><i class="layer-symbol route"></i><span>Carreteras troncales<small>corredores regionales</small></span></label>
             <label><input type="checkbox" data-map-layer="rail" checked><i class="layer-symbol rail"></i><span>Ferrocarril<small>ejes interurbanos</small></span></label>
+            <label><input type="checkbox" data-map-layer="admin" checked><i class="layer-symbol admin"></i><span>Divisiones administrativas<small>óblasts esquemáticos</small></span></label>
+            <label><input type="checkbox" data-map-layer="water" checked><i class="layer-symbol water"></i><span>Hidrografía<small>ríos, embalses y costa</small></span></label>
+            <label><input type="checkbox" data-map-layer="terrain" checked><i class="layer-symbol terrain"></i><span>Relieve<small>altura relativa del terreno</small></span></label>
+            <label><input type="checkbox" data-map-layer="maritime" checked><i class="layer-symbol maritime"></i><span>Tráfico marítimo<small>corredores civiles agregados</small></span></label>
+            <label><input type="checkbox" data-map-layer="aviation" checked><i class="layer-symbol aviation"></i><span>Tráfico aéreo<small>rutas civiles regionales</small></span></label>
             <label><input type="checkbox" data-map-layer="energy"><i class="layer-symbol energy"></i><span>Energía<small>zonas generalizadas</small></span></label>
             <label><input type="checkbox" data-map-layer="civic"><i class="layer-symbol civic"></i><span>Servicios civiles<small>salud y ayuda</small></span></label>
             <label><input type="checkbox" data-map-layer="communications"><i class="layer-symbol communications"></i><span>Telecomunicaciones<small>áreas de resiliencia</small></span></label>
+          </div>
+          <div class="map-safety-note">
+            <strong>OSINT SEGURO</strong>
+            <span>Sin posiciones militares ni tráfico operacional en tiempo real. Precisión mínima: sector regional.</span>
           </div>
           <div class="confidence-key">
             <span class="eyebrow">CONFIANZA</span>
@@ -86,6 +99,7 @@
               <button class="active" data-view="theater">Teatro</button>
             </div>
             <div class="map-toolbar-status">
+              <span id="zoomDetailState">DETALLE · TEATRO</span>
               <span id="visibleCount">5 eventos visibles</span>
               <div class="zoom-controls" role="group" aria-label="Controles de zoom">
                 <button id="zoomOut" aria-label="Alejar mapa" title="Alejar">−</button>
@@ -97,8 +111,8 @@
           <div id="map" class="map" role="img" aria-label="Mapa de Europa oriental con eventos seleccionables">
             <div class="map-loading"><span></span>Cargando cartografía…</div>
           </div>
-          <div class="map-legend"><span><i class="actor ua"></i>Ucrania</span><span><i class="actor ru"></i>Rusia</span><span><i class="route-key"></i>Corredor</span><span><i class="halo"></i>Zona aproximada</span></div>
-          <div class="map-disclaimer">Rutas y zonas generalizadas · sin estado operativo ni valor táctico en tiempo real</div>
+          <div class="map-legend"><span><i class="actor ua"></i>Control UA</span><span><i class="actor ru"></i>Control RU</span><span><i class="contested-key"></i>Frente</span><span><i class="route-key"></i>Transporte</span><span><i class="halo"></i>Sector aproximado</span></div>
+          <div class="map-disclaimer">Capa editorial generalizada · tráfico civil agregado · unidades visibles desde zoom regional</div>
         </section>
 
         <aside class="intel-panel" id="intelPanel" aria-live="polite">
@@ -346,6 +360,7 @@
     </div>
     <div class="confidence-scale"><span><i class="conf high"></i><b>Alta</b> corroboración múltiple</span><span><i class="conf medium"></i><b>Media</b> evidencia parcial</span><span><i class="conf low"></i><b>Baja</b> afirmación no confirmada</span></div>
     <p class="method-note"><strong>Modelos estratégicos:</strong> la consola de dinámica y sistemas emplea metáforas visuales inspiradas en videojuegos. Sus índices son demostrativos y nunca sustituyen la cadena de evidencia.</p>
+    <p class="method-note"><strong>Mapa:</strong> control y movimientos son esquemas editoriales generalizados; las capacidades se degradan a sectores de al menos 50 km y solo aparecen con zoom. Transporte, límites e hidrografía toman como referencia <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noreferrer">OpenStreetMap</a> y <a href="https://response.reliefweb.int/ukraine/operational-and-dynamic-maps" target="_blank" rel="noreferrer">OCHA/ReliefWeb</a>. Las capas aérea y marítima representan corredores civiles agregados, no posiciones en vivo.</p>
   </dialog>
 
   <script src="https://cdn.jsdelivr.net/npm/d3@7/dist/d3.min.js"></script>
