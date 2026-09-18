@@ -374,3 +374,16 @@ dialog { width: min(760px, calc(100% - 32px)); color: var(--ink); background: #0
 .news-dialog-actions button:disabled{opacity:.35;cursor:not-allowed}
 .news-dialog-source{margin-top:14px}
 @media(max-width:620px){.news-dialog-actions{flex-direction:column}.news-navigation{justify-content:space-between}.news-navigation button{flex:1}}
+
+
+/* Concise feed and thematic news-map layer */
+.news-card-excerpt{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden;max-width:72ch}
+.news-map-context-route{fill:none;stroke:#e7b567;stroke-width:2.4;stroke-dasharray:7 4;opacity:.9;vector-effect:non-scaling-stroke;filter:drop-shadow(0 0 3px rgba(231,181,103,.35))}
+.news-map-context-route.route-1{stroke:#e6786e;stroke-dasharray:3 3}
+.news-map-context-node circle{fill:#e7b567;stroke:#07100d;stroke-width:2;vector-effect:non-scaling-stroke}
+.news-map-context-node text{fill:#f3e6ca;font:700 8px var(--mono);paint-order:stroke;stroke:#07100d;stroke-width:3px;stroke-linejoin:round}
+.news-map-context-node .news-map-context-role{fill:#a8b9b0;font-size:6px;font-weight:500}
+.news-context-map__insight{display:grid;grid-template-columns:auto 1fr;gap:12px;align-items:start;padding:11px 14px;border-top:1px solid rgba(132,166,151,.14);background:rgba(231,181,103,.045)}
+.news-context-map__insight span{font:700 .61rem var(--mono);letter-spacing:.09em;color:#e7b567;white-space:nowrap}
+.news-context-map__insight p{margin:0;color:#9eaea6;font-size:.72rem;line-height:1.5}
+@media(max-width:620px){.news-context-map__insight{grid-template-columns:1fr;gap:5px}.news-map-context-node text{font-size:7px}}
