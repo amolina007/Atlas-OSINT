@@ -387,3 +387,23 @@ dialog { width: min(760px, calc(100% - 32px)); color: var(--ink); background: #0
 .news-context-map__insight span{font:700 .61rem var(--mono);letter-spacing:.09em;color:#e7b567;white-space:nowrap}
 .news-context-map__insight p{margin:0;color:#9eaea6;font-size:.72rem;line-height:1.5}
 @media(max-width:620px){.news-context-map__insight{grid-template-columns:1fr;gap:5px}.news-map-context-node text{font-size:7px}}
+
+
+/* Selected market signals below each news map */
+.news-market-context{margin:0 0 22px;border:1px solid rgba(132,166,151,.2);border-radius:11px;background:rgba(7,17,14,.72);overflow:hidden}
+.news-market-context__heading{display:flex;justify-content:space-between;align-items:center;gap:16px;padding:11px 14px;border-bottom:1px solid rgba(132,166,151,.14)}
+.news-market-context__heading div{display:flex;flex-direction:column;gap:3px}
+.news-market-context__heading span{color:#79d6a0;font:700 .61rem var(--mono);letter-spacing:.1em}
+.news-market-context__heading strong{font-size:.83rem;color:#dce8e1}
+.news-market-context__heading small{color:#687d73;font-size:.64rem;text-align:right}
+.news-market-indicators{display:grid;grid-template-columns:repeat(3,minmax(0,1fr))}
+.news-market-indicator{display:flex;align-items:center;justify-content:space-between;gap:10px;min-width:0;padding:13px 14px;border-right:1px solid rgba(132,166,151,.12);color:#dce8e1;text-decoration:none}
+.news-market-indicator:last-child{border-right:0}
+.news-market-indicator span{display:flex;min-width:0;flex-direction:column;gap:3px}
+.news-market-indicator b{font-size:.76rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.news-market-indicator small{color:#71877d;font-size:.61rem}
+.news-market-indicator strong{font:700 .82rem var(--mono)}
+.news-market-indicator.gain strong{color:#79d6a0}.news-market-indicator.loss strong{color:#e68478}.news-market-indicator.flat strong{color:#e7b567}.news-market-indicator.unavailable strong{color:#71877d}
+.news-market-indicator:hover{background:rgba(121,214,160,.045)}
+.news-market-context>p{margin:0;padding:8px 14px;border-top:1px solid rgba(132,166,151,.1);color:#5f746a;font-size:.62rem;line-height:1.45}
+@media(max-width:620px){.news-market-context__heading{align-items:flex-start;flex-direction:column;gap:5px}.news-market-context__heading small{text-align:left}.news-market-indicators{grid-template-columns:1fr}.news-market-indicator{border-right:0;border-bottom:1px solid rgba(132,166,151,.1)}.news-market-indicator:last-child{border-bottom:0}}
