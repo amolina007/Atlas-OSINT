@@ -23,6 +23,10 @@
       <nav class="top-actions" aria-label="Controles principales">
         <a class="ghost-button market-nav-button" href="#markets"><span class="button-icon">⌁</span> Mercados</a>
         <button class="ghost-button" id="methodButton"><span class="button-icon">◎</span> Metodología</button>
+        <button class="auth-button" id="authButton" type="button" aria-haspopup="dialog">
+          <span class="auth-avatar" id="authAvatar">◎</span>
+          <span id="authButtonLabel">Ingresar</span>
+        </button>
         <button class="turn-pill" id="turnButton"><span class="pulse"></span><span>Turno activo</span><strong>16 SEP 2026</strong></button>
       </nav>
     </header>
@@ -569,6 +573,30 @@
     </main>
   </div>
 
+
+  <dialog id="authDialog" class="auth-dialog">
+    <button class="dialog-close" id="authDialogClose" aria-label="Cerrar">×</button>
+    <div class="auth-brand"><span class="brand-mark">A</span><div><strong>IDENTIDAD CONVERGENCIA AURA</strong><small>Acceso compartido en preparación</small></div></div>
+    <section id="authSignedOut">
+      <p class="eyebrow">MAGIC LINK</p>
+      <h2>Ingresa a Atlas sin contraseña</h2>
+      <p>Recibirás un enlace de acceso en tu correo. La sesión permanecerá activa en este navegador.</p>
+      <form id="magicLinkForm">
+        <label for="authEmail">Correo electrónico</label>
+        <input id="authEmail" name="email" type="email" autocomplete="email" required placeholder="tu@correo.cl">
+        <button type="submit" id="magicLinkSubmit">Enviar Magic Link</button>
+      </form>
+      <p class="auth-status" id="authStatus" aria-live="polite"></p>
+    </section>
+    <section id="authSignedIn" hidden>
+      <p class="eyebrow">SESIÓN ACTIVA</p>
+      <h2>Identidad conectada</h2>
+      <div class="auth-user-card"><span class="auth-avatar large" id="authDialogAvatar">A</span><div><strong id="authUserEmail"></strong><small>Cuenta Supabase · Atlas</small></div></div>
+      <p>Tu sesión se conserva en Atlas. El cierre utiliza alcance global para invalidar las sesiones del mismo proyecto de Supabase.</p>
+      <button class="auth-signout" id="authSignOut" type="button">Cerrar sesión</button>
+    </section>
+    <p class="auth-sso-note">La sesión transversal completa se activará cuando los demás productos utilicen este mismo proyecto y el dominio común de autenticación.</p>
+  </dialog>
 
   <dialog id="newsDialog" class="news-dialog">
     <button class="dialog-close" id="newsDialogClose" aria-label="Cerrar">×</button>
