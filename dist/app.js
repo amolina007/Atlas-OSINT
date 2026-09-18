@@ -710,11 +710,8 @@ function createMap() {
   container.innerHTML = "";
   fallbackSvg = null;
   fallbackZoom = null;
-  // MapLibre queda desactivado temporalmente: algunos navegadores mostraban
-  // un lienzo WebGL negro aunque declararan compatibilidad. Priorizamos el
-  // mapa vectorial probado hasta migrar la base OSM a un motor sin WebGL.
-  createVectorFallback(container);
-  return;
+  // La base topográfica usa MapLibre cuando WebGL está disponible.
+  // El mapa vectorial permanece como respaldo automático.
   if (!document.createElement("canvas").getContext("webgl2")) {
     createVectorFallback(container);
     return;
@@ -726,29 +723,35 @@ function createMap() {
       center: state.view === "theater" ? [31.5, 49.1] : [20, 30],
       zoom: state.view === "theater" ? 4.65 : 1.15,
       minZoom: 1,
-      maxZoom: 9,
+      maxZoom: 12,
       attributionControl: false,
       style: {
         version: 8,
         sources: {
-          osm: {
+          topo: {
             type: "raster",
-            tiles: ["https://tile.openstreetmap.org/{z}/{x}/{y}.png"],
+            tiles: [
+              "https://a.tile.opentopomap.org/{z}/{x}/{y}.png",
+              "https://b.tile.opentopomap.org/{z}/{x}/{y}.png",
+              "https://c.tile.opentopomap.org/{z}/{x}/{y}.png"
+            ],
             tileSize: 256,
-            attribution: "© OpenStreetMap contributors"
+            maxzoom: 17,
+            attribution: "© OpenStreetMap contributors · SRTM | OpenTopoMap"
           }
         },
         layers: [
           { id: "atlas-background", type: "background", paint: { "background-color": "#07100d" } },
           {
-            id: "osm-base",
+            id: "topographic-base",
             type: "raster",
-            source: "osm",
+            source: "topo",
             paint: {
-              "raster-opacity": 0.42,
-              "raster-saturation": -0.78,
-              "raster-contrast": 0.22,
-              "raster-brightness-max": 0.58
+              "raster-opacity": 0.82,
+              "raster-saturation": -0.38,
+              "raster-contrast": 0.18,
+              "raster-brightness-min": 0.08,
+              "raster-brightness-max": 0.72
             }
           }
         ]
@@ -762,6 +765,7 @@ function createMap() {
   }
   atlasMap.addControl(new maplibregl.AttributionControl({ compact: true }), "bottom-right");
   atlasMap.on("load", () => {
+    addAdministrativeTopographicLayers();
     addStrategicLayers();
     addFogLayer();
     addEventLayers();
@@ -1112,6 +1116,61 @@ function drawVectorEvents(svg, projection) {
   applyFilter(state.kind);
 }
 
+function addAdministrativeTopographicLayers() {
+  if (!atlasMap?.isStyleLoaded()) return;
+  if (!currentTheater().adminGeoJSON) return;
+
+  atlasMap.addSource("atlas-admin-oblasts", {
+    type: "geojson",
+    data: "./data/ukraine-oblasts.geojson"
+  });
+  atlasMap.addSource("atlas-admin-districts", {
+    type: "geojson",
+    data: "./data/ukraine-districts.geojson"
+  });
+  atlasMap.addLayer({
+    id: "atlas-admin-oblast-lines",
+    type: "line",
+    source: "atlas-admin-oblasts",
+    minzoom: 3,
+    paint: {
+      "line-color": "#dbe8df",
+      "line-width": ["interpolate", ["linear"], ["zoom"], 3, 0.7, 8, 1.6],
+      "line-opacity": 0.68
+    }
+  });
+  atlasMap.addLayer({
+    id: "atlas-admin-oblast-labels",
+    type: "symbol",
+    source: "atlas-admin-oblasts",
+    minzoom: 4.2,
+    layout: {
+      "text-field": ["coalesce", ["get", "shapeName"], ["get", "name"]],
+      "text-size": ["interpolate", ["linear"], ["zoom"], 4, 10, 8, 13],
+      "text-transform": "uppercase",
+      "text-letter-spacing": 0.08,
+      "text-allow-overlap": false
+    },
+    paint: {
+      "text-color": "#eef5f0",
+      "text-halo-color": "#101914",
+      "text-halo-width": 1.6
+    }
+  });
+  atlasMap.addLayer({
+    id: "atlas-admin-district-lines",
+    type: "line",
+    source: "atlas-admin-districts",
+    minzoom: 6,
+    paint: {
+      "line-color": "#b7c9bf",
+      "line-width": ["interpolate", ["linear"], ["zoom"], 6, 0.45, 10, 1.1],
+      "line-opacity": 0.46,
+      "line-dasharray": [2, 2]
+    }
+  });
+}
+
 function addStrategicLayers() {
   ["routes", "rail"].forEach((type) => {
     const routes = strategicRoutes.filter((route) => route.type === type);
@@ -1173,7 +1232,8 @@ function syncMapLayers() {
   const ids = {
     routes: ["atlas-routes-line", "atlas-routes-label"], rail: ["atlas-rail-line"],
     energy: ["atlas-energy-halo", "atlas-energy-core"], civic: ["atlas-civic-halo", "atlas-civic-core"],
-    communications: ["atlas-communications-halo", "atlas-communications-core"]
+    communications: ["atlas-communications-halo", "atlas-communications-core"],
+    admin: ["atlas-admin-oblast-lines", "atlas-admin-oblast-labels", "atlas-admin-district-lines"]
   };
   Object.entries(ids).forEach(([name, layerIds]) => {
     layerIds.forEach((id) => { if (atlasMap.getLayer(id)) atlasMap.setLayoutProperty(id, "visibility", state.layers.has(name) ? "visible" : "none"); });
