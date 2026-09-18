@@ -473,3 +473,19 @@ dialog { width: min(760px, calc(100% - 32px)); color: var(--ink); background: #0
   .news-filter-group{width:100%}
   .news-more-menu{position:fixed;left:14px;right:14px;top:auto;width:auto}
 }
+
+
+/* Global territorial context */
+.global-context{position:sticky;top:58px;z-index:45;display:grid;grid-template-columns:minmax(210px,.8fr) minmax(420px,1.5fr) minmax(190px,.55fr);gap:18px;align-items:center;padding:13px 22px;border-bottom:1px solid rgba(132,166,151,.16);background:rgba(6,16,12,.96);backdrop-filter:blur(14px)}
+.global-context-copy{display:flex;flex-direction:column;gap:2px}.global-context-copy strong{font-size:.92rem}.global-context-copy small,.location-search>small,.global-language small{color:#687e73;font-size:.66rem}
+.location-search>label,.global-language>span{display:block;margin-bottom:5px;color:#79d6a0;font:600 .62rem var(--mono);letter-spacing:.09em}
+.location-search>div{display:flex;gap:6px}.location-search input{min-width:0;flex:1;padding:9px 11px;border:1px solid rgba(132,166,151,.24);border-radius:7px;background:#081510;color:#dce8e1}
+.location-search button{padding:8px 10px;border:1px solid rgba(121,214,160,.25);border-radius:7px;background:rgba(121,214,160,.06);color:#bde6cc;cursor:pointer}
+.global-language select{width:100%;padding:9px;background:#081510;color:#dce8e1;border:1px solid rgba(132,166,151,.24);border-radius:7px}
+.map-analysis-controls{margin:0 0 15px;border:1px solid rgba(132,166,151,.16);border-radius:9px;background:rgba(7,17,14,.45)}
+.map-analysis-controls>summary{padding:11px 12px;color:#9fcdb6;font:600 .7rem var(--mono);letter-spacing:.06em;cursor:pointer}
+.map-analysis-controls[open]>summary{border-bottom:1px solid rgba(132,166,151,.14)}
+.map-analysis-controls>.context-field,.map-analysis-controls>.perspective-field{display:block;margin:11px 12px}
+.map-analysis-controls .perspective-note{margin:12px;padding:11px}
+.atlas-context-marker{pointer-events:none}.atlas-context-halo{fill:rgba(88,199,238,.08);stroke:#58c7ee;stroke-width:1.5;stroke-dasharray:4 3}.atlas-context-core{fill:#d9f99d;stroke:#07100d;stroke-width:2}.atlas-context-marker text{fill:#e7f8ee;font:700 9px var(--mono);paint-order:stroke;stroke:#07100d;stroke-width:3px}
+@media(max-width:900px){.global-context{position:relative;top:auto;grid-template-columns:1fr;padding:14px}.location-search>div{flex-wrap:wrap}.location-search input{flex-basis:100%}.global-context-copy small{display:none}}
