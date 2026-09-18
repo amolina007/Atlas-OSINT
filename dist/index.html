@@ -10,9 +10,20 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/maplibre-gl@6.10.0/dist/maplibre-gl.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css" rel="stylesheet">
   <link rel="stylesheet" href="./styles.css">
 </head>
 <body>
+<style id="convergencia-aura-banner-style">
+  .ca-ecosystem-banner{position:relative;z-index:9999;width:100%;background:linear-gradient(90deg,#071521 0%,#0b2637 55%,#10384a 100%);border-bottom:1px solid rgba(105,220,255,.28);color:#eaf8ff;font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+  .ca-ecosystem-banner__inner{max-width:1200px;margin:0 auto;min-height:42px;padding:7px 20px;display:flex;align-items:center;justify-content:space-between;gap:16px}
+  .ca-ecosystem-banner__label{margin:0;font-size:13px;line-height:1.35;letter-spacing:.01em;color:#d7edf7}.ca-ecosystem-banner__label strong{color:#fff;font-weight:700}
+  .ca-ecosystem-banner__links{display:flex;align-items:center;gap:8px;flex:none}.ca-ecosystem-banner__links a{display:inline-flex;align-items:center;justify-content:center;min-height:28px;padding:5px 10px;border:1px solid rgba(151,225,255,.3);border-radius:999px;color:#dff7ff!important;text-decoration:none!important;font-size:12px;font-weight:700;line-height:1;white-space:nowrap;background:rgba(94,201,240,.08);transition:background .18s ease,border-color .18s ease}
+  .ca-ecosystem-banner__links a:hover,.ca-ecosystem-banner__links a:focus-visible{background:rgba(94,201,240,.2);border-color:rgba(151,225,255,.72);outline:none}
+  @media(max-width:680px){.ca-ecosystem-banner__inner{align-items:flex-start;flex-direction:column;gap:6px;padding:8px 14px 9px}.ca-ecosystem-banner__links{width:100%;flex-wrap:wrap}.ca-ecosystem-banner__links a{flex:1}.ca-ecosystem-banner__label{font-size:12.5px}}
+</style>
+<aside class="ca-ecosystem-banner" aria-label="Navegación del ecosistema Convergencia Aura"><div class="ca-ecosystem-banner__inner"><p class="ca-ecosystem-banner__label"><strong>Parte de Convergencia Aura.</strong> Existen más páginas y proyectos conectados.</p><nav class="ca-ecosystem-banner__links" aria-label="Enlaces de Convergencia Aura"><a href="https://convergenciaaura.cl" target="_blank" rel="noopener noreferrer">Convergencia Aura ↗</a><a href="https://linktr.ee/amolina.uchile" target="_blank" rel="noopener noreferrer">Linktree oficial ↗</a></nav></div></aside>
+
   <div class="app-shell">
     <header class="topbar">
       <a class="brand" href="#" aria-label="ATLAS OSINT, inicio">
@@ -20,33 +31,180 @@
         <span><strong>ATLAS</strong><small>OSINT CONFLICT INTELLIGENCE</small></span>
       </a>
       <nav class="top-actions" aria-label="Controles principales">
+        <a class="ghost-button market-nav-button" href="#markets"><span class="button-icon">⌁</span> Mercados</a>
         <button class="ghost-button" id="methodButton"><span class="button-icon">◎</span> Metodología</button>
-        <button class="turn-pill" id="turnButton"><span class="pulse"></span><span>Turno activo</span><strong>16 SEP 2026</strong></button>
+        <button class="auth-button" id="authButton" type="button" aria-haspopup="dialog">
+          <span class="auth-avatar" id="authAvatar">◎</span>
+          <span id="authButtonLabel">Ingresar</span>
+        </button>
+        <button class="turn-pill" id="turnButton" type="button" aria-haspopup="dialog"><span class="pulse"></span><span id="turnStatus">Turno activo</span><strong id="turnDate">16 SEP 2026</strong></button>
       </nav>
     </header>
 
-    <main>
-      <section class="briefing" aria-labelledby="briefing-title">
+    <section class="global-context" aria-label="Ubicación e idioma de Atlas">
+      <div class="global-context-copy">
+        <span class="eyebrow">CONTEXTO TERRITORIAL</span>
+        <strong id="globalContextTitle">Atlas desde tu ubicación</strong>
+        <small id="globalContextHelp">La ubicación reorganiza el mapa, las noticias y los mercados. Se procesa localmente.</small>
+      </div>
+      <form class="location-search" id="atlasLocationForm">
+        <label for="atlasLocationInput">UBICACIÓN</label>
         <div>
-          <p class="eyebrow">TEATRO · EUROPA ORIENTAL</p>
-          <h1 id="briefing-title">Guerra ruso-ucraniana</h1>
-          <p class="lede">Una vista estratégica de la situación, construida sobre afirmaciones trazables y niveles explícitos de confianza.</p>
+          <input id="atlasLocationInput" list="atlasLocationSuggestions" autocomplete="off" placeholder="Ciudad, región o país">
+          <button type="submit">Aplicar</button>
+          <button type="button" id="detectAtlasLocation" title="Detectar ubicación actual">◎ Actual</button>
         </div>
-        <div class="status-strip" aria-label="Resumen del turno">
-          <article><span>INICIATIVA</span><strong>Disputada</strong><em class="trend up">↑ local UA</em></article>
-          <article><span>PRESIÓN AÉREA</span><strong>Alta</strong><em class="trend hot">intensa</em></article>
-          <article><span>DIPLOMACIA</span><strong>Estancada</strong><em class="trend neutral">sin tregua</em></article>
-          <article><span>COBERTURA</span><strong>68%</strong><em class="trend neutral">12 fuentes</em></article>
+        <datalist id="atlasLocationSuggestions">
+          <option value="Maipú, Chile"></option>
+          <option value="Santiago, Chile"></option>
+          <option value="Valparaíso, Chile"></option>
+          <option value="Antofagasta, Chile"></option>
+          <option value="Buenos Aires, Argentina"></option>
+          <option value="Lima, Perú"></option>
+          <option value="São Paulo, Brasil"></option>
+          <option value="Ciudad de México, México"></option>
+          <option value="Nueva York, Estados Unidos"></option>
+          <option value="Madrid, España"></option>
+          <option value="Kyiv, Ucrania"></option>
+          <option value="Moscú, Rusia"></option>
+          <option value="Amán, Jordania"></option>
+          <option value="Singapur"></option>
+          <option value="Tokio, Japón"></option>
+          <option value="Beijing, China"></option>
+        </datalist>
+        <small id="atlasLocationStatus" aria-live="polite">Ubicación pendiente</small>
+      </form>
+      <label class="global-language" for="languageSelect">
+        <span>IDIOMA</span>
+        <select id="languageSelect">
+          <option value="es">Español</option>
+          <option value="en">English</option>
+          <option value="pt">Português</option>
+          <option value="fr">Français</option>
+          <option value="de">Deutsch</option>
+          <option value="it">Italiano</option>
+          <option value="ca">Català</option>
+          <option value="eu">Euskara</option>
+          <option value="gl">Galego</option>
+          <option value="nl">Nederlands</option>
+          <option value="pl">Polski</option>
+          <option value="cs">Čeština</option>
+          <option value="sk">Slovenčina</option>
+          <option value="hu">Magyar</option>
+          <option value="ro">Română</option>
+          <option value="bg">Български</option>
+          <option value="el">Ελληνικά</option>
+          <option value="uk">Українська</option>
+          <option value="ru">Русский</option>
+          <option value="tr">Türkçe</option>
+          <option value="ar">العربية</option>
+          <option value="he">עברית</option>
+          <option value="fa">فارسی</option>
+          <option value="hi">हिन्दी</option>
+          <option value="bn">বাংলা</option>
+          <option value="ur">اردو</option>
+          <option value="zh">中文</option>
+          <option value="ja">日本語</option>
+          <option value="ko">한국어</option>
+          <option value="vi">Tiếng Việt</option>
+          <option value="th">ไทย</option>
+          <option value="id">Bahasa Indonesia</option>
+          <option value="ms">Bahasa Melayu</option>
+          <option value="sw">Kiswahili</option>
+        </select>
+        <small id="languageHelp">Sugerido por ubicación; puedes modificarlo.</small>
+      </label>
+    </section>
+
+    <nav class="section-nav" aria-label="Secciones de Atlas">
+      <button class="active" type="button" data-atlas-section="map" aria-pressed="true"><span>◫</span> Mapa</button>
+      <button type="button" data-atlas-section="news" aria-pressed="false"><span>◉</span> Noticiero</button>
+      <button type="button" data-atlas-section="markets" aria-pressed="false"><span>⌁</span> Mercados</button>
+    </nav>
+
+    <main>
+      <section class="briefing atlas-section atlas-map-section" aria-labelledby="briefing-title">
+        <div>
+          <p class="eyebrow" id="theaterLabel">TEATRO · EUROPA ORIENTAL</p>
+          <h1 id="briefing-title">Guerra ruso-ucraniana</h1>
+          <p class="lede" id="briefingLede">Una vista estratégica de la situación, construida sobre afirmaciones trazables y niveles explícitos de confianza.</p>
+        </div>
+        <div class="status-strip" id="statusStrip" aria-label="Resumen del turno">
+          <article><span id="statusLabel1">INICIATIVA</span><strong id="statusValue1">Disputada</strong><em class="trend up" id="statusTrend1">↑ local UA</em></article>
+          <article><span id="statusLabel2">PRESIÓN AÉREA</span><strong id="statusValue2">Alta</strong><em class="trend hot" id="statusTrend2">intensa</em></article>
+          <article><span id="statusLabel3">DIPLOMACIA</span><strong id="statusValue3">Estancada</strong><em class="trend neutral" id="statusTrend3">sin tregua</em></article>
+          <article><span id="statusLabel4">COBERTURA</span><strong id="statusValue4">68%</strong><em class="trend neutral" id="statusTrend4">12 fuentes</em></article>
         </div>
       </section>
 
-      <section class="workspace">
+      <section class="workspace atlas-section atlas-map-section">
         <aside class="control-panel">
           <div class="panel-heading">
             <span class="eyebrow">CAPAS</span>
             <button class="icon-button" id="resetFilters" aria-label="Restablecer filtros" title="Restablecer filtros">↺</button>
           </div>
-          <div class="filter-group" aria-label="Tipo de evento">
+          <details class="map-analysis-controls">
+            <summary>Análisis del teatro</summary>
+            <label class="context-field" for="conflictSelect">
+              <span id="conflictLabel">CONFLICTO O CAPA</span>
+              <select id="conflictSelect" aria-describedby="conflictHelp">
+                <option value="russia-ukraine">Guerra ruso-ucraniana</option>
+                <option value="middle-east">Oriente Medio ampliado</option>
+                <option value="sudan">Guerra de Sudán</option>
+                <option value="world-resources">Materias primas mundiales</option>
+              </select>
+              <small id="conflictHelp">Herramienta interna del mapa.</small>
+            </label>
+            <fieldset class="perspective-field">
+              <legend id="perspectiveLabel">PERSPECTIVA EDITORIAL</legend>
+              <div class="perspective-switch" id="perspectiveSwitch">
+                <button class="active" type="button" data-perspective="neutral" aria-pressed="true">Neutra</button>
+                <button type="button" data-perspective="russian" aria-pressed="false">Visión rusa</button>
+                <button type="button" data-perspective="ukrainian" aria-pressed="false">Visión ucraniana</button>
+              </div>
+              <small id="perspectiveHelp">Compara narrativas sin alterar los hechos verificados.</small>
+            </fieldset>
+            <article class="perspective-note" id="perspectiveNote" data-perspective-tone="neutral" aria-live="polite">
+              <span id="perspectiveKicker">VISTA NEUTRA</span>
+              <strong id="perspectiveTitle">Síntesis comparada y trazable</strong>
+              <p id="perspectiveDescription">Prioriza coincidencias entre fuentes independientes.</p>
+              <small id="perspectiveDisclaimer">La perspectiva no modifica evidencia ni confianza.</small>
+            </article>
+          </details>
+          <div class="resource-controls" id="resourceControls" hidden>
+            <span class="eyebrow">MATERIA PRIMA</span>
+            <label for="resourceRegionSelect">Región</label>
+            <select id="resourceRegionSelect">
+              <option value="world">Mundo</option>
+              <option value="americas">Américas</option>
+              <option value="europe-central-asia">Europa y Asia Central</option>
+              <option value="mena">Oriente Medio y Norte de África</option>
+              <option value="sub-saharan-africa">África subsahariana</option>
+              <option value="south-asia">Asia meridional</option>
+              <option value="east-asia-pacific">Asia oriental y Pacífico</option>
+            </select>
+            <label for="resourceSelect">Recurso</label>
+            <select id="resourceSelect">
+              <optgroup label="Minerales">
+                <option value="copper">Cobre</option>
+                <option value="lithium">Litio</option>
+                <option value="iron">Hierro</option>
+              </optgroup>
+              <optgroup label="Energía">
+                <option value="oil">Petróleo</option>
+                <option value="gas">Gas natural</option>
+              </optgroup>
+              <optgroup label="Agricultura">
+                <option value="wheat">Trigo</option>
+                <option value="maize">Maíz</option>
+                <option value="rice">Arroz</option>
+              </optgroup>
+            </select>
+            <div class="resource-metric"><span>MEDIDA</span><strong id="resourceMetric">Reservas nacionales</strong></div>
+            <p id="resourceDescription">Concentración relativa de reservas y grandes distritos productores.</p>
+            <a id="resourceSource" href="https://www.usgs.gov/centers/national-minerals-information-center/mineral-commodity-summaries" target="_blank" rel="noreferrer">Fuente y metodología ↗</a>
+          </div>
+          <div class="filter-group" id="eventFilterGroup" aria-label="Tipo de evento">
             <button class="filter-chip active" data-kind="all"><span class="chip-dot all"></span>Todo <b>5</b></button>
             <button class="filter-chip" data-kind="ground"><span class="chip-dot ground"></span>Terreno <b>1</b></button>
             <button class="filter-chip" data-kind="air"><span class="chip-dot air"></span>Ataque aéreo <b>3</b></button>
@@ -59,7 +217,7 @@
             <i aria-hidden="true"></i>
           </label>
           <div class="divider"></div>
-          <div class="map-layer-group" aria-label="Capas cartográficas">
+          <div class="map-layer-group" id="conflictLayerControls" aria-label="Capas cartográficas">
             <span class="eyebrow">SITUACIÓN GENERAL</span>
             <label><input type="checkbox" data-map-layer="control" checked><i class="layer-symbol control"></i><span>Control territorial<small>áreas aproximadas</small></span></label>
             <label><input type="checkbox" data-map-layer="movements" checked><i class="layer-symbol movement"></i><span>Evolución del frente<small>flechas históricas agregadas</small></span></label>
@@ -67,18 +225,18 @@
             <span class="eyebrow layer-subhead">TERRITORIO Y REDES</span>
             <label><input type="checkbox" data-map-layer="routes" checked><i class="layer-symbol route"></i><span>Carreteras troncales<small>corredores regionales</small></span></label>
             <label><input type="checkbox" data-map-layer="rail" checked><i class="layer-symbol rail"></i><span>Ferrocarril<small>ejes interurbanos</small></span></label>
-            <label><input type="checkbox" data-map-layer="admin" checked><i class="layer-symbol admin"></i><span>Divisiones administrativas<small>óblasts esquemáticos</small></span></label>
+            <label><input type="checkbox" data-map-layer="admin" checked><i class="layer-symbol admin"></i><span>Divisiones administrativas<small>óblasts y raiones · según zoom</small></span></label>
             <label><input type="checkbox" data-map-layer="water" checked><i class="layer-symbol water"></i><span>Hidrografía<small>ríos, embalses y costa</small></span></label>
             <label><input type="checkbox" data-map-layer="terrain" checked><i class="layer-symbol terrain"></i><span>Relieve<small>altura relativa del terreno</small></span></label>
-            <label><input type="checkbox" data-map-layer="maritime" checked><i class="layer-symbol maritime"></i><span>Tráfico marítimo<small>corredores civiles agregados</small></span></label>
-            <label><input type="checkbox" data-map-layer="aviation" checked><i class="layer-symbol aviation"></i><span>Tráfico aéreo<small>rutas civiles regionales</small></span></label>
+            <label><input type="checkbox" data-map-layer="maritime" checked><i class="layer-symbol maritime"></i><span>Tráfico marítimo<small>presencia AIS retrasada · ≥96 h</small></span></label>
+            <label><input type="checkbox" data-map-layer="aviation" checked><i class="layer-symbol aviation"></i><span>Tráfico aéreo<small>señales ADS-B agrupadas · OpenSky</small></span></label>
             <label><input type="checkbox" data-map-layer="energy"><i class="layer-symbol energy"></i><span>Energía<small>zonas generalizadas</small></span></label>
             <label><input type="checkbox" data-map-layer="civic"><i class="layer-symbol civic"></i><span>Servicios civiles<small>salud y ayuda</small></span></label>
             <label><input type="checkbox" data-map-layer="communications"><i class="layer-symbol communications"></i><span>Telecomunicaciones<small>áreas de resiliencia</small></span></label>
           </div>
-          <div class="map-safety-note">
+          <div class="map-safety-note" id="mapSafetyNote">
             <strong>OSINT SEGURO</strong>
-            <span>Sin posiciones militares ni tráfico operacional en tiempo real. Precisión mínima: sector regional.</span>
+            <span>Sin identificadores ni posiciones exactas. Cada contacto representa una celda regional, nunca una trayectoria táctica.</span>
           </div>
           <div class="confidence-key">
             <span class="eyebrow">CONFIANZA</span>
@@ -88,7 +246,7 @@
           </div>
           <div class="analyst-note">
             <span>NOTA DEL ANALISTA</span>
-            <p>La iniciativa ucraniana es localizada. No equivale a un cambio confirmado del equilibrio general.</p>
+            <p id="analystNote">La iniciativa ucraniana es localizada. No equivale a un cambio confirmado del equilibrio general.</p>
           </div>
         </aside>
 
@@ -111,8 +269,14 @@
           <div id="map" class="map" role="img" aria-label="Mapa de Europa oriental con eventos seleccionables">
             <div class="map-loading"><span></span>Cargando cartografía…</div>
           </div>
-          <div class="map-legend"><span><i class="actor ua"></i>Control UA</span><span><i class="actor ru"></i>Control RU</span><span><i class="contested-key"></i>Frente</span><span><i class="route-key"></i>Transporte</span><span><i class="halo"></i>Sector aproximado</span></div>
-          <div class="map-disclaimer">Capa editorial generalizada · tráfico civil agregado · unidades visibles desde zoom regional</div>
+          <div class="map-legend" id="conflictMapLegend"><span><i class="actor ua"></i><b id="legendActorA">Control UA</b></span><span><i class="actor ru"></i><b id="legendActorB">Control RU</b></span><span><i class="contested-key"></i>Frente</span><span><i class="route-key"></i>Transporte</span><span><i class="halo"></i>Sector aproximado</span></div>
+          <div class="map-legend resource-map-legend" id="resourceMapLegend" hidden><span><i class="resource-key major"></i>Concentración mayor</span><span><i class="resource-key secondary"></i>Concentración secundaria</span><span>● tamaño = intensidad relativa</span></div>
+          <div class="traffic-data-note">
+            <span><i class="aviation-key"></i>ADS-B · <a href="https://opensky-network.org/" target="_blank" rel="noreferrer">OpenSky</a></span>
+            <span><i class="maritime-key"></i>AIS retrasado · <a href="https://globalfishingwatch.org/" target="_blank" rel="noreferrer">Global Fishing Watch</a></span>
+            <b id="trafficStatus">Cargando estado de las fuentes…</b>
+          </div>
+          <div class="map-disclaimer">Capa editorial generalizada · límites: <a href="https://www.geoboundaries.org/" target="_blank" rel="noreferrer">geoBoundaries</a> · unidades visibles desde zoom regional</div>
         </section>
 
         <aside class="intel-panel" id="intelPanel" aria-live="polite">
@@ -136,7 +300,7 @@
         </aside>
       </section>
 
-      <section class="strategy-console" aria-labelledby="strategy-title">
+      <section class="strategy-console atlas-section atlas-map-section" aria-labelledby="strategy-title">
         <div class="strategy-heading">
           <div>
             <p class="eyebrow">MODELO ESTRATÉGICO · DEMOSTRACIÓN</p>
@@ -154,8 +318,8 @@
             <div class="era-index"><span>CICLO</span><strong>04</strong><small>marco ilustrativo</small></div>
             <div>
               <p class="eyebrow">FASE ESTRATÉGICA</p>
-              <h3>Desgaste, adaptación y sistemas no tripulados</h3>
-              <p>El turno se interpreta mediante cuatro fuerzas acumulativas. Cada nivel expresa una lectura editorial del prototipo, no una puntuación factual.</p>
+              <h3 id="strategyPhaseTitle">Desgaste, adaptación y sistemas no tripulados</h3>
+              <p id="strategyPhaseCopy">El turno se interpreta mediante cuatro fuerzas acumulativas. Cada nivel expresa una lectura editorial del prototipo, no una puntuación factual.</p>
             </div>
           </div>
           <div class="pressure-grid" aria-label="Indicadores editoriales de presión">
@@ -212,7 +376,7 @@
         <p class="model-disclaimer"><strong>Límite del modelo:</strong> los niveles, hitos y capacidades son recursos narrativos de esta maqueta. Deben validarse contra eventos y fuentes antes de usarse para análisis.</p>
       </section>
 
-      <section class="force-compare" aria-labelledby="force-title">
+      <section class="force-compare atlas-section atlas-map-section" aria-labelledby="force-title">
         <div class="force-heading">
           <div>
             <p class="eyebrow">BALANCE DE FUERZAS · ESTIMACIONES ABIERTAS</p>
@@ -332,7 +496,160 @@
         </div>
       </section>
 
-      <section class="timeline-section" aria-labelledby="timeline-title">
+
+
+      <section class="news-console atlas-section atlas-news-section" id="newsroom" hidden aria-labelledby="news-title">
+        <div class="news-heading">
+          <div>
+            <p class="eyebrow">NOTICIERO TERRITORIAL · OSINT</p>
+            <h1 id="news-title">Noticias desde tu ubicación</h1>
+            <p id="newsLede">Autoriza una ubicación aproximada para priorizar acontecimientos cercanos sin perder la perspectiva mundial.</p>
+          </div>
+          <div class="news-location-state" id="newsLocationState">
+            <span class="location-pulse"></span>
+            <div><strong>UBICACIÓN PENDIENTE</strong><small>Orden global activo</small></div>
+          </div>
+        </div>
+
+        <div class="location-consent" id="locationConsent">
+          <div>
+            <strong>¿Usar tu ubicación aproximada?</strong>
+            <p>Atlas la procesa en este navegador para ordenar noticias por cercanía. No la guarda ni la envía a Supabase.</p>
+          </div>
+          <div>
+            <button class="primary-location-button" id="allowLocation" type="button">Usar mi ubicación</button>
+            <button class="secondary-location-button" id="skipLocation" type="button">Continuar sin compartir</button>
+          </div>
+        </div>
+
+        <div class="news-toolbar">
+          <div class="news-filter-stack">
+            <div class="news-filter-group" role="group" aria-label="Sección de noticias">
+              <button class="active" type="button" data-news-filter="all">Todo</button>
+              <button type="button" data-news-filter="territory">Territorio</button>
+              <button type="button" data-news-filter="geopolitics">Geopolítica</button>
+              <button type="button" data-news-filter="economy">Economía</button>
+              <button type="button" data-news-filter="security">Seguridad</button>
+              <details class="news-more-sections">
+                <summary>Más secciones</summary>
+                <div class="news-more-menu">
+                  <button type="button" data-news-filter="technology">Tecnología</button>
+                  <button type="button" data-news-filter="resources">Recursos y clima</button>
+                  <button type="button" data-news-filter="health">Salud y sociedad</button>
+                  <button type="button" data-news-filter="infrastructure">Infraestructura</button>
+                </div>
+              </details>
+            </div>
+            <button class="news-nearby-toggle" id="newsNearbyToggle" type="button" aria-pressed="false">
+              <span aria-hidden="true">◎</span> Solo cercanas
+            </button>
+          </div>
+          <label>Orden
+            <select id="newsSort">
+              <option value="distance">Cercanía</option>
+              <option value="recent">Más recientes</option>
+              <option value="relevance">Relevancia OSINT</option>
+            </select>
+          </label>
+        </div>
+
+        <div class="news-layout">
+          <div class="news-feed" id="newsFeed"></div>
+          <aside class="news-brief">
+            <p class="eyebrow">CÓMO LEER EL FEED</p>
+            <h2>Proximidad no equivale a importancia</h2>
+            <p>El orden territorial ayuda a detectar impactos locales, pero Atlas mantiene asuntos globales de alta relevancia dentro del flujo.</p>
+            <dl>
+              <div><dt>HECHO</dt><dd>Confirmado por evidencia o fuentes independientes.</dd></div>
+              <div><dt>AFIRMACIÓN</dt><dd>Declaración atribuida aún no corroborada.</dd></div>
+              <div><dt>ANÁLISIS</dt><dd>Interpretación separada de los hechos.</dd></div>
+              <div><dt>ALCANCE</dt><dd>Local, nacional, regional o mundial; no reemplaza la sección temática.</dd></div>
+              <div><dt>URGENCIA</dt><dd>Última hora, seguimiento o contexto.</dd></div>
+              <div><dt>FORMATO</dt><dd>Noticia, investigación u opinión identificadas por separado.</dd></div>
+            </dl>
+          </aside>
+        </div>
+      </section>
+
+      <section class="market-console atlas-section atlas-markets-section" hidden id="markets" aria-labelledby="markets-title">
+        <div class="market-heading">
+          <div>
+            <p class="eyebrow">ECONOMÍA GLOBAL · SEÑALES DE MERCADO</p>
+            <h2 id="markets-title">Mercados bursátiles</h2>
+            <p>Monitor para relacionar precios financieros con conflictos, sanciones, energía y cadenas de suministro. Los datos pueden ser indicativos o diferidos según bolsa y proveedor.</p>
+          </div>
+          <div class="market-status">
+            <span class="market-status-dot" aria-hidden="true"></span>
+            <div><strong>DATOS EXTERNOS</strong><small>TradingView · horario y retraso según mercado</small></div>
+          </div>
+        </div>
+
+        <div class="market-ticker" aria-label="Cotizaciones destacadas">
+          <div class="tradingview-widget-container">
+            <div class="tradingview-widget-container__widget"></div>
+            <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-ticker-tape.js" async>
+            {
+              "symbols": [
+                {"proName":"FOREXCOM:SPXUSD","title":"S&P 500"},
+                {"proName":"NASDAQ:NDX","title":"Nasdaq 100"},
+                {"proName":"DJ:DJI","title":"Dow Jones"},
+                {"proName":"INDEX:STOXX50E","title":"Euro Stoxx 50"},
+                {"proName":"TVC:NI225","title":"Nikkei 225"},
+                {"proName":"BCS:SP_IPSA","title":"IPSA Chile"},
+                {"proName":"TVC:DXY","title":"Dólar DXY"},
+                {"proName":"TVC:USOIL","title":"Petróleo WTI"},
+                {"proName":"TVC:GOLD","title":"Oro"},
+                {"proName":"COMEX:HG1!","title":"Cobre"}
+              ],
+              "showSymbolLogo": true,
+              "isTransparent": true,
+              "displayMode": "adaptive",
+              "colorTheme": "dark",
+              "locale": "es"
+            }
+            </script>
+          </div>
+        </div>
+
+        <div class="market-grid">
+          <article class="market-widget-card market-overview-card">
+            <div class="market-card-heading"><span>MAPA DE MERCADOS</span><small>índices, futuros, divisas y bonos</small></div>
+            <div class="native-market-map" id="marketHeatmap" aria-live="polite">
+              <div class="native-market-loading"><span></span>Consultando mercados…</div>
+            </div>
+            <div class="market-map-legend">
+              <span><i class="market-swatch gain"></i>Sube</span>
+              <span><i class="market-swatch flat"></i>Sin cambio relevante</span>
+              <span><i class="market-swatch loss"></i>Baja</span>
+              <small id="marketTimestamp">Variación de la última sesión disponible</small>
+            </div>
+            <div class="market-native-fallback">
+              <span>ACCESOS DIRECTOS</span>
+              <a href="https://www.tradingview.com/markets/stocks-usa/market-movers-large-cap/" target="_blank" rel="noreferrer">Acciones EEUU ↗</a>
+              <a href="https://www.tradingview.com/markets/stocks-europe/market-movers-large-cap/" target="_blank" rel="noreferrer">Europa ↗</a>
+              <a href="https://www.tradingview.com/markets/stocks-asia/market-movers-large-cap/" target="_blank" rel="noreferrer">Asia ↗</a>
+              <a href="https://www.tradingview.com/markets/futures/" target="_blank" rel="noreferrer">Futuros ↗</a>
+            </div>
+            </article>
+
+          <aside class="market-intel">
+            <div class="market-card-heading"><span>LECTURA OSINT</span><small>qué observar</small></div>
+            <article><i>01</i><div><strong>Riesgo global</strong><p>Contrasta acciones, oro, dólar y volatilidad. Un movimiento aislado no confirma causalidad geopolítica.</p></div></article>
+            <article><i>02</i><div><strong>Energía y sanciones</strong><p>Brent, WTI y divisas de exportadores ayudan a detectar presión sobre oferta, rutas y expectativas.</p></div></article>
+            <article><i>03</i><div><strong>Alimentos y estabilidad</strong><p>Trigo y maíz conectan clima, puertos, guerra y seguridad alimentaria; deben compararse con inventarios y fletes.</p></div></article>
+            <article><i>04</i><div><strong>Chile y cobre</strong><p>Cobre, USD/CLP e IPSA ofrecen una lectura conjunta de demanda china, términos de intercambio y apetito por riesgo.</p></div></article>
+            <div class="market-caution"><strong>Regla de evidencia</strong><span>Precio = señal, no explicación. Toda atribución requiere cronología, fuentes independientes y una hipótesis alternativa.</span></div>
+          </aside>
+        </div>
+
+        <div class="market-source-line">
+          <span>Proveedor visual: <a href="https://www.tradingview.com/markets/" target="_blank" rel="noreferrer">TradingView ↗</a></span>
+          <span>Referencia institucional: <a href="https://data.imf.org/" target="_blank" rel="noreferrer">FMI Data ↗</a></span>
+          <span>No constituye asesoría financiera.</span>
+        </div>
+      </section>
+
+      <section class="timeline-section atlas-section atlas-map-section" aria-labelledby="timeline-title">
         <div class="timeline-heading">
           <div><p class="eyebrow">REGISTRO DEL TURNO</p><h2 id="timeline-title">Secuencia de acontecimientos</h2></div>
           <p>Selecciona un evento para inspeccionar sus fuentes y valoración.</p>
@@ -347,6 +664,81 @@
       </footer>
     </main>
   </div>
+
+
+  <dialog id="turnArchiveDialog" class="turn-archive-dialog">
+    <button class="dialog-close" id="turnArchiveClose" aria-label="Cerrar">×</button>
+    <p class="eyebrow">ARCHIVO TEMPORAL</p>
+    <h2>Turnos de inteligencia</h2>
+    <p class="turn-archive-lede">Selecciona un turno para reconstruir el mapa, la cronología y el panel de acontecimientos disponibles en esa fecha.</p>
+    <div class="turn-archive-list" id="turnArchiveList"></div>
+    <p class="turn-archive-note">El archivo solo muestra turnos que contienen registros publicados para el conflicto seleccionado.</p>
+  </dialog>
+
+  <dialog id="authDialog" class="auth-dialog">
+    <button class="dialog-close" id="authDialogClose" aria-label="Cerrar">×</button>
+    <div class="auth-brand"><span class="brand-mark">A</span><div><strong>IDENTIDAD CONVERGENCIA AURA</strong><small>Acceso compartido en preparación</small></div></div>
+    <section id="authSignedOut">
+      <p class="eyebrow">MAGIC LINK</p>
+      <h2>Ingresa a Atlas sin contraseña</h2>
+      <p>Recibirás un enlace de acceso en tu correo. La sesión permanecerá activa en este navegador.</p>
+      <form id="magicLinkForm">
+        <label for="authEmail">Correo electrónico</label>
+        <input id="authEmail" name="email" type="email" autocomplete="email" required placeholder="tu@correo.cl">
+        <button type="submit" id="magicLinkSubmit">Enviar Magic Link</button>
+      </form>
+      <p class="auth-status" id="authStatus" aria-live="polite"></p>
+    </section>
+    <section id="authSignedIn" hidden>
+      <p class="eyebrow">SESIÓN ACTIVA</p>
+      <h2>Identidad conectada</h2>
+      <div class="auth-user-card"><span class="auth-avatar large" id="authDialogAvatar">A</span><div><strong id="authUserEmail"></strong><small>Cuenta Supabase · Atlas</small></div></div>
+      <p>Tu sesión se conserva en Atlas. El cierre utiliza alcance global para invalidar las sesiones del mismo proyecto de Supabase.</p>
+      <button class="auth-signout" id="authSignOut" type="button">Cerrar sesión</button>
+    </section>
+    <p class="auth-sso-note">La sesión transversal completa se activará cuando los demás productos utilicen este mismo proyecto y el dominio común de autenticación.</p>
+  </dialog>
+
+  <dialog id="newsDialog" class="news-dialog">
+    <button class="dialog-close" id="newsDialogClose" aria-label="Cerrar">×</button>
+    <p class="eyebrow" id="newsDialogType">HECHO</p>
+    <h2 id="newsDialogTitle">Detalle de la noticia</h2>
+    <div class="news-dialog-meta" id="newsDialogMeta"></div>
+    <p class="news-dialog-summary" id="newsDialogSummary"></p>
+    <div class="news-dialog-hashtags" id="newsDialogHashtags" aria-label="Etiquetas de la noticia"></div>
+    <figure class="news-context-map">
+      <div class="news-context-map__heading">
+        <div><span>CONTEXTO TERRITORIAL</span><strong id="newsMapPlace">Ubicación aproximada</strong></div>
+        <small id="newsMapScale">Vista regional</small>
+      </div>
+      <div id="newsContextMap" class="news-context-map__canvas" role="img" aria-label="Mapa contextual de la noticia"></div>
+      <div class="news-context-map__insight"><span>LECTURA DEL MAPA</span><p id="newsMapInsight">El territorio aporta contexto a la noticia.</p></div>
+      <figcaption>Posiciones y corredores aproximados para contexto editorial; no representan precisión operativa ni datos en tiempo real.</figcaption>
+    </figure>
+    <section class="news-market-context" aria-labelledby="newsMarketTitle">
+      <div class="news-market-context__heading">
+        <div><span>SEÑALES DE MERCADO</span><strong id="newsMarketTitle">Indicadores relacionados</strong></div>
+        <small id="newsMarketTimestamp">Última sesión disponible</small>
+      </div>
+      <div class="news-market-indicators" id="newsMarketIndicators"></div>
+      <p>Selección editorial; muestra correlaciones a vigilar, no causalidad ni recomendación de inversión.</p>
+    </section>
+    <div class="news-dialog-analysis">
+      <span>CONTEXTO Y LÍMITES</span>
+      <p id="newsDialogAnalysis"></p>
+    </div>
+    <div class="news-dialog-actions">
+      <div class="news-feedback" aria-label="Valorar noticia">
+        <button id="newsInterested" type="button" aria-pressed="false">＋ Me interesa</button>
+        <button id="newsNotInterested" type="button" aria-pressed="false">− No me interesa</button>
+      </div>
+      <div class="news-navigation" aria-label="Navegar noticias">
+        <button id="newsPrevious" type="button">← Anterior</button>
+        <button id="newsNext" type="button">Siguiente →</button>
+      </div>
+    </div>
+    <a class="news-dialog-source" id="newsDialogSource" href="#" target="_blank" rel="noreferrer">Abrir fuente original ↗</a>
+  </dialog>
 
   <dialog id="infoDialog">
     <button class="dialog-close" id="dialogClose" aria-label="Cerrar">×</button>
@@ -363,6 +755,7 @@
     <p class="method-note"><strong>Mapa:</strong> control y movimientos son esquemas editoriales generalizados; las capacidades se degradan a sectores de al menos 50 km y solo aparecen con zoom. Transporte, límites e hidrografía toman como referencia <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noreferrer">OpenStreetMap</a> y <a href="https://response.reliefweb.int/ukraine/operational-and-dynamic-maps" target="_blank" rel="noreferrer">OCHA/ReliefWeb</a>. Las capas aérea y marítima representan corredores civiles agregados, no posiciones en vivo.</p>
   </dialog>
 
+  <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/d3@7/dist/d3.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/topojson-client@3/dist/topojson-client.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>

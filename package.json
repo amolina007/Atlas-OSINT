@@ -1,0 +1,9 @@
+{
+  "name": "atlas-osint",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Vista estratégica OSINT para seguimiento de conflictos.",
+  "scripts": {
+    "dev": "npx --yes netlify-cli@27.8.0 dev --offline"
+  }
+}
