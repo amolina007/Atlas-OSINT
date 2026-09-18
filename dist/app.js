@@ -1680,8 +1680,16 @@ const marketInstruments = [
   { symbol: "GC=F", code: "Oro", region: "Refugio", size: "size-sm" },
   { symbol: "HG=F", code: "Cobre", region: "Industria", size: "size-sm" }
 ];
+let marketSnapshot = new Map();
+let marketSnapshotUpdatedAt = null;
 
 function renderMarketTiles(items, updatedAt) {
+  marketSnapshot = new Map(items.map((item) => [item.symbol, item]));
+  marketSnapshotUpdatedAt = updatedAt || null;
+  if (currentNewsId) {
+    const selectedNews = atlasNews.find((item) => item.id === currentNewsId);
+    if (selectedNews) renderNewsMarketIndicators(selectedNews);
+  }
   const container = byId("marketHeatmap");
   if (!container) return;
   container.innerHTML = items.map((item, index) => {
@@ -1766,6 +1774,58 @@ const newsMapContexts = {
     lines:[{name:"Estrecho de Malaca",coordinates:[[99.8,5.7],[101.2,3.8],[102.25,2.20],[103.82,1.35],[104.6,0.5]]}]
   }
 };
+
+const newsMarketLinks = {
+  "N-CL-01":[
+    {symbol:"^IPSA",label:"IPSA",reason:"Actividad local"},
+    {symbol:"HG=F",label:"Cobre",reason:"Ingreso exportador"}
+  ],
+  "N-CL-02":[
+    {symbol:"^IPSA",label:"IPSA",reason:"Mercado chileno"},
+    {symbol:"HG=F",label:"Cobre",reason:"Principal exportación"},
+    {symbol:"^GSPC",label:"S&P 500",reason:"Entorno global"}
+  ],
+  "N-UA-01":[
+    {symbol:"CL=F",label:"Petróleo WTI",reason:"Energía y sanciones"},
+    {symbol:"GC=F",label:"Oro",reason:"Demanda defensiva"},
+    {symbol:"^STOXX50E",label:"Euro Stoxx 50",reason:"Exposición europea"}
+  ],
+  "N-ME-01":[
+    {symbol:"CL=F",label:"Petróleo WTI",reason:"Riesgo energético"},
+    {symbol:"GC=F",label:"Oro",reason:"Activo refugio"},
+    {symbol:"^STOXX50E",label:"Euro Stoxx 50",reason:"Comercio y energía"}
+  ],
+  "N-SD-01":[
+    {symbol:"GC=F",label:"Oro",reason:"Exportación regional"},
+    {symbol:"CL=F",label:"Petróleo WTI",reason:"Economía regional"}
+  ],
+  "N-AS-01":[
+    {symbol:"^HSI",label:"Hang Seng",reason:"Comercio asiático"},
+    {symbol:"000001.SS",label:"Shanghai",reason:"Manufactura china"},
+    {symbol:"^N225",label:"Nikkei 225",reason:"Industria regional"}
+  ]
+};
+
+function renderNewsMarketIndicators(item) {
+  const container = byId("newsMarketIndicators");
+  if (!container) return;
+  const links = newsMarketLinks[item.id] || [];
+  container.innerHTML = links.map((link) => {
+    const quote = marketSnapshot.get(link.symbol);
+    const change = Number(quote?.changePercent);
+    const available = Number.isFinite(change);
+    const tone = !available ? "unavailable" : change > 0.08 ? "gain" : change < -0.08 ? "loss" : "flat";
+    const value = available ? `${change > 0 ? "+" : ""}${change.toFixed(2)}%` : "Sin dato";
+    return `<a class="news-market-indicator ${tone}" href="https://finance.yahoo.com/quote/${encodeURIComponent(link.symbol)}" target="_blank" rel="noreferrer">
+      <span><b>${link.label}</b><small>${link.reason}</small></span>
+      <strong>${value}</strong>
+    </a>`;
+  }).join("");
+  const stamp = byId("newsMarketTimestamp");
+  if (stamp) stamp.textContent = marketSnapshotUpdatedAt
+    ? `Última sesión · ${new Date(marketSnapshotUpdatedAt).toLocaleString("es-CL")}`
+    : "Datos indicativos · proveedor pendiente";
+}
 
 let newsLocation = null;
 let newsFilter = "all";
@@ -2005,6 +2065,7 @@ function openNewsDialog(item, alreadyOpen = false) {
   byId("newsDialogAnalysis").textContent = item.analysis || "Contexto editorial pendiente.";
   byId("newsDialogSource").textContent = `Abrir ${item.source} ↗`;
   byId("newsDialogSource").href = item.sourceUrl;
+  renderNewsMarketIndicators(item);
   updateNewsPreferenceControls(item);
   const available = (currentNewsItems.length ? currentNewsItems : atlasNews).length > 1;
   byId("newsPrevious").disabled = !available;
