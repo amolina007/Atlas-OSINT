@@ -432,3 +432,23 @@ dialog { width: min(760px, calc(100% - 32px)); color: var(--ink); background: #0
 .auth-signout{background:transparent;color:#e68478;border-color:rgba(230,132,120,.45)}
 .auth-sso-note{margin:22px 0 0;padding-top:15px;border-top:1px solid rgba(132,166,151,.12);color:#5f746a;font-size:.66rem;line-height:1.5}
 @media(max-width:760px){.auth-button #authButtonLabel{display:none}.auth-button{padding:6px}.auth-dialog{padding:22px}}
+
+
+/* Intelligence turn archive */
+.turn-pill{cursor:pointer}
+.turn-pill.archived{border-color:rgba(231,181,103,.5);background:rgba(231,181,103,.08)}
+.turn-pill.archived .pulse{background:#e7b567;box-shadow:0 0 0 5px rgba(231,181,103,.1)}
+.turn-archive-dialog{width:min(620px,calc(100vw - 28px));padding:28px;border:1px solid rgba(132,166,151,.3);border-radius:16px;background:#091612;color:#e7eee9;box-shadow:0 30px 90px rgba(0,0,0,.6)}
+.turn-archive-dialog::backdrop{background:rgba(2,7,5,.76);backdrop-filter:blur(5px)}
+.turn-archive-dialog h2{margin:7px 38px 8px 0;font-size:1.6rem}
+.turn-archive-lede{margin:0 0 20px;color:#91a59b;font-size:.82rem;line-height:1.55}
+.turn-archive-list{display:grid;gap:8px;max-height:54vh;overflow:auto}
+.turn-archive-item{display:flex;align-items:center;justify-content:space-between;gap:18px;width:100%;padding:14px;border:1px solid rgba(132,166,151,.17);border-radius:9px;background:rgba(132,166,151,.035);color:#dce8e1;text-align:left;cursor:pointer}
+.turn-archive-item:hover,.turn-archive-item.active{border-color:rgba(121,214,160,.42);background:rgba(121,214,160,.07)}
+.turn-archive-item>span{display:flex;flex-direction:column;gap:4px}
+.turn-archive-item b{color:#79d6a0;font:700 .59rem var(--mono);letter-spacing:.1em}
+.turn-archive-item strong{font-size:.88rem}
+.turn-archive-metrics{align-items:flex-end}.turn-archive-metrics em{color:#d9f99d;font:600 .69rem var(--mono);font-style:normal}.turn-archive-metrics small{color:#687d73;font-size:.64rem}
+.turn-archive-note{margin:18px 0 0;color:#5f746a;font-size:.66rem;line-height:1.5}
+.turn-archive-empty{padding:28px;text-align:center;color:#71877d}
+@media(max-width:620px){.turn-archive-item{align-items:flex-start}.turn-archive-metrics{align-items:flex-end;text-align:right}}
