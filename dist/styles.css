@@ -242,3 +242,8 @@ dialog { width: min(760px, calc(100% - 32px)); color: var(--ink); background: #0
 .market-source-line a{color:#9fcdb6}
 @media(max-width:900px){.market-heading{flex-direction:column}.market-status{min-width:0;width:100%;box-sizing:border-box}.market-grid{grid-template-columns:1fr}.market-overview-card{border-right:0;border-bottom:1px solid rgba(132,166,151,.16)}.market-widget-frame{height:490px}}
 @media(max-width:600px){.market-heading{padding:22px 18px}.market-card-heading{padding:0 14px}.market-widget-frame{height:460px}.market-source-line{flex-direction:column}.market-nav-button{display:none}}
+
+.market-iframe-shell{position:relative;overflow:hidden;background:#08130f}
+.market-overview-iframe{display:block;width:100%;height:100%;min-height:510px;border:0;background:#08130f}
+.market-widget-fallback{padding:24px;color:#9fb2a9}
+.market-widget-fallback a{color:#9fcdb6}
