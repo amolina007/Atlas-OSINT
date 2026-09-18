@@ -1,3 +1,4 @@
+const categoryRules = [
   ["security", /seguridad|polic[ií]a|delito|crimen|emergencia|incendio|terremoto|ataque|guerra|militar|defensa|víctima|victima/i],
   ["economy", /econom[ií]a|mercado|bolsa|d[oó]lar|inflaci[oó]n|banco|empresa|empleo|precio|inversi[oó]n|cobre|petr[oó]leo/i],
   ["technology", /tecnolog[ií]a|inteligencia artificial|\bIA\b|ciber|software|internet|datos|chip|robot|telecom/i],
