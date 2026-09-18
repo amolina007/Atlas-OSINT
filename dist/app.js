@@ -1715,12 +1715,17 @@ function selectTurn(key) {
 function renderTurnArchive() {
   const list = byId("turnArchiveList");
   if (!list) return;
-  const keys = [...turnArchive.keys()].sort().reverse();
+  const keys = [...turnArchive.keys()]
+    .filter((key) => key !== "sin-fecha")
+    .sort()
+    .reverse()
+    .slice(0, 8);
   list.innerHTML = keys.length ? keys.map((key, index) => {
     const turnEvents = turnArchive.get(key) || [];
     const highConfidence = turnEvents.filter((event) => event.confidence === "high").length;
+    const turnNumber = 8 - index;
     return `<button type="button" class="turn-archive-item${key === currentTurnKey ? " active" : ""}" data-turn-key="${key}">
-      <span><b>${index === 0 ? "ACTIVO" : "ARCHIVO"}</b><strong>${formatTurnDate(key)}</strong></span>
+      <span><b>TURNO ${turnNumber}${index === 0 ? " · ACTUAL" : ""}</b><strong>${formatTurnDate(key)}</strong></span>
       <span class="turn-archive-metrics"><em>${turnEvents.length} eventos</em><small>${highConfidence} confianza alta</small></span>
     </button>`;
   }).join("") : '<div class="turn-archive-empty">Todavía no existen turnos archivados.</div>';
