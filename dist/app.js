@@ -1717,3 +1717,100 @@ async function loadMarketHeatmap() {
 }
 
 loadMarketHeatmap();
+
+
+const atlasNews = [
+  { id:"N-CL-01", title:"Actividad metropolitana y servicios en Santiago", place:"Santiago, Chile", lat:-33.4489, lon:-70.6693, category:"local", type:"HECHO", age:1, relevance:82, summary:"Cobertura territorial de movilidad, servicios públicos y acontecimientos con impacto directo en la Región Metropolitana.", source:"Fuentes públicas locales" },
+  { id:"N-CL-02", title:"Señales económicas relevantes para Chile", place:"Santiago, Chile", lat:-33.4489, lon:-70.6693, category:"economy", type:"ANÁLISIS", age:3, relevance:78, summary:"Cobre, tipo de cambio, actividad y decisiones públicas reunidas en una lectura nacional trazable.", source:"Fuentes económicas abiertas" },
+  { id:"N-UA-01", title:"Evolución del frente ruso-ucraniano", place:"Kyiv, Ucrania", lat:50.4501, lon:30.5234, category:"geopolitics", type:"HECHO", age:2, relevance:96, summary:"Cambios territoriales, ataques y diplomacia separados por nivel de confirmación y perspectiva editorial.", source:"Feed ATLAS Ucrania" },
+  { id:"N-ME-01", title:"Tensiones regionales y rutas energéticas", place:"Amán, Jordania", lat:31.9539, lon:35.9106, category:"geopolitics", type:"ANÁLISIS", age:4, relevance:91, summary:"Seguimiento de seguridad regional, energía, navegación y efectos diplomáticos.", source:"Fuentes regionales abiertas" },
+  { id:"N-SD-01", title:"Situación humanitaria y territorial en Sudán", place:"Jartum, Sudán", lat:15.5007, lon:32.5599, category:"security", type:"HECHO", age:5, relevance:88, summary:"Acceso humanitario, desplazamiento y control territorial con advertencias sobre vacíos de información.", source:"Fuentes humanitarias abiertas" },
+  { id:"N-AS-01", title:"Mercados asiáticos y cadenas de suministro", place:"Singapur", lat:1.3521, lon:103.8198, category:"economy", type:"ANÁLISIS", age:6, relevance:80, summary:"Señales sobre comercio, manufactura, transporte marítimo y demanda de materias primas.", source:"Fuentes económicas abiertas" }
+];
+
+let newsLocation = null;
+let newsFilter = "all";
+
+function distanceKm(a, b) {
+  const radius = 6371;
+  const dLat = (b.lat - a.lat) * Math.PI / 180;
+  const dLon = (b.lon - a.lon) * Math.PI / 180;
+  const x = Math.sin(dLat / 2) ** 2 + Math.cos(a.lat * Math.PI / 180) * Math.cos(b.lat * Math.PI / 180) * Math.sin(dLon / 2) ** 2;
+  return radius * 2 * Math.atan2(Math.sqrt(x), Math.sqrt(1 - x));
+}
+
+function renderNews() {
+  const feed = byId("newsFeed");
+  if (!feed) return;
+  const sort = byId("newsSort")?.value || "distance";
+  let items = atlasNews.map((item) => ({ ...item, distance: newsLocation ? distanceKm(newsLocation, item) : null }));
+  if (newsFilter !== "all") {
+    items = newsFilter === "local"
+      ? items.filter((item) => item.distance !== null && item.distance <= 500)
+      : items.filter((item) => item.category === newsFilter);
+  }
+  items.sort((a,b) => sort === "recent" ? a.age-b.age : sort === "relevance" ? b.relevance-a.relevance : newsLocation ? a.distance-b.distance : b.relevance-a.relevance);
+  feed.innerHTML = items.length ? items.map((item, index) => `
+    <article class="news-card">
+      <div class="news-rank">${String(index + 1).padStart(2,"0")}</div>
+      <div class="news-card-body">
+        <div class="news-meta"><span class="news-type ${item.type.toLowerCase()}">${item.type}</span><span>${item.place}</span><span>hace ${item.age} h</span></div>
+        <h2>${item.title}</h2>
+        <p>${item.summary}</p>
+        <div class="news-source"><span>${item.source}</span><b>${item.distance === null ? "Orden global" : item.distance < 1 ? "En tu zona" : Math.round(item.distance).toLocaleString("es-CL") + " km"}</b></div>
+      </div>
+    </article>`).join("") : '<div class="news-empty">No hay noticias dentro de este filtro territorial.</div>';
+}
+
+function setAtlasSection(name) {
+  document.querySelectorAll("[data-atlas-section]").forEach((button) => {
+    const active = button.dataset.atlasSection === name;
+    button.classList.toggle("active", active);
+    button.setAttribute("aria-pressed", String(active));
+  });
+  document.querySelectorAll(".atlas-section").forEach((section) => {
+    const visible = section.classList.contains(`atlas-${name}-section`);
+    section.hidden = !visible;
+  });
+  if (name === "news") renderNews();
+  if (name === "map") setTimeout(() => { leafletMap?.invalidateSize(); atlasMap?.resize(); }, 40);
+  history.replaceState(null, "", name === "map" ? "#map" : name === "news" ? "#newsroom" : "#markets");
+}
+
+function requestNewsLocation() {
+  if (!navigator.geolocation) {
+    byId("newsLocationState").innerHTML = "<div><strong>UBICACIÓN NO DISPONIBLE</strong><small>Orden global activo</small></div>";
+    return;
+  }
+  byId("newsLocationState").innerHTML = '<span class="location-pulse searching"></span><div><strong>LOCALIZANDO…</strong><small>Esperando permiso del navegador</small></div>';
+  navigator.geolocation.getCurrentPosition((position) => {
+    newsLocation = {
+      lat: Math.round(position.coords.latitude * 100) / 100,
+      lon: Math.round(position.coords.longitude * 100) / 100
+    };
+    byId("locationConsent").hidden = true;
+    byId("newsLocationState").innerHTML = '<span class="location-pulse active"></span><div><strong>UBICACIÓN APROXIMADA</strong><small>Noticias ordenadas por cercanía</small></div>';
+    renderNews();
+  }, () => {
+    byId("locationConsent").hidden = true;
+    byId("newsLocationState").innerHTML = '<div><strong>UBICACIÓN NO COMPARTIDA</strong><small>Orden global activo</small></div>';
+    renderNews();
+  }, { enableHighAccuracy:false, timeout:8000, maximumAge:900000 });
+}
+
+document.querySelectorAll("[data-atlas-section]").forEach((button) => button.addEventListener("click", () => setAtlasSection(button.dataset.atlasSection)));
+document.querySelectorAll("[data-news-filter]").forEach((button) => button.addEventListener("click", () => {
+  newsFilter = button.dataset.newsFilter;
+  document.querySelectorAll("[data-news-filter]").forEach((item) => item.classList.toggle("active", item === button));
+  renderNews();
+}));
+byId("newsSort")?.addEventListener("change", renderNews);
+byId("allowLocation")?.addEventListener("click", requestNewsLocation);
+byId("skipLocation")?.addEventListener("click", () => {
+  byId("locationConsent").hidden = true;
+  byId("newsLocationState").innerHTML = '<div><strong>UBICACIÓN NO COMPARTIDA</strong><small>Orden global activo</small></div>';
+  renderNews();
+});
+
+const initialAtlasSection = location.hash === "#newsroom" ? "news" : location.hash === "#markets" ? "markets" : "map";
+setAtlasSection(initialAtlasSection);
