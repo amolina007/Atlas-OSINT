@@ -448,12 +448,26 @@
         </div>
 
         <div class="news-toolbar">
-          <div class="news-filter-group" role="group" aria-label="Filtrar noticias">
-            <button class="active" type="button" data-news-filter="all">Todo</button>
-            <button type="button" data-news-filter="local">Cercanas</button>
-            <button type="button" data-news-filter="geopolitics">Geopolítica</button>
-            <button type="button" data-news-filter="economy">Economía</button>
-            <button type="button" data-news-filter="security">Seguridad</button>
+          <div class="news-filter-stack">
+            <div class="news-filter-group" role="group" aria-label="Sección de noticias">
+              <button class="active" type="button" data-news-filter="all">Todo</button>
+              <button type="button" data-news-filter="territory">Territorio</button>
+              <button type="button" data-news-filter="geopolitics">Geopolítica</button>
+              <button type="button" data-news-filter="economy">Economía</button>
+              <button type="button" data-news-filter="security">Seguridad</button>
+              <details class="news-more-sections">
+                <summary>Más secciones</summary>
+                <div class="news-more-menu">
+                  <button type="button" data-news-filter="technology">Tecnología</button>
+                  <button type="button" data-news-filter="resources">Recursos y clima</button>
+                  <button type="button" data-news-filter="health">Salud y sociedad</button>
+                  <button type="button" data-news-filter="infrastructure">Infraestructura</button>
+                </div>
+              </details>
+            </div>
+            <button class="news-nearby-toggle" id="newsNearbyToggle" type="button" aria-pressed="false">
+              <span aria-hidden="true">◎</span> Solo cercanas
+            </button>
           </div>
           <label>Orden
             <select id="newsSort">
@@ -474,6 +488,9 @@
               <div><dt>HECHO</dt><dd>Confirmado por evidencia o fuentes independientes.</dd></div>
               <div><dt>AFIRMACIÓN</dt><dd>Declaración atribuida aún no corroborada.</dd></div>
               <div><dt>ANÁLISIS</dt><dd>Interpretación separada de los hechos.</dd></div>
+              <div><dt>ALCANCE</dt><dd>Local, nacional, regional o mundial; no reemplaza la sección temática.</dd></div>
+              <div><dt>URGENCIA</dt><dd>Última hora, seguimiento o contexto.</dd></div>
+              <div><dt>FORMATO</dt><dd>Noticia, investigación u opinión identificadas por separado.</dd></div>
             </dl>
           </aside>
         </div>
