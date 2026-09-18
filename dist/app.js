@@ -712,10 +712,11 @@ function createMap() {
   container.innerHTML = "";
   fallbackSvg = null;
   fallbackZoom = null;
-  // Leaflet usa teselas topográficas reales sin depender de WebGL.
-  if (window.L) {
-    createLeafletAtlas(container);
-    return;
+  // Modo estable: cartografía SVG local sin teselas externas ni WebGL.
+  // Evita lienzos negros y cuadros de imagen rota en despliegues de rama.
+  if (leafletMap) {
+    leafletMap.remove();
+    leafletMap = null;
   }
   createVectorFallback(container);
   return;
