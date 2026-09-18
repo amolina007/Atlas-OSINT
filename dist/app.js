@@ -165,6 +165,143 @@ const resourceRegions = {
   "south-asia": { label: "Asia meridional", center: [78, 24], scale: 2, countries: ["India", "Pakistán", "Bangladés"] },
   "east-asia-pacific": { label: "Asia oriental y Pacífico", center: [122, 5], scale: 0.78, countries: ["Australia", "China", "Indonesia", "Vietnam", "Tailandia", "Myanmar", "Filipinas"] }
 };
+
+const atlasLocationProfiles = [
+  { name:"Maipú, Chile", lat:-33.5106, lon:-70.7573, country:"CL", region:"americas", language:"es", markets:["^IPSA","HG=F","CL=F","^GSPC"] },
+  { name:"Santiago, Chile", lat:-33.4489, lon:-70.6693, country:"CL", region:"americas", language:"es", markets:["^IPSA","HG=F","CL=F","^GSPC"] },
+  { name:"Valparaíso, Chile", lat:-33.0472, lon:-71.6127, country:"CL", region:"americas", language:"es", markets:["^IPSA","HG=F","CL=F","^GSPC"] },
+  { name:"Antofagasta, Chile", lat:-23.6509, lon:-70.3975, country:"CL", region:"americas", language:"es", markets:["HG=F","^IPSA","CL=F","^GSPC"] },
+  { name:"Buenos Aires, Argentina", lat:-34.6037, lon:-58.3816, country:"AR", region:"americas", language:"es", markets:["^GSPC","^IPSA","HG=F","CL=F"] },
+  { name:"Lima, Perú", lat:-12.0464, lon:-77.0428, country:"PE", region:"americas", language:"es", markets:["HG=F","^GSPC","^IPSA","CL=F"] },
+  { name:"São Paulo, Brasil", lat:-23.5505, lon:-46.6333, country:"BR", region:"americas", language:"pt", markets:["^GSPC","HG=F","CL=F","^IPSA"] },
+  { name:"Ciudad de México, México", lat:19.4326, lon:-99.1332, country:"MX", region:"americas", language:"es", markets:["^GSPC","^DJI","CL=F","HG=F"] },
+  { name:"Nueva York, Estados Unidos", lat:40.7128, lon:-74.0060, country:"US", region:"americas", language:"en", markets:["^GSPC","^IXIC","^DJI","GC=F"] },
+  { name:"Madrid, España", lat:40.4168, lon:-3.7038, country:"ES", region:"europe-central-asia", language:"es", markets:["^STOXX50E","^FTSE","^GDAXI","^GSPC"] },
+  { name:"Kyiv, Ucrania", lat:50.4501, lon:30.5234, country:"UA", region:"europe-central-asia", language:"uk", markets:["^STOXX50E","CL=F","GC=F","^GSPC"] },
+  { name:"Moscú, Rusia", lat:55.7558, lon:37.6173, country:"RU", region:"europe-central-asia", language:"ru", markets:["CL=F","GC=F","^STOXX50E","^GSPC"] },
+  { name:"Amán, Jordania", lat:31.9539, lon:35.9106, country:"JO", region:"mena", language:"ar", markets:["CL=F","GC=F","^STOXX50E","^GSPC"] },
+  { name:"Singapur", lat:1.3521, lon:103.8198, country:"SG", region:"east-asia-pacific", language:"en", markets:["^HSI","000001.SS","^N225","CL=F"] },
+  { name:"Tokio, Japón", lat:35.6762, lon:139.6503, country:"JP", region:"east-asia-pacific", language:"ja", markets:["^N225","^HSI","000001.SS","^GSPC"] },
+  { name:"Beijing, China", lat:39.9042, lon:116.4074, country:"CN", region:"east-asia-pacific", language:"zh", markets:["000001.SS","^HSI","^N225","HG=F"] }
+];
+
+const countryLanguageDefaults = {
+  CL:"es",AR:"es",PE:"es",MX:"es",CO:"es",ES:"es",BR:"pt",PT:"pt",US:"en",GB:"en",CA:"en",AU:"en",
+  FR:"fr",DE:"de",IT:"it",UA:"uk",RU:"ru",PL:"pl",CZ:"cs",SK:"sk",HU:"hu",RO:"ro",BG:"bg",GR:"el",
+  TR:"tr",JO:"ar",SA:"ar",AE:"ar",EG:"ar",IL:"he",IR:"fa",IN:"hi",BD:"bn",PK:"ur",CN:"zh",JP:"ja",
+  KR:"ko",VN:"vi",TH:"th",ID:"id",MY:"ms",KE:"sw",TZ:"sw"
+};
+
+let atlasContext = JSON.parse(localStorage.getItem("atlas-location-context") || "null");
+let atlasLanguageManual = localStorage.getItem("atlas-language-manual") === "true";
+
+function nearestAtlasProfile(location) {
+  return atlasLocationProfiles
+    .map((profile) => ({ ...profile, distance:distanceKm(location, profile) }))
+    .sort((a,b) => a.distance - b.distance)[0];
+}
+
+function regionFromCoordinates(lat, lon) {
+  if (lon < -25) return "americas";
+  if (lat > 34 && lon < 65) return "europe-central-asia";
+  if (lat >= 10 && lat <= 40 && lon >= -20 && lon < 65) return "mena";
+  if (lat < 12 && lon > -25 && lon < 55) return "sub-saharan-africa";
+  if (lon >= 55 && lon < 95 && lat < 38) return "south-asia";
+  return "east-asia-pacific";
+}
+
+function atlasLanguageForContext(context) {
+  return countryLanguageDefaults[context?.country] || nearestAtlasProfile(context || {lat:0,lon:0})?.language || navigator.language.split("-")[0] || "en";
+}
+
+function applyAtlasContext(context, { suggestLanguage = true } = {}) {
+  if (!context || !Number.isFinite(context.lat) || !Number.isFinite(context.lon)) return;
+  atlasContext = {
+    name: context.name || "Ubicación seleccionada",
+    lat: Number(context.lat),
+    lon: Number(context.lon),
+    country: (context.country || "").toUpperCase(),
+    region: context.region || regionFromCoordinates(Number(context.lat), Number(context.lon)),
+    markets: context.markets || nearestAtlasProfile(context)?.markets || ["^GSPC","^IXIC","^DJI","GC=F"]
+  };
+  localStorage.setItem("atlas-location-context", JSON.stringify(atlasContext));
+  newsLocation = { lat:atlasContext.lat, lon:atlasContext.lon };
+  const input = byId("atlasLocationInput");
+  if (input) input.value = atlasContext.name;
+  const status = byId("atlasLocationStatus");
+  if (status) status.textContent = `Contexto activo · ${atlasContext.name}`;
+  const title = byId("globalContextTitle");
+  if (title) title.textContent = `Atlas desde ${atlasContext.name}`;
+  const newsTitle = byId("news-title");
+  if (newsTitle) newsTitle.textContent = `Noticias desde ${atlasContext.name}`;
+  const newsLede = byId("newsLede");
+  if (newsLede) newsLede.textContent = "Prioridad territorial combinada con acontecimientos globales de alta relevancia.";
+  const marketTitle = byId("markets-title");
+  if (marketTitle) marketTitle.textContent = `Mercados relevantes para ${atlasContext.name}`;
+  if (byId("resourceRegionSelect")) {
+    state.resourceRegion = atlasContext.region;
+    byId("resourceRegionSelect").value = state.resourceRegion;
+  }
+  if (suggestLanguage && !atlasLanguageManual) {
+    state.language = atlasLanguageForContext(atlasContext);
+    localStorage.setItem("atlas-language", state.language);
+  }
+  state.view = "world";
+  document.querySelectorAll(".segmented button").forEach((button) => button.classList.toggle("active", button.dataset.view === "world"));
+  applyAnalysisContext();
+  renderNews();
+  if (marketSnapshot.size) renderMarketTiles([...marketSnapshot.values()], marketSnapshotUpdatedAt);
+  createMap();
+}
+
+async function resolveAtlasLocation(query) {
+  const normalized = query.trim().toLocaleLowerCase();
+  const known = atlasLocationProfiles.find((profile) => profile.name.toLocaleLowerCase() === normalized)
+    || atlasLocationProfiles.find((profile) => profile.name.toLocaleLowerCase().includes(normalized));
+  if (known) return known;
+  const response = await fetch(`https://nominatim.openstreetmap.org/search?format=jsonv2&limit=1&addressdetails=1&q=${encodeURIComponent(query)}`, { headers:{ Accept:"application/json" } });
+  if (!response.ok) throw new Error(`HTTP ${response.status}`);
+  const [result] = await response.json();
+  if (!result) throw new Error("Ubicación no encontrada");
+  const lat = Number(result.lat);
+  const lon = Number(result.lon);
+  return {
+    name: result.display_name.split(",").slice(0,3).join(","),
+    lat, lon,
+    country: result.address?.country_code?.toUpperCase() || "",
+    region: regionFromCoordinates(lat,lon)
+  };
+}
+
+async function detectAtlasLocation() {
+  const status = byId("atlasLocationStatus");
+  if (!navigator.geolocation) {
+    if (status) status.textContent = "Geolocalización no disponible · escribe una ubicación";
+    return;
+  }
+  if (status) status.textContent = "Solicitando ubicación aproximada…";
+  navigator.geolocation.getCurrentPosition(async (position) => {
+    const coords = { lat:position.coords.latitude, lon:position.coords.longitude };
+    let context = nearestAtlasProfile(coords);
+    try {
+      const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&zoom=10&addressdetails=1&lat=${coords.lat}&lon=${coords.lon}`, { headers:{ Accept:"application/json" } });
+      if (response.ok) {
+        const result = await response.json();
+        context = {
+          name:[result.address?.city || result.address?.town || result.address?.municipality || result.address?.county, result.address?.country].filter(Boolean).join(", "),
+          lat:coords.lat, lon:coords.lon,
+          country:result.address?.country_code?.toUpperCase() || context.country,
+          region:regionFromCoordinates(coords.lat,coords.lon),
+          markets:context.markets
+        };
+      }
+    } catch {}
+    applyAtlasContext(context);
+  }, () => {
+    if (status) status.textContent = "Permiso no concedido · escribe una ubicación";
+  }, { enableHighAccuracy:false, timeout:9000, maximumAge:900000 });
+}
+
 const byId = (id) => document.getElementById(id);
 const atlasSupabase = window.supabase?.createClient && window.ATLAS_SUPABASE
   ? window.supabase.createClient(
