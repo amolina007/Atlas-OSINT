@@ -64,8 +64,15 @@
       </article>
     </section>
 
+
+    <nav class="section-nav" aria-label="Secciones de Atlas">
+      <button class="active" type="button" data-atlas-section="map" aria-pressed="true"><span>◫</span> Mapa</button>
+      <button type="button" data-atlas-section="news" aria-pressed="false"><span>◉</span> Noticiero</button>
+      <button type="button" data-atlas-section="markets" aria-pressed="false"><span>⌁</span> Mercados</button>
+    </nav>
+
     <main>
-      <section class="briefing" aria-labelledby="briefing-title">
+      <section class="briefing atlas-section atlas-map-section" aria-labelledby="briefing-title">
         <div>
           <p class="eyebrow" id="theaterLabel">TEATRO · EUROPA ORIENTAL</p>
           <h1 id="briefing-title">Guerra ruso-ucraniana</h1>
@@ -79,7 +86,7 @@
         </div>
       </section>
 
-      <section class="workspace">
+      <section class="workspace atlas-section atlas-map-section">
         <aside class="control-panel">
           <div class="panel-heading">
             <span class="eyebrow">CAPAS</span>
@@ -214,7 +221,7 @@
         </aside>
       </section>
 
-      <section class="strategy-console" aria-labelledby="strategy-title">
+      <section class="strategy-console atlas-section atlas-map-section" aria-labelledby="strategy-title">
         <div class="strategy-heading">
           <div>
             <p class="eyebrow">MODELO ESTRATÉGICO · DEMOSTRACIÓN</p>
@@ -290,7 +297,7 @@
         <p class="model-disclaimer"><strong>Límite del modelo:</strong> los niveles, hitos y capacidades son recursos narrativos de esta maqueta. Deben validarse contra eventos y fuentes antes de usarse para análisis.</p>
       </section>
 
-      <section class="force-compare" aria-labelledby="force-title">
+      <section class="force-compare atlas-section atlas-map-section" aria-labelledby="force-title">
         <div class="force-heading">
           <div>
             <p class="eyebrow">BALANCE DE FUERZAS · ESTIMACIONES ABIERTAS</p>
@@ -411,7 +418,64 @@
       </section>
 
 
-      <section class="market-console" id="markets" aria-labelledby="markets-title">
+
+      <section class="news-console atlas-section atlas-news-section" id="newsroom" hidden aria-labelledby="news-title">
+        <div class="news-heading">
+          <div>
+            <p class="eyebrow">NOTICIERO TERRITORIAL · OSINT</p>
+            <h1 id="news-title">Noticias desde tu ubicación</h1>
+            <p id="newsLede">Autoriza una ubicación aproximada para priorizar acontecimientos cercanos sin perder la perspectiva mundial.</p>
+          </div>
+          <div class="news-location-state" id="newsLocationState">
+            <span class="location-pulse"></span>
+            <div><strong>UBICACIÓN PENDIENTE</strong><small>Orden global activo</small></div>
+          </div>
+        </div>
+
+        <div class="location-consent" id="locationConsent">
+          <div>
+            <strong>¿Usar tu ubicación aproximada?</strong>
+            <p>Atlas la procesa en este navegador para ordenar noticias por cercanía. No la guarda ni la envía a Supabase.</p>
+          </div>
+          <div>
+            <button class="primary-location-button" id="allowLocation" type="button">Usar mi ubicación</button>
+            <button class="secondary-location-button" id="skipLocation" type="button">Continuar sin compartir</button>
+          </div>
+        </div>
+
+        <div class="news-toolbar">
+          <div class="news-filter-group" role="group" aria-label="Filtrar noticias">
+            <button class="active" type="button" data-news-filter="all">Todo</button>
+            <button type="button" data-news-filter="local">Cercanas</button>
+            <button type="button" data-news-filter="geopolitics">Geopolítica</button>
+            <button type="button" data-news-filter="economy">Economía</button>
+            <button type="button" data-news-filter="security">Seguridad</button>
+          </div>
+          <label>Orden
+            <select id="newsSort">
+              <option value="distance">Cercanía</option>
+              <option value="recent">Más recientes</option>
+              <option value="relevance">Relevancia OSINT</option>
+            </select>
+          </label>
+        </div>
+
+        <div class="news-layout">
+          <div class="news-feed" id="newsFeed"></div>
+          <aside class="news-brief">
+            <p class="eyebrow">CÓMO LEER EL FEED</p>
+            <h2>Proximidad no equivale a importancia</h2>
+            <p>El orden territorial ayuda a detectar impactos locales, pero Atlas mantiene asuntos globales de alta relevancia dentro del flujo.</p>
+            <dl>
+              <div><dt>HECHO</dt><dd>Confirmado por evidencia o fuentes independientes.</dd></div>
+              <div><dt>AFIRMACIÓN</dt><dd>Declaración atribuida aún no corroborada.</dd></div>
+              <div><dt>ANÁLISIS</dt><dd>Interpretación separada de los hechos.</dd></div>
+            </dl>
+          </aside>
+        </div>
+      </section>
+
+      <section class="market-console atlas-section atlas-markets-section" hidden id="markets" aria-labelledby="markets-title">
         <div class="market-heading">
           <div>
             <p class="eyebrow">ECONOMÍA GLOBAL · SEÑALES DE MERCADO</p>
@@ -489,7 +553,7 @@
         </div>
       </section>
 
-      <section class="timeline-section" aria-labelledby="timeline-title">
+      <section class="timeline-section atlas-section atlas-map-section" aria-labelledby="timeline-title">
         <div class="timeline-heading">
           <div><p class="eyebrow">REGISTRO DEL TURNO</p><h2 id="timeline-title">Secuencia de acontecimientos</h2></div>
           <p>Selecciona un evento para inspeccionar sus fuentes y valoración.</p>
