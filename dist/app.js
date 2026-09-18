@@ -710,8 +710,10 @@ function createMap() {
   container.innerHTML = "";
   fallbackSvg = null;
   fallbackZoom = null;
-  // La base topográfica usa MapLibre cuando WebGL está disponible.
-  // El mapa vectorial permanece como respaldo automático.
+  // Base administrativa y topográfica vectorial: evita el lienzo WebGL negro
+  // observado en algunos navegadores y conserva zoom, relieve y divisiones.
+  createVectorFallback(container);
+  return;
   if (!document.createElement("canvas").getContext("webgl2")) {
     createVectorFallback(container);
     return;
