@@ -31,43 +31,80 @@
       </nav>
     </header>
 
-    <section class="analysis-context" aria-label="Contexto de análisis">
-      <label class="context-field" for="conflictSelect">
-        <span id="conflictLabel">CONFLICTO</span>
-        <select id="conflictSelect" aria-describedby="conflictHelp">
-          <option value="russia-ukraine">Guerra ruso-ucraniana</option>
-          <option value="middle-east">Oriente Medio ampliado</option>
-          <option value="sudan">Guerra de Sudán</option>
-          <option value="world-resources">Materias primas mundiales</option>
-        </select>
-        <small id="conflictHelp">Selecciona el conflicto que quieres explorar.</small>
-      </label>
-      <fieldset class="perspective-field">
-        <legend id="perspectiveLabel">PERSPECTIVA EDITORIAL</legend>
-        <div class="perspective-switch" id="perspectiveSwitch">
-          <button class="active" type="button" data-perspective="neutral" aria-pressed="true">Neutra</button>
-          <button type="button" data-perspective="russian" aria-pressed="false">Visión rusa</button>
-          <button type="button" data-perspective="ukrainian" aria-pressed="false">Visión ucraniana</button>
+    <section class="global-context" aria-label="Ubicación e idioma de Atlas">
+      <div class="global-context-copy">
+        <span class="eyebrow">CONTEXTO TERRITORIAL</span>
+        <strong id="globalContextTitle">Atlas desde tu ubicación</strong>
+        <small id="globalContextHelp">La ubicación reorganiza el mapa, las noticias y los mercados. Se procesa localmente.</small>
+      </div>
+      <form class="location-search" id="atlasLocationForm">
+        <label for="atlasLocationInput">UBICACIÓN</label>
+        <div>
+          <input id="atlasLocationInput" list="atlasLocationSuggestions" autocomplete="off" placeholder="Ciudad, región o país">
+          <button type="submit">Aplicar</button>
+          <button type="button" id="detectAtlasLocation" title="Detectar ubicación actual">◎ Actual</button>
         </div>
-        <small id="perspectiveHelp">Compara énfasis y afirmaciones sin convertir una narrativa en hecho.</small>
-      </fieldset>
-      <label class="context-field language-field" for="languageSelect">
-        <span id="languageLabel">IDIOMA</span>
+        <datalist id="atlasLocationSuggestions">
+          <option value="Maipú, Chile"></option>
+          <option value="Santiago, Chile"></option>
+          <option value="Valparaíso, Chile"></option>
+          <option value="Antofagasta, Chile"></option>
+          <option value="Buenos Aires, Argentina"></option>
+          <option value="Lima, Perú"></option>
+          <option value="São Paulo, Brasil"></option>
+          <option value="Ciudad de México, México"></option>
+          <option value="Nueva York, Estados Unidos"></option>
+          <option value="Madrid, España"></option>
+          <option value="Kyiv, Ucrania"></option>
+          <option value="Moscú, Rusia"></option>
+          <option value="Amán, Jordania"></option>
+          <option value="Singapur"></option>
+          <option value="Tokio, Japón"></option>
+          <option value="Beijing, China"></option>
+        </datalist>
+        <small id="atlasLocationStatus" aria-live="polite">Ubicación pendiente</small>
+      </form>
+      <label class="global-language" for="languageSelect">
+        <span>IDIOMA</span>
         <select id="languageSelect">
           <option value="es">Español</option>
+          <option value="en">English</option>
+          <option value="pt">Português</option>
+          <option value="fr">Français</option>
+          <option value="de">Deutsch</option>
+          <option value="it">Italiano</option>
+          <option value="ca">Català</option>
+          <option value="eu">Euskara</option>
+          <option value="gl">Galego</option>
+          <option value="nl">Nederlands</option>
+          <option value="pl">Polski</option>
+          <option value="cs">Čeština</option>
+          <option value="sk">Slovenčina</option>
+          <option value="hu">Magyar</option>
+          <option value="ro">Română</option>
+          <option value="bg">Български</option>
+          <option value="el">Ελληνικά</option>
           <option value="uk">Українська</option>
           <option value="ru">Русский</option>
+          <option value="tr">Türkçe</option>
+          <option value="ar">العربية</option>
+          <option value="he">עברית</option>
+          <option value="fa">فارسی</option>
+          <option value="hi">हिन्दी</option>
+          <option value="bn">বাংলা</option>
+          <option value="ur">اردو</option>
+          <option value="zh">中文</option>
+          <option value="ja">日本語</option>
+          <option value="ko">한국어</option>
+          <option value="vi">Tiếng Việt</option>
+          <option value="th">ไทย</option>
+          <option value="id">Bahasa Indonesia</option>
+          <option value="ms">Bahasa Melayu</option>
+          <option value="sw">Kiswahili</option>
         </select>
-        <small id="languageHelp">La interfaz y el contenido disponible cambian de idioma.</small>
+        <small id="languageHelp">Sugerido por ubicación; puedes modificarlo.</small>
       </label>
-      <article class="perspective-note" id="perspectiveNote" data-perspective-tone="neutral" aria-live="polite">
-        <span id="perspectiveKicker">VISTA NEUTRA</span>
-        <strong id="perspectiveTitle">Síntesis comparada y trazable</strong>
-        <p id="perspectiveDescription">Prioriza coincidencias entre fuentes independientes y separa hechos, declaraciones e inferencias.</p>
-        <small id="perspectiveDisclaimer">Cambiar de perspectiva no modifica los hechos verificados, la confianza ni la cadena de evidencia.</small>
-      </article>
     </section>
-
 
     <nav class="section-nav" aria-label="Secciones de Atlas">
       <button class="active" type="button" data-atlas-section="map" aria-pressed="true"><span>◫</span> Mapa</button>
@@ -96,6 +133,34 @@
             <span class="eyebrow">CAPAS</span>
             <button class="icon-button" id="resetFilters" aria-label="Restablecer filtros" title="Restablecer filtros">↺</button>
           </div>
+          <details class="map-analysis-controls">
+            <summary>Análisis del teatro</summary>
+            <label class="context-field" for="conflictSelect">
+              <span id="conflictLabel">CONFLICTO O CAPA</span>
+              <select id="conflictSelect" aria-describedby="conflictHelp">
+                <option value="russia-ukraine">Guerra ruso-ucraniana</option>
+                <option value="middle-east">Oriente Medio ampliado</option>
+                <option value="sudan">Guerra de Sudán</option>
+                <option value="world-resources">Materias primas mundiales</option>
+              </select>
+              <small id="conflictHelp">Herramienta interna del mapa.</small>
+            </label>
+            <fieldset class="perspective-field">
+              <legend id="perspectiveLabel">PERSPECTIVA EDITORIAL</legend>
+              <div class="perspective-switch" id="perspectiveSwitch">
+                <button class="active" type="button" data-perspective="neutral" aria-pressed="true">Neutra</button>
+                <button type="button" data-perspective="russian" aria-pressed="false">Visión rusa</button>
+                <button type="button" data-perspective="ukrainian" aria-pressed="false">Visión ucraniana</button>
+              </div>
+              <small id="perspectiveHelp">Compara narrativas sin alterar los hechos verificados.</small>
+            </fieldset>
+            <article class="perspective-note" id="perspectiveNote" data-perspective-tone="neutral" aria-live="polite">
+              <span id="perspectiveKicker">VISTA NEUTRA</span>
+              <strong id="perspectiveTitle">Síntesis comparada y trazable</strong>
+              <p id="perspectiveDescription">Prioriza coincidencias entre fuentes independientes.</p>
+              <small id="perspectiveDisclaimer">La perspectiva no modifica evidencia ni confianza.</small>
+            </article>
+          </details>
           <div class="resource-controls" id="resourceControls" hidden>
             <span class="eyebrow">MATERIA PRIMA</span>
             <label for="resourceRegionSelect">Región</label>
