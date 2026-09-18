@@ -140,6 +140,8 @@ const sudanEvents = [
 ];
 
 let events = demoEvents;
+let currentTurnKey = "2026-09-16";
+let turnArchive = new Map([[currentTurnKey, demoEvents]]);
 
 const state = {
   kind: "all",
@@ -1525,7 +1527,10 @@ function normalizePublicEvent(event, index) {
       ["Precisión", "Posición pública aproximada"]
     ],
     assessment: "Registro publicado desde la capa pública de ATLAS. Consulte la cadena de evidencia antes de extraer conclusiones.",
-    sources: []
+    sources: [],
+    turnDate: occurredAt && !Number.isNaN(occurredAt.valueOf())
+      ? occurredAt.toISOString().slice(0, 10)
+      : null
   };
 }
 
@@ -1553,9 +1558,19 @@ async function loadPublishedEvents() {
     .filter((event) => Number.isFinite(event.lon) && Number.isFinite(event.lat));
   if (!published.length) return;
 
-  events = published;
+  turnArchive = published.reduce((archive, event) => {
+    const key = event.turnDate || "sin-fecha";
+    if (!archive.has(key)) archive.set(key, []);
+    archive.get(key).push(event);
+    return archive;
+  }, new Map());
+  const availableTurns = [...turnArchive.keys()].filter((key) => key !== "sin-fecha").sort().reverse();
+  currentTurnKey = availableTurns[0] || [...turnArchive.keys()][0];
+  events = turnArchive.get(currentTurnKey) || published;
   state.selected = events[0].id;
-  byId("dataNotice").textContent = `Supabase conectado · ${events.length} eventos publicados · Posiciones aproximadas.`;
+  updateTurnButton();
+  renderTurnArchive();
+  byId("dataNotice").textContent = `Supabase conectado · ${published.length} eventos en ${turnArchive.size} turnos · Posiciones aproximadas.`;
   renderTimeline();
   renderIntel(events[0]);
   createMap();
@@ -1664,7 +1679,64 @@ const dialog = byId("infoDialog");
 byId("dialogClose").addEventListener("click", () => dialog.close());
 dialog.addEventListener("click", (event) => { if (event.target === dialog) dialog.close(); });
 byId("closeIntel").addEventListener("click", () => byId("intelPanel").classList.toggle("collapsed"));
-byId("turnButton").addEventListener("click", () => document.querySelector(".timeline-section").scrollIntoView({ behavior: "smooth" }));
+function formatTurnDate(key) {
+  if (key === "sin-fecha") return "FECHA PENDIENTE";
+  const date = new Date(`${key}T12:00:00Z`);
+  return Number.isNaN(date.valueOf())
+    ? key.toUpperCase()
+    : date.toLocaleDateString("es-CL", { day:"2-digit", month:"short", year:"numeric", timeZone:"UTC" }).replaceAll(".", "").toUpperCase();
+}
+
+function updateTurnButton() {
+  const keys = [...turnArchive.keys()].filter((key) => key !== "sin-fecha").sort().reverse();
+  const latest = keys[0] || currentTurnKey;
+  byId("turnStatus").textContent = currentTurnKey === latest ? "Turno activo" : "Turno archivado";
+  byId("turnDate").textContent = formatTurnDate(currentTurnKey);
+  byId("turnButton").classList.toggle("archived", currentTurnKey !== latest);
+}
+
+function selectTurn(key) {
+  const selectedEvents = turnArchive.get(key);
+  if (!selectedEvents?.length) return;
+  currentTurnKey = key;
+  events = selectedEvents;
+  state.selected = events[0].id;
+  state.kind = "all";
+  document.querySelectorAll(".filter-chip").forEach((button) => button.classList.toggle("active", button.dataset.kind === "all"));
+  updateTurnButton();
+  renderTurnArchive();
+  renderTimeline();
+  renderIntel(events[0]);
+  byId("visibleCount").textContent = `${events.length} ${events.length === 1 ? "evento visible" : "eventos visibles"}`;
+  createMap();
+  byId("turnArchiveDialog")?.close();
+}
+
+function renderTurnArchive() {
+  const list = byId("turnArchiveList");
+  if (!list) return;
+  const keys = [...turnArchive.keys()].sort().reverse();
+  list.innerHTML = keys.length ? keys.map((key, index) => {
+    const turnEvents = turnArchive.get(key) || [];
+    const highConfidence = turnEvents.filter((event) => event.confidence === "high").length;
+    return `<button type="button" class="turn-archive-item${key === currentTurnKey ? " active" : ""}" data-turn-key="${key}">
+      <span><b>${index === 0 ? "ACTIVO" : "ARCHIVO"}</b><strong>${formatTurnDate(key)}</strong></span>
+      <span class="turn-archive-metrics"><em>${turnEvents.length} eventos</em><small>${highConfidence} confianza alta</small></span>
+    </button>`;
+  }).join("") : '<div class="turn-archive-empty">Todavía no existen turnos archivados.</div>';
+  list.querySelectorAll("[data-turn-key]").forEach((button) => button.addEventListener("click", () => selectTurn(button.dataset.turnKey)));
+}
+
+byId("turnButton").addEventListener("click", () => {
+  renderTurnArchive();
+  byId("turnArchiveDialog")?.showModal();
+});
+byId("turnArchiveClose")?.addEventListener("click", () => byId("turnArchiveDialog")?.close());
+byId("turnArchiveDialog")?.addEventListener("click", (event) => {
+  if (event.target === byId("turnArchiveDialog")) byId("turnArchiveDialog").close();
+});
+updateTurnButton();
+renderTurnArchive();
 
 applyTheaterData();
 applyAnalysisContext();
