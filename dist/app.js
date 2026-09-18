@@ -1438,3 +1438,57 @@ renderIntel(events[0]);
 createMap();
 if (!currentTheater().resources) loadPublishedEvents();
 window.addEventListener("resize", () => { clearTimeout(window.mapResizeTimer); window.mapResizeTimer = setTimeout(() => atlasMap?.resize(), 180); });
+
+
+const marketInstruments = [
+  { symbol: "^GSPC", code: "S&P 500", region: "Estados Unidos", size: "size-xl" },
+  { symbol: "^IXIC", code: "Nasdaq", region: "Estados Unidos", size: "size-xl" },
+  { symbol: "^DJI", code: "Dow Jones", region: "Estados Unidos", size: "size-lg" },
+  { symbol: "^STOXX50E", code: "Euro Stoxx 50", region: "Europa", size: "size-lg" },
+  { symbol: "^FTSE", code: "FTSE 100", region: "Reino Unido", size: "size-md" },
+  { symbol: "^GDAXI", code: "DAX", region: "Alemania", size: "size-md" },
+  { symbol: "^N225", code: "Nikkei 225", region: "Japón", size: "size-lg" },
+  { symbol: "000001.SS", code: "Shanghai", region: "China", size: "size-md" },
+  { symbol: "^HSI", code: "Hang Seng", region: "Hong Kong", size: "size-md" },
+  { symbol: "^IPSA", code: "IPSA", region: "Chile", size: "size-md" },
+  { symbol: "CL=F", code: "WTI", region: "Energía", size: "size-sm" },
+  { symbol: "GC=F", code: "Oro", region: "Refugio", size: "size-sm" },
+  { symbol: "HG=F", code: "Cobre", region: "Industria", size: "size-sm" }
+];
+
+function renderMarketTiles(items, updatedAt) {
+  const container = byId("marketHeatmap");
+  if (!container) return;
+  container.innerHTML = items.map((item, index) => {
+    const change = Number(item.changePercent);
+    const available = Number.isFinite(change);
+    const tone = !available ? "unavailable" : change > 0.08 ? "gain" : change < -0.08 ? "loss" : "flat";
+    const label = available ? `${change > 0 ? "+" : ""}${change.toFixed(2)}%` : "Sin dato";
+    const meta = marketInstruments[index] || {};
+    return `<a class="market-tile ${tone} ${meta.size || "size-md"}" href="https://finance.yahoo.com/quote/${encodeURIComponent(item.symbol)}" target="_blank" rel="noreferrer" aria-label="${meta.code}: ${label}">
+      <span class="market-symbol">${item.symbol}</span>
+      <strong>${meta.code}</strong>
+      <span class="market-change">${label}</span>
+      <small>${meta.region} · última sesión</small>
+    </a>`;
+  }).join("");
+  const stamp = byId("marketTimestamp");
+  if (stamp) stamp.textContent = updatedAt ? `Actualizado: ${new Date(updatedAt).toLocaleString("es-CL")}` : "Última sesión disponible";
+}
+
+async function loadMarketHeatmap() {
+  const container = byId("marketHeatmap");
+  if (!container) return;
+  try {
+    const response = await fetch("/.netlify/functions/markets", { headers: { Accept: "application/json" } });
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    const payload = await response.json();
+    renderMarketTiles(payload.items, payload.updatedAt);
+  } catch (error) {
+    renderMarketTiles(marketInstruments.map((item) => ({ symbol: item.symbol, changePercent: null })), null);
+    const stamp = byId("marketTimestamp");
+    if (stamp) stamp.textContent = "Proveedor temporalmente no disponible · estructura del mercado visible";
+  }
+}
+
+loadMarketHeatmap();
