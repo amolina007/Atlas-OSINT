@@ -27,7 +27,7 @@
           <span class="auth-avatar" id="authAvatar">◎</span>
           <span id="authButtonLabel">Ingresar</span>
         </button>
-        <button class="turn-pill" id="turnButton"><span class="pulse"></span><span>Turno activo</span><strong>16 SEP 2026</strong></button>
+        <button class="turn-pill" id="turnButton" type="button" aria-haspopup="dialog"><span class="pulse"></span><span id="turnStatus">Turno activo</span><strong id="turnDate">16 SEP 2026</strong></button>
       </nav>
     </header>
 
@@ -573,6 +573,15 @@
     </main>
   </div>
 
+
+  <dialog id="turnArchiveDialog" class="turn-archive-dialog">
+    <button class="dialog-close" id="turnArchiveClose" aria-label="Cerrar">×</button>
+    <p class="eyebrow">ARCHIVO TEMPORAL</p>
+    <h2>Turnos de inteligencia</h2>
+    <p class="turn-archive-lede">Selecciona un turno para reconstruir el mapa, la cronología y el panel de acontecimientos disponibles en esa fecha.</p>
+    <div class="turn-archive-list" id="turnArchiveList"></div>
+    <p class="turn-archive-note">El archivo solo muestra turnos que contienen registros publicados para el conflicto seleccionado.</p>
+  </dialog>
 
   <dialog id="authDialog" class="auth-dialog">
     <button class="dialog-close" id="authDialogClose" aria-label="Cerrar">×</button>
