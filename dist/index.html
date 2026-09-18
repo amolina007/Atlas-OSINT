@@ -453,27 +453,14 @@
         <div class="market-grid">
           <article class="market-widget-card market-overview-card">
             <div class="market-card-heading"><span>MAPA DE MERCADOS</span><small>índices, futuros, divisas y bonos</small></div>
-            <div class="tradingview-widget-container market-widget-frame market-heatmap-shell">
-              <div class="tradingview-widget-container__widget"></div>
-              <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-stock-heatmap.js" async>
-              {
-                "exchanges": [],
-                "dataSource": "SPX500",
-                "grouping": "sector",
-                "blockSize": "market_cap_basic",
-                "blockColor": "change",
-                "locale": "es",
-                "symbolUrl": "",
-                "colorTheme": "dark",
-                "hasTopBar": true,
-                "isDataSetEnabled": true,
-                "isZoomEnabled": true,
-                "hasSymbolTooltip": true,
-                "isMonoSize": false,
-                "width": "100%",
-                "height": 510
-              }
-              </script>
+            <div class="native-market-map" id="marketHeatmap" aria-live="polite">
+              <div class="native-market-loading"><span></span>Consultando mercados…</div>
+            </div>
+            <div class="market-map-legend">
+              <span><i class="market-swatch gain"></i>Sube</span>
+              <span><i class="market-swatch flat"></i>Sin cambio relevante</span>
+              <span><i class="market-swatch loss"></i>Baja</span>
+              <small id="marketTimestamp">Variación de la última sesión disponible</small>
             </div>
             <div class="market-native-fallback">
               <span>ACCESOS DIRECTOS</span>
