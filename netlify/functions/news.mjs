@@ -1,4 +1,3 @@
-const categoryRules = [
   ["security", /seguridad|polic[ií]a|delito|crimen|emergencia|incendio|terremoto|ataque|guerra|militar|defensa|víctima|victima/i],
   ["economy", /econom[ií]a|mercado|bolsa|d[oó]lar|inflaci[oó]n|banco|empresa|empleo|precio|inversi[oó]n|cobre|petr[oó]leo/i],
   ["technology", /tecnolog[ií]a|inteligencia artificial|\bIA\b|ciber|software|internet|datos|chip|robot|telecom/i],
@@ -45,6 +44,7 @@ const newsGazetteer = [
   { pattern:/\bpunta arenas\b|\bmagallanes\b/i, place:"Punta Arenas, Chile", lat:-53.1638, lon:-70.9171, scope:"regional" },
   { pattern:/\brancagua\b|\bo['’]?higgins\b/i, place:"Rancagua, Chile", lat:-34.1708, lon:-70.7444, scope:"regional" },
   { pattern:/\btalca\b|\bmaule\b/i, place:"Talca, Chile", lat:-35.4264, lon:-71.6554, scope:"regional" },
+  { pattern:/\bbolivia\b/i, place:"Frontera Chile–Bolivia", lat:-20.1, lon:-68.6, scope:"regional" },
   { pattern:/\brosario\b|marcelo bielsa/i, place:"Rosario, Argentina", lat:-32.9442, lon:-60.6505, scope:"local" },
   { pattern:/\bmontevideo\b/i, place:"Montevideo, Uruguay", lat:-34.9011, lon:-56.1645, scope:"local" },
   { pattern:/\bchile\b|\bla roja\b/i, place:"Chile", lat:-33.4489, lon:-70.6693, scope:"national" },
@@ -70,7 +70,7 @@ const mapContextFor = ({ category, text, geo }) => {
   if (/lluvia|tormenta|inundaci[oó]n|r[ií]o|embalse|sequ[ií]a|agua/i.test(text)) return { layer:"HIDROGRAFÍA Y CLIMA", insight:`La lectura territorial de ${geo.place} prioriza cuencas, costa y relieve vinculados al fenómeno informado.`, layers:["water","terrain","admin"], scope:geo.scope };
   if (/incendio|evacuaci[oó]n|emergencia/i.test(text)) return { layer:"EMERGENCIA Y ACCESIBILIDAD", insight:`El encuadre localiza ${geo.place} y muestra relieve y divisiones administrativas útiles para interpretar acceso y respuesta.`, layers:["terrain","admin","routes"], scope:geo.scope };
   if (/puerto|carretera|metro|tren|aeropuerto|transporte|log[ií]stica/i.test(text) || category === "infrastructure") return { layer:"TRANSPORTE Y CORREDORES", insight:`El mapa sitúa el hecho en ${geo.place} y prioriza conexiones de transporte y límites administrativos.`, layers:["routes","admin","water"], scope:geo.scope };
-  if (/guerra|ataque|militar|frontera|conflicto/i.test(text) || category === "geopolitics") return { layer:"FRONTERAS Y CONTEXTO ESTRATÉGICO", insight:`La vista ubica ${geo.place} con fronteras y rasgos físicos relevantes; no implica control territorial ni atribución.`, layers:["admin","terrain","routes"], scope:geo.scope };
+  if (/guerra|ataque|militar|frontera|conflicto|soberan[ií]a|canciller|relaciones bilaterales/i.test(text) || category === "geopolitics") return { layer:"FRONTERAS Y CONTEXTO ESTRATÉGICO", insight:`La vista ubica ${geo.place} con fronteras y rasgos físicos relevantes; no implica control territorial ni atribución.`, layers:["admin","terrain","routes"], scope:geo.scope };
   if (category === "economy" || /mercado|bolsa|cobre|petr[oó]leo|minero/i.test(text)) return { layer:"NODOS ECONÓMICOS Y RECURSOS", insight:`La noticia se contextualiza en ${geo.place}; se priorizan corredores, costa y relieve ligados a actividad económica.`, layers:["routes","water","terrain"], scope:geo.scope };
   if (category === "health") return { layer:"COBERTURA SANITARIA Y POBLACIÓN", insight:`El mapa sitúa el ámbito informado en ${geo.place} y muestra divisiones administrativas para interpretar cobertura, sin representar datos personales.`, layers:["admin","routes"], scope:geo.scope };
   return { layer:"CONTEXTO ADMINISTRATIVO", insight:`La vista se centra en ${geo.place}, ubicación identificada en el contenido de la noticia, y conserva sólo referencias territoriales pertinentes.`, layers:["admin","terrain"], scope:geo.scope };
