@@ -1720,16 +1720,28 @@ loadMarketHeatmap();
 
 
 const atlasNews = [
-  { id:"N-CL-01", title:"Actividad metropolitana y servicios en Santiago", place:"Santiago, Chile", lat:-33.4489, lon:-70.6693, category:"local", type:"HECHO", age:1, relevance:82, summary:"Cobertura territorial de movilidad, servicios públicos y acontecimientos con impacto directo en la Región Metropolitana.", source:"Fuentes públicas locales" },
-  { id:"N-CL-02", title:"Señales económicas relevantes para Chile", place:"Santiago, Chile", lat:-33.4489, lon:-70.6693, category:"economy", type:"ANÁLISIS", age:3, relevance:78, summary:"Cobre, tipo de cambio, actividad y decisiones públicas reunidas en una lectura nacional trazable.", source:"Fuentes económicas abiertas" },
-  { id:"N-UA-01", title:"Evolución del frente ruso-ucraniano", place:"Kyiv, Ucrania", lat:50.4501, lon:30.5234, category:"geopolitics", type:"HECHO", age:2, relevance:96, summary:"Cambios territoriales, ataques y diplomacia separados por nivel de confirmación y perspectiva editorial.", source:"Feed ATLAS Ucrania" },
-  { id:"N-ME-01", title:"Tensiones regionales y rutas energéticas", place:"Amán, Jordania", lat:31.9539, lon:35.9106, category:"geopolitics", type:"ANÁLISIS", age:4, relevance:91, summary:"Seguimiento de seguridad regional, energía, navegación y efectos diplomáticos.", source:"Fuentes regionales abiertas" },
-  { id:"N-SD-01", title:"Situación humanitaria y territorial en Sudán", place:"Jartum, Sudán", lat:15.5007, lon:32.5599, category:"security", type:"HECHO", age:5, relevance:88, summary:"Acceso humanitario, desplazamiento y control territorial con advertencias sobre vacíos de información.", source:"Fuentes humanitarias abiertas" },
-  { id:"N-AS-01", title:"Mercados asiáticos y cadenas de suministro", place:"Singapur", lat:1.3521, lon:103.8198, category:"economy", type:"ANÁLISIS", age:6, relevance:80, summary:"Señales sobre comercio, manufactura, transporte marítimo y demanda de materias primas.", source:"Fuentes económicas abiertas" }
+  { id:"N-CL-01", title:"Actividad metropolitana y servicios en Santiago", place:"Santiago, Chile", lat:-33.4489, lon:-70.6693, category:"local", type:"HECHO", age:1, relevance:82, summary:"Cobertura territorial de movilidad, servicios públicos y acontecimientos con impacto directo en la Región Metropolitana.", analysis:"La ficha territorial reúne señales locales y exige confirmar fecha, organismo responsable y alcance antes de convertirlas en una conclusión.", source:"Gobierno Regional Metropolitano", sourceUrl:"https://www.gobiernosantiago.cl/" },
+  { id:"N-CL-02", title:"Señales económicas relevantes para Chile", place:"Santiago, Chile", lat:-33.4489, lon:-70.6693, category:"economy", type:"ANÁLISIS", age:3, relevance:78, summary:"Cobre, tipo de cambio, actividad y decisiones públicas reunidas en una lectura nacional trazable.", analysis:"La cercanía geográfica no prueba impacto económico directo. Deben contrastarse cobre, dólar, tasas y actividad con series oficiales.", source:"Banco Central de Chile", sourceUrl:"https://www.bcentral.cl/" },
+  { id:"N-UA-01", title:"Evolución del frente ruso-ucraniano", place:"Kyiv, Ucrania", lat:50.4501, lon:30.5234, category:"geopolitics", type:"HECHO", age:2, relevance:96, summary:"Cambios territoriales, ataques y diplomacia separados por nivel de confirmación y perspectiva editorial.", analysis:"La situación cambia rápidamente. Atlas distingue hechos corroborados, afirmaciones de cada actor e inferencias editoriales.", source:"OCHA Ukraine", sourceUrl:"https://www.unocha.org/ukraine" },
+  { id:"N-ME-01", title:"Tensiones regionales y rutas energéticas", place:"Amán, Jordania", lat:31.9539, lon:35.9106, category:"geopolitics", type:"ANÁLISIS", age:4, relevance:91, summary:"Seguimiento de seguridad regional, energía, navegación y efectos diplomáticos.", analysis:"Las rutas energéticas y las tensiones regionales deben analizarse con cronología, capacidad material e hipótesis alternativas.", source:"OCHA Middle East", sourceUrl:"https://www.unocha.org/middle-east-and-north-africa" },
+  { id:"N-SD-01", title:"Situación humanitaria y territorial en Sudán", place:"Jartum, Sudán", lat:15.5007, lon:32.5599, category:"security", type:"HECHO", age:5, relevance:88, summary:"Acceso humanitario, desplazamiento y control territorial con advertencias sobre vacíos de información.", analysis:"Los vacíos de acceso y telecomunicaciones producen subregistro. Las cifras deben leerse como mínimos documentados.", source:"OCHA Sudan", sourceUrl:"https://www.unocha.org/sudan" },
+  { id:"N-AS-01", title:"Mercados asiáticos y cadenas de suministro", place:"Singapur", lat:1.3521, lon:103.8198, category:"economy", type:"ANÁLISIS", age:6, relevance:80, summary:"Señales sobre comercio, manufactura, transporte marítimo y demanda de materias primas.", analysis:"Los movimientos de mercado son señales, no explicaciones causales. Deben contrastarse con comercio, fletes e inventarios.", source:"IMF Data", sourceUrl:"https://data.imf.org/" }
 ];
 
 let newsLocation = null;
 let newsFilter = "all";
+let newsLocationRequested = false;
+const knownNewsPlaces = [
+  { name:"Maipú, Región Metropolitana", lat:-33.51, lon:-70.76 },
+  { name:"Santiago, Región Metropolitana", lat:-33.45, lon:-70.67 },
+  { name:"Valparaíso, Chile", lat:-33.05, lon:-71.62 },
+  { name:"Concepción, Chile", lat:-36.82, lon:-73.05 },
+  { name:"Kyiv, Ucrania", lat:50.45, lon:30.52 }
+];
+
+function nearestNewsPlace(location) {
+  return knownNewsPlaces.map((place) => ({ ...place, distance:distanceKm(location, place) })).sort((a,b) => a.distance-b.distance)[0];
+}
 
 function distanceKm(a, b) {
   const radius = 6371;
@@ -1751,13 +1763,14 @@ function renderNews() {
   }
   items.sort((a,b) => sort === "recent" ? a.age-b.age : sort === "relevance" ? b.relevance-a.relevance : newsLocation ? a.distance-b.distance : b.relevance-a.relevance);
   feed.innerHTML = items.length ? items.map((item, index) => `
-    <article class="news-card">
+    <article class="news-card" data-news-id="${item.id}" tabindex="0">
       <div class="news-rank">${String(index + 1).padStart(2,"0")}</div>
       <div class="news-card-body">
         <div class="news-meta"><span class="news-type ${item.type.toLowerCase()}">${item.type}</span><span>${item.place}</span><span>hace ${item.age} h</span></div>
         <h2>${item.title}</h2>
         <p>${item.summary}</p>
-        <div class="news-source"><span>${item.source}</span><b>${item.distance === null ? "Orden global" : item.distance < 1 ? "En tu zona" : Math.round(item.distance).toLocaleString("es-CL") + " km"}</b></div>
+        <div class="news-source"><a href="${item.sourceUrl}" target="_blank" rel="noreferrer">${item.source} ↗</a><b>${item.distance === null ? "Orden global" : item.distance < 1 ? "En tu zona" : Math.round(item.distance).toLocaleString("es-CL") + " km"}</b></div>
+        <small class="news-open-hint">Doble clic para abrir la ficha completa</small>
       </div>
     </article>`).join("") : '<div class="news-empty">No hay noticias dentro de este filtro territorial.</div>';
 }
@@ -1772,12 +1785,16 @@ function setAtlasSection(name) {
     const visible = section.classList.contains(`atlas-${name}-section`);
     section.hidden = !visible;
   });
-  if (name === "news") renderNews();
+  if (name === "news") {
+    renderNews();
+    if (!newsLocationRequested) requestNewsLocation();
+  }
   if (name === "map") setTimeout(() => { leafletMap?.invalidateSize(); atlasMap?.resize(); }, 40);
   history.replaceState(null, "", name === "map" ? "#map" : name === "news" ? "#newsroom" : "#markets");
 }
 
 function requestNewsLocation() {
+  newsLocationRequested = true;
   if (!navigator.geolocation) {
     byId("newsLocationState").innerHTML = "<div><strong>UBICACIÓN NO DISPONIBLE</strong><small>Orden global activo</small></div>";
     return;
@@ -1788,8 +1805,9 @@ function requestNewsLocation() {
       lat: Math.round(position.coords.latitude * 100) / 100,
       lon: Math.round(position.coords.longitude * 100) / 100
     };
+    const nearest = nearestNewsPlace(newsLocation);
     byId("locationConsent").hidden = true;
-    byId("newsLocationState").innerHTML = '<span class="location-pulse active"></span><div><strong>UBICACIÓN APROXIMADA</strong><small>Noticias ordenadas por cercanía</small></div>';
+    byId("newsLocationState").innerHTML = `<span class="location-pulse active"></span><div><strong>${nearest.name.toUpperCase()}</strong><small>Ubicación aproximada · ±${Math.max(1, Math.round(position.coords.accuracy / 1000))} km</small></div>`;
     renderNews();
   }, () => {
     byId("locationConsent").hidden = true;
@@ -1818,3 +1836,33 @@ byId("skipLocation")?.addEventListener("click", () => {
 
 const initialAtlasSection = location.hash === "#newsroom" ? "news" : location.hash === "#markets" ? "markets" : "map";
 setAtlasSection(initialAtlasSection);
+
+function openNewsDialog(item) {
+  const dialog = byId("newsDialog");
+  if (!dialog || !item) return;
+  byId("newsDialogType").textContent = item.type;
+  byId("newsDialogTitle").textContent = item.title;
+  byId("newsDialogMeta").textContent = `${item.place} · hace ${item.age} h · relevancia OSINT ${item.relevance}/100`;
+  byId("newsDialogSummary").textContent = item.summary;
+  byId("newsDialogAnalysis").textContent = item.analysis || "Contexto editorial pendiente.";
+  byId("newsDialogSource").textContent = `Abrir ${item.source} ↗`;
+  byId("newsDialogSource").href = item.sourceUrl;
+  dialog.showModal();
+}
+
+byId("newsFeed")?.addEventListener("dblclick", (event) => {
+  const card = event.target.closest("[data-news-id]");
+  if (!card) return;
+  openNewsDialog(atlasNews.find((item) => item.id === card.dataset.newsId));
+});
+byId("newsFeed")?.addEventListener("keydown", (event) => {
+  if (event.key !== "Enter" && event.key !== " ") return;
+  const card = event.target.closest("[data-news-id]");
+  if (!card) return;
+  event.preventDefault();
+  openNewsDialog(atlasNews.find((item) => item.id === card.dataset.newsId));
+});
+byId("newsDialogClose")?.addEventListener("click", () => byId("newsDialog").close());
+byId("newsDialog")?.addEventListener("click", (event) => {
+  if (event.target === byId("newsDialog")) byId("newsDialog").close();
+});
