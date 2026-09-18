@@ -1687,8 +1687,21 @@ function formatTurnDate(key) {
     : date.toLocaleDateString("es-CL", { day:"2-digit", month:"short", year:"numeric", timeZone:"UTC" }).replaceAll(".", "").toUpperCase();
 }
 
+function recentTurnKeys() {
+  const datedKeys = [...turnArchive.keys()].filter((key) => /^\d{4}-\d{2}-\d{2}$/.test(key)).sort().reverse();
+  const anchorKey = datedKeys[0] || currentTurnKey;
+  const anchor = new Date(`${anchorKey}T12:00:00Z`);
+  if (Number.isNaN(anchor.valueOf())) return datedKeys.slice(0, 8);
+
+  return Array.from({ length: 8 }, (_, index) => {
+    const date = new Date(anchor);
+    date.setUTCDate(anchor.getUTCDate() - index);
+    return date.toISOString().slice(0, 10);
+  });
+}
+
 function updateTurnButton() {
-  const keys = [...turnArchive.keys()].filter((key) => key !== "sin-fecha").sort().reverse();
+  const keys = recentTurnKeys();
   const latest = keys[0] || currentTurnKey;
   byId("turnStatus").textContent = currentTurnKey === latest ? "Turno activo" : "Turno archivado";
   byId("turnDate").textContent = formatTurnDate(currentTurnKey);
@@ -1696,17 +1709,22 @@ function updateTurnButton() {
 }
 
 function selectTurn(key) {
-  const selectedEvents = turnArchive.get(key);
-  if (!selectedEvents?.length) return;
+  const selectedEvents = turnArchive.get(key) || [];
   currentTurnKey = key;
   events = selectedEvents;
-  state.selected = events[0].id;
+  state.selected = events[0]?.id || null;
   state.kind = "all";
   document.querySelectorAll(".filter-chip").forEach((button) => button.classList.toggle("active", button.dataset.kind === "all"));
   updateTurnButton();
   renderTurnArchive();
   renderTimeline();
-  renderIntel(events[0]);
+  renderIntel(events[0] || null);
+  if (!events.length) {
+    byId("eventKind").textContent = "TURNO ARCHIVADO";
+    byId("eventTitle").textContent = "Sin eventos publicados";
+    byId("eventSummary").textContent = `No hay eventos registrados para el turno del ${formatTurnDate(key)}.`;
+    byId("eventAssessment").textContent = "El turno está disponible para consulta, pero todavía no contiene información publicada.";
+  }
   byId("visibleCount").textContent = `${events.length} ${events.length === 1 ? "evento visible" : "eventos visibles"}`;
   createMap();
   byId("turnArchiveDialog")?.close();
@@ -1715,18 +1733,14 @@ function selectTurn(key) {
 function renderTurnArchive() {
   const list = byId("turnArchiveList");
   if (!list) return;
-  const keys = [...turnArchive.keys()]
-    .filter((key) => key !== "sin-fecha")
-    .sort()
-    .reverse()
-    .slice(0, 8);
+  const keys = recentTurnKeys();
   list.innerHTML = keys.length ? keys.map((key, index) => {
     const turnEvents = turnArchive.get(key) || [];
     const highConfidence = turnEvents.filter((event) => event.confidence === "high").length;
     const turnNumber = 8 - index;
     return `<button type="button" class="turn-archive-item${key === currentTurnKey ? " active" : ""}" data-turn-key="${key}">
       <span><b>TURNO ${turnNumber}${index === 0 ? " · ACTUAL" : ""}</b><strong>${formatTurnDate(key)}</strong></span>
-      <span class="turn-archive-metrics"><em>${turnEvents.length} eventos</em><small>${highConfidence} confianza alta</small></span>
+      <span class="turn-archive-metrics"><em>${turnEvents.length ? `${turnEvents.length} eventos` : "Sin eventos"}</em><small>${turnEvents.length ? `${highConfidence} confianza alta` : "Disponible para consulta"}</small></span>
     </button>`;
   }).join("") : '<div class="turn-archive-empty">Todavía no existen turnos archivados.</div>';
   list.querySelectorAll("[data-turn-key]").forEach((button) => button.addEventListener("click", () => selectTurn(button.dataset.turnKey)));
