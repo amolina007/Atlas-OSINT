@@ -780,8 +780,8 @@ function applyAnalysisContext() {
   });
   byId("perspectiveLabel").textContent = copy.perspective;
   byId("perspectiveHelp").textContent = copy.perspectiveHelp;
-  byId("languageLabel").textContent = copy.language;
-  byId("languageHelp").textContent = copy.languageHelp;
+  if (byId("languageLabel")) byId("languageLabel").textContent = copy.language;
+  if (byId("languageHelp")) byId("languageHelp").textContent = copy.languageHelp;
   const perspectiveButtons = [...document.querySelectorAll("[data-perspective]")];
   const perspectiveLabels = currentTheater().perspectiveLabels[state.language] || currentTheater().perspectiveLabels.es;
   perspectiveButtons[0].textContent = perspectiveLabels[0];
@@ -1097,7 +1097,9 @@ function createVectorFallback(container) {
     ? d3.geoMercator().center(selectedRegion.center).scale(width * selectedRegion.scale).translate([width / 2, height / 2])
     : state.view === "theater"
     ? d3.geoMercator().center(config.center).scale(width * config.scale).translate([width / 2, height / 2])
-    : d3.geoNaturalEarth1().scale(width / 6.35).translate([width / 2, height / 2]);
+    : atlasContext
+      ? d3.geoMercator().center([atlasContext.lon, atlasContext.lat]).scale(width * 0.46).translate([width / 2, height / 2])
+      : d3.geoNaturalEarth1().scale(width / 6.35).translate([width / 2, height / 2]);
   const path = d3.geoPath(projection);
   viewport.append("path").datum(d3.geoGraticule10()).attr("class", "graticule").attr("d", path);
 
@@ -1113,6 +1115,15 @@ function createVectorFallback(container) {
     drawVectorFog(viewport, projection);
     if (currentTheater().resources) drawVectorResources(viewport, projection);
     else drawVectorEvents(viewport, projection);
+    if (atlasContext && state.view === "world") {
+      const point = projection([atlasContext.lon, atlasContext.lat]);
+      if (point) {
+        const marker = viewport.append("g").attr("class","atlas-context-marker").attr("transform",`translate(${point[0]},${point[1]})`);
+        marker.append("circle").attr("class","atlas-context-halo").attr("r",18);
+        marker.append("circle").attr("class","atlas-context-core").attr("r",5);
+        marker.append("text").attr("x",9).attr("y",-9).text(atlasContext.name);
+      }
+    }
     syncMapLayers();
     updateVectorDetail(1);
     updateVectorTextScale(1);
@@ -1800,8 +1811,12 @@ byId("resourceRegionSelect").addEventListener("change", (event) => {
 });
 byId("languageSelect").addEventListener("change", (event) => {
   state.language = event.target.value;
+  atlasLanguageManual = true;
   localStorage.setItem("atlas-language", state.language);
+  localStorage.setItem("atlas-language-manual", "true");
   applyAnalysisContext();
+  renderNews();
+  if (marketSnapshot.size) renderMarketTiles([...marketSnapshot.values()], marketSnapshotUpdatedAt);
   renderIntel(events.find((item) => item.id === state.selected) || events[0]);
 });
 document.querySelectorAll("[data-perspective]").forEach((button) => button.addEventListener("click", () => {
@@ -1924,6 +1939,12 @@ let marketSnapshotUpdatedAt = null;
 function renderMarketTiles(items, updatedAt) {
   marketSnapshot = new Map(items.map((item) => [item.symbol, item]));
   marketSnapshotUpdatedAt = updatedAt || null;
+  const priority = atlasContext?.markets || [];
+  items = [...items].sort((a,b) => {
+    const ai = priority.indexOf(a.symbol);
+    const bi = priority.indexOf(b.symbol);
+    return (ai < 0 ? 999 : ai) - (bi < 0 ? 999 : bi);
+  });
   if (currentNewsId) {
     const selectedNews = atlasNews.find((item) => item.id === currentNewsId);
     if (selectedNews) renderNewsMarketIndicators(selectedNews);
@@ -1935,7 +1956,7 @@ function renderMarketTiles(items, updatedAt) {
     const available = Number.isFinite(change);
     const tone = !available ? "unavailable" : change > 0.08 ? "gain" : change < -0.08 ? "loss" : "flat";
     const label = available ? `${change > 0 ? "+" : ""}${change.toFixed(2)}%` : "Sin dato";
-    const meta = marketInstruments[index] || {};
+    const meta = marketInstruments.find((instrument) => instrument.symbol === item.symbol) || marketInstruments[index] || {};
     return `<a class="market-tile ${tone} ${meta.size || "size-md"}" href="https://finance.yahoo.com/quote/${encodeURIComponent(item.symbol)}" target="_blank" rel="noreferrer" aria-label="${meta.code}: ${label}">
       <span class="market-symbol">${item.symbol}</span>
       <strong>${meta.code}</strong>
@@ -1944,7 +1965,7 @@ function renderMarketTiles(items, updatedAt) {
     </a>`;
   }).join("");
   const stamp = byId("marketTimestamp");
-  if (stamp) stamp.textContent = updatedAt ? `Actualizado: ${new Date(updatedAt).toLocaleString("es-CL")}` : "Última sesión disponible";
+  if (stamp) stamp.textContent = updatedAt ? `Actualizado: ${new Date(updatedAt).toLocaleString(state.language || "es")}` : "Última sesión disponible";
 }
 
 async function loadMarketHeatmap() {
@@ -2208,6 +2229,13 @@ function setAtlasSection(name) {
 
 function requestNewsLocation() {
   newsLocationRequested = true;
+  if (atlasContext) {
+    newsLocation = { lat:atlasContext.lat, lon:atlasContext.lon };
+    byId("locationConsent").hidden = true;
+    byId("newsLocationState").innerHTML = `<span class="location-pulse active"></span><div><strong>${atlasContext.name.toUpperCase()}</strong><small>Contexto territorial global</small></div>`;
+    renderNews();
+    return;
+  }
   if (!navigator.geolocation) {
     byId("newsLocationState").innerHTML = "<div><strong>UBICACIÓN NO DISPONIBLE</strong><small>Orden global activo</small></div>";
     return;
@@ -2513,3 +2541,30 @@ byId("authSignOut")?.addEventListener("click", async () => {
   }
 });
 initAtlasAuth();
+
+byId("atlasLocationForm")?.addEventListener("submit", async (event) => {
+  event.preventDefault();
+  const input = byId("atlasLocationInput");
+  const status = byId("atlasLocationStatus");
+  const query = input?.value.trim();
+  if (!query) return;
+  if (status) status.textContent = "Buscando ubicación…";
+  try {
+    const context = await resolveAtlasLocation(query);
+    applyAtlasContext(context);
+  } catch (error) {
+    if (status) status.textContent = "No encontramos esa ubicación. Prueba con ciudad y país.";
+  }
+});
+byId("detectAtlasLocation")?.addEventListener("click", detectAtlasLocation);
+
+if (atlasContext) {
+  applyAtlasContext(atlasContext, { suggestLanguage:false });
+} else {
+  const browserLanguage = navigator.language.split("-")[0];
+  if ([...byId("languageSelect").options].some((option) => option.value === browserLanguage)) {
+    state.language = browserLanguage;
+    localStorage.setItem("atlas-language", state.language);
+  }
+  detectAtlasLocation();
+}
