@@ -2244,6 +2244,14 @@ function newsSourceUrl(value = "") {
   } catch { return "#"; }
 }
 
+function newsSourceDate(value) {
+  const date = new Date(value);
+  if (!Number.isFinite(date.getTime())) return "Fecha no informada";
+  return new Intl.DateTimeFormat(state.language || "es", {
+    day:"2-digit", month:"short", year:"numeric", hour:"2-digit", minute:"2-digit"
+  }).format(date);
+}
+
 function renderNews() {
   const feed = byId("newsFeed");
   if (!feed) return;
@@ -2257,12 +2265,15 @@ function renderNews() {
     <article class="news-card" data-news-id="${escapeNewsText(item.id)}" tabindex="0">
       <div class="news-rank">${String(index + 1).padStart(2,"0")}</div>
       <div class="news-card-body">
-        <div class="news-meta"><span class="news-type ${escapeNewsText(item.type.toLowerCase())}">${escapeNewsText(item.type)}</span><span class="news-section-tag">${escapeNewsText(newsCategoryLabels[item.category] || item.category)}</span><span>${escapeNewsText(item.place)}</span><span>hace ${item.age} h</span></div>
+        <div class="news-meta"><span class="news-type ${escapeNewsText(item.type.toLowerCase())}">${escapeNewsText(item.type)}</span><span class="news-section-tag">${escapeNewsText(newsCategoryLabels[item.category] || item.category)}</span><span>${escapeNewsText(item.place)}</span></div>
         <h2>${escapeNewsText(item.title)}</h2>
         <div class="news-editorial-tags">${Object.values(newsEditorialMeta[item.id] || {scope:item.live ? "Actualidad" : "Regional",urgency:item.age <= 6 ? "Última hora" : "Seguimiento",format:item.live ? "Noticia" : "Análisis"}).map((value) => `<span>${escapeNewsText(value)}</span>`).join("")}</div>
         <p class="news-card-excerpt">${escapeNewsText(item.summary.length > 280 ? item.summary.slice(0, 277).trimEnd() + "…" : item.summary)}</p>
         <div class="news-hashtags">${item.hashtags.map((tag) => `<span>${escapeNewsText(tag)}</span>`).join("")}</div>
-        <div class="news-source"><a href="${newsSourceUrl(item.sourceUrl)}" target="_blank" rel="noreferrer" aria-label="Profundizar en ${escapeNewsText(item.source)}">Profundizar en ${escapeNewsText(item.source)} ↗</a><b>${item.distance === null ? "Orden global" : item.distance < 1 ? "En tu zona" : Math.round(item.distance).toLocaleString("es-CL") + " km"}</b></div>
+        <div class="news-source-box">
+          <span>FUENTE</span>
+          <div class="news-source"><a href="${newsSourceUrl(item.sourceUrl)}" target="_blank" rel="noreferrer" aria-label="Leer la noticia en ${escapeNewsText(item.source)}">${escapeNewsText(item.source)} ↗</a><time datetime="${escapeNewsText(item.publishedAt || "")}">${escapeNewsText(newsSourceDate(item.publishedAt))}</time></div>
+        </div>
         <small class="news-open-hint">Doble clic para abrir la ficha completa</small>
       </div>
     </article>`).join("") : '<div class="news-empty"><strong>No hay noticias verificables disponibles.</strong><span>Atlas descartó fichas genéricas o contenido sin información periodística suficiente.</span></div>';
@@ -2466,11 +2477,11 @@ function openNewsDialog(item, alreadyOpen = false) {
   currentNewsId = item.id;
   byId("newsDialogType").textContent = item.type;
   byId("newsDialogTitle").textContent = item.title;
-  byId("newsDialogMeta").textContent = `${item.place} · hace ${item.age} h · relevancia OSINT ${item.relevance}/100`;
+  byId("newsDialogMeta").textContent = `${item.place} · relevancia OSINT ${item.relevance}/100`;
   byId("newsDialogSummary").textContent = item.summary;
   byId("newsDialogHashtags").innerHTML = item.hashtags.map((tag) => `<span>${tag}</span>`).join("");
   byId("newsDialogAnalysis").textContent = item.analysis || "Contexto editorial pendiente.";
-  byId("newsDialogSource").textContent = `Profundizar en ${item.source} ↗`;
+  byId("newsDialogSource").textContent = `${item.source} · ${newsSourceDate(item.publishedAt)} ↗`;
   byId("newsDialogSource").href = newsSourceUrl(item.sourceUrl);
   renderNewsMarketIndicators(item);
   updateNewsPreferenceControls(item);
