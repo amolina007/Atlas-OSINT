@@ -272,3 +272,17 @@ dialog { width: min(760px, calc(100% - 32px)); color: var(--ink); background: #0
 .market-map-legend{display:flex;align-items:center;flex-wrap:wrap;gap:14px;padding:10px 16px;border-top:1px solid rgba(132,166,151,.14);background:#07110e;color:#91a49b;font-size:.72rem}
 .market-map-legend span{display:flex;align-items:center;gap:6px}.market-map-legend small{margin-left:auto;color:#687d73}.market-swatch{width:9px;height:9px;border-radius:2px}.market-swatch.gain{background:#197d4e}.market-swatch.flat{background:#4b5c55}.market-swatch.loss{background:#993734}
 @media(max-width:760px){.native-market-map{grid-template-columns:repeat(6,minmax(0,1fr));grid-auto-rows:86px}.market-tile.size-xl{grid-column:span 6}.market-tile.size-lg{grid-column:span 3}.market-tile.size-md{grid-column:span 3}.market-tile.size-sm{grid-column:span 3}.market-map-legend small{width:100%;margin-left:0}}
+
+/* Strong administrative-topographic visibility */
+.layer-terrain{mix-blend-mode:screen}
+.terrain-band{stroke:rgba(232,205,132,.72);stroke-width:1.25;filter:drop-shadow(0 0 5px rgba(205,174,92,.18))}
+.terrain-band.high{fill:rgba(186,143,65,.30)}
+.terrain-band.mid{fill:rgba(157,144,98,.17)}
+.terrain-contour{fill:none;stroke:rgba(244,218,151,.48);stroke-width:.7;vector-effect:non-scaling-stroke}
+.terrain-contour.high{stroke:rgba(255,218,126,.66)}
+.terrain-label{fill:#f3d890;font-size:8px;font-weight:700;stroke:#07100d;stroke-width:3px}
+.waterway-casing{fill:none;stroke:rgba(2,17,24,.88);stroke-width:4.4;vector-effect:non-scaling-stroke}
+.waterway{fill:none;stroke:#58c7ee;stroke-width:2.2;vector-effect:non-scaling-stroke;filter:drop-shadow(0 0 3px rgba(70,191,232,.55))}
+.water-label{fill:#8ee1ff;font-size:7px;font-weight:700;stroke:#061016;stroke-width:3px}
+.admin-line-oblast{stroke:rgba(239,247,241,.72);stroke-width:1.15}
+.admin-line-district{stroke:rgba(207,222,212,.48);stroke-width:.7}
