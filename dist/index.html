@@ -453,50 +453,18 @@
         <div class="market-grid">
           <article class="market-widget-card market-overview-card">
             <div class="market-card-heading"><span>MAPA DE MERCADOS</span><small>índices, futuros, divisas y bonos</small></div>
-            <div class="tradingview-widget-container market-widget-frame">
-              <div class="tradingview-widget-container__widget"></div>
-              <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-market-overview.js" async>
-              {
-                "colorTheme":"dark",
-                "dateRange":"1D",
-                "showChart":true,
-                "locale":"es",
-                "width":"100%",
-                "height":"100%",
-                "largeChartUrl":"",
-                "isTransparent":true,
-                "showSymbolLogo":true,
-                "showFloatingTooltip":false,
-                "tabs":[
-                  {"title":"Índices","symbols":[
-                    {"s":"FOREXCOM:SPXUSD","d":"S&P 500"},
-                    {"s":"NASDAQ:NDX","d":"Nasdaq 100"},
-                    {"s":"DJ:DJI","d":"Dow Jones"},
-                    {"s":"INDEX:STOXX50E","d":"Euro Stoxx 50"},
-                    {"s":"TVC:NI225","d":"Nikkei 225"},
-                    {"s":"BCS:SP_IPSA","d":"IPSA Chile"}
-                  ]},
-                  {"title":"Materias primas","symbols":[
-                    {"s":"TVC:USOIL","d":"Petróleo WTI"},
-                    {"s":"TVC:UKOIL","d":"Petróleo Brent"},
-                    {"s":"TVC:GOLD","d":"Oro"},
-                    {"s":"COMEX:HG1!","d":"Cobre"},
-                    {"s":"CBOT:ZW1!","d":"Trigo"},
-                    {"s":"CBOT:ZC1!","d":"Maíz"}
-                  ]},
-                  {"title":"Divisas y bonos","symbols":[
-                    {"s":"TVC:DXY","d":"Índice dólar"},
-                    {"s":"FX:EURUSD","d":"EUR/USD"},
-                    {"s":"FX_IDC:USDCLP","d":"USD/CLP"},
-                    {"s":"TVC:US10Y","d":"Bono EEUU 10 años"},
-                    {"s":"TVC:DE10Y","d":"Bono Alemania 10 años"},
-                    {"s":"TVC:JP10Y","d":"Bono Japón 10 años"}
-                  ]}
-                ]
-              }
-              </script>
+            <div class="market-widget-frame market-iframe-shell">
+              <iframe
+                class="market-overview-iframe"
+                title="Mapa de mercados globales"
+                src="https://s.tradingview.com/embed-widget/market-overview/?locale=es#%7B%22colorTheme%22%3A%22dark%22%2C%22dateRange%22%3A%221D%22%2C%22showChart%22%3Atrue%2C%22locale%22%3A%22es%22%2C%22width%22%3A%22100%25%22%2C%22height%22%3A510%2C%22largeChartUrl%22%3A%22%22%2C%22isTransparent%22%3Atrue%2C%22showSymbolLogo%22%3Atrue%2C%22showFloatingTooltip%22%3Afalse%2C%22tabs%22%3A%5B%7B%22title%22%3A%22%C3%8Dndices%22%2C%22symbols%22%3A%5B%7B%22s%22%3A%22FOREXCOM%3ASPXUSD%22%2C%22d%22%3A%22S%26P%20500%22%7D%2C%7B%22s%22%3A%22NASDAQ%3ANDX%22%2C%22d%22%3A%22Nasdaq%20100%22%7D%2C%7B%22s%22%3A%22DJ%3ADJI%22%2C%22d%22%3A%22Dow%20Jones%22%7D%2C%7B%22s%22%3A%22INDEX%3ADEU40%22%2C%22d%22%3A%22DAX%22%7D%2C%7B%22s%22%3A%22TVC%3AUKX%22%2C%22d%22%3A%22FTSE%20100%22%7D%2C%7B%22s%22%3A%22TVC%3ANI225%22%2C%22d%22%3A%22Nikkei%20225%22%7D%5D%7D%2C%7B%22title%22%3A%22Materias%20primas%22%2C%22symbols%22%3A%5B%7B%22s%22%3A%22TVC%3AUSOIL%22%2C%22d%22%3A%22Petr%C3%B3leo%20WTI%22%7D%2C%7B%22s%22%3A%22TVC%3AUKOIL%22%2C%22d%22%3A%22Petr%C3%B3leo%20Brent%22%7D%2C%7B%22s%22%3A%22TVC%3AGOLD%22%2C%22d%22%3A%22Oro%22%7D%2C%7B%22s%22%3A%22COMEX%3AHG1!%22%2C%22d%22%3A%22Cobre%22%7D%2C%7B%22s%22%3A%22CBOT%3AZW1!%22%2C%22d%22%3A%22Trigo%22%7D%2C%7B%22s%22%3A%22CBOT%3AZC1!%22%2C%22d%22%3A%22Ma%C3%ADz%22%7D%5D%7D%2C%7B%22title%22%3A%22Divisas%20y%20bonos%22%2C%22symbols%22%3A%5B%7B%22s%22%3A%22TVC%3ADXY%22%2C%22d%22%3A%22%C3%8Dndice%20d%C3%B3lar%22%7D%2C%7B%22s%22%3A%22FX%3AEURUSD%22%2C%22d%22%3A%22EUR%2FUSD%22%7D%2C%7B%22s%22%3A%22FX_IDC%3AUSDCLP%22%2C%22d%22%3A%22USD%2FCLP%22%7D%2C%7B%22s%22%3A%22TVC%3AUS10Y%22%2C%22d%22%3A%22Bono%20EEUU%2010%20a%C3%B1os%22%7D%2C%7B%22s%22%3A%22TVC%3ADE10Y%22%2C%22d%22%3A%22Bono%20Alemania%2010%20a%C3%B1os%22%7D%2C%7B%22s%22%3A%22TVC%3AJP10Y%22%2C%22d%22%3A%22Bono%20Jap%C3%B3n%2010%20a%C3%B1os%22%7D%5D%7D%5D%7D"
+                loading="eager"
+                referrerpolicy="origin"
+                allowtransparency="true">
+              </iframe>
+              <noscript><p class="market-widget-fallback">Activa JavaScript para consultar el mapa de mercados. También puedes abrir <a href="https://www.tradingview.com/markets/" target="_blank" rel="noreferrer">TradingView Markets</a>.</p></noscript>
             </div>
-          </article>
+            </article>
 
           <aside class="market-intel">
             <div class="market-card-heading"><span>LECTURA OSINT</span><small>qué observar</small></div>
