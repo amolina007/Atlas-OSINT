@@ -286,3 +286,11 @@ dialog { width: min(760px, calc(100% - 32px)); color: var(--ink); background: #0
 .water-label{fill:#8ee1ff;font-size:7px;font-weight:700;stroke:#061016;stroke-width:3px}
 .admin-line-oblast{stroke:rgba(239,247,241,.72);stroke-width:1.15}
 .admin-line-district{stroke:rgba(207,222,212,.48);stroke-width:.7}
+
+/* Leaflet administrative-topographic base */
+.map .leaflet-container{width:100%;height:100%;background:#0a1511;font-family:var(--sans)}
+.leaflet-tile-pane{filter:saturate(.72) brightness(.78) contrast(1.08)}
+.leaflet-control-attribution{background:rgba(5,14,11,.82)!important;color:#789087!important;font-size:10px!important}
+.leaflet-control-attribution a{color:#9fcdb6!important}
+.leaflet-tooltip{background:rgba(7,16,13,.94);border:1px solid rgba(159,205,182,.35);color:#edf4ef;box-shadow:0 8px 24px rgba(0,0,0,.28);font:600 11px var(--mono)}
+.leaflet-tooltip:before{border-top-color:rgba(159,205,182,.35)}
