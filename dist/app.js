@@ -165,6 +165,8 @@ const resourceRegions = {
 };
 const byId = (id) => document.getElementById(id);
 let atlasMap = null;
+let leafletMap = null;
+let leafletLayers = {};
 let fallbackSvg = null;
 let fallbackZoom = null;
 let vectorZoomFrame = null;
@@ -710,8 +712,11 @@ function createMap() {
   container.innerHTML = "";
   fallbackSvg = null;
   fallbackZoom = null;
-  // Base administrativa y topográfica vectorial: evita el lienzo WebGL negro
-  // observado en algunos navegadores y conserva zoom, relieve y divisiones.
+  // Leaflet usa teselas topográficas reales sin depender de WebGL.
+  if (window.L) {
+    createLeafletAtlas(container);
+    return;
+  }
   createVectorFallback(container);
   return;
   if (!document.createElement("canvas").getContext("webgl2")) {
@@ -776,6 +781,122 @@ function createMap() {
   });
   atlasMap.on("error", (event) => {
     if (event?.error?.message) console.warn("ATLAS map warning:", event.error.message);
+  });
+}
+
+function lonLatToLeaflet(coordinates) {
+  return coordinates.map(([lon, lat]) => [lat, lon]);
+}
+
+function createLeafletAtlas(container) {
+  if (leafletMap) {
+    leafletMap.remove();
+    leafletMap = null;
+  }
+  if (atlasMap) {
+    atlasMap.remove();
+    atlasMap = null;
+  }
+  container.innerHTML = "";
+  const config = currentTheater();
+  const selectedRegion = resourceRegions[state.resourceRegion] || resourceRegions.world;
+  const regional = Boolean(config.resources && state.resourceRegion !== "world");
+  const center = regional ? selectedRegion.center : state.view === "theater" ? config.center : [20, 30];
+  const zoom = regional ? 4 : state.view === "theater" ? 5 : 2;
+
+  leafletMap = L.map(container, {
+    center: [center[1], center[0]],
+    zoom,
+    minZoom: 2,
+    maxZoom: 16,
+    zoomControl: false,
+    preferCanvas: true
+  });
+
+  L.tileLayer("https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png", {
+    subdomains: "abc",
+    maxZoom: 16,
+    opacity: 0.9,
+    attribution: "© OpenStreetMap contributors · SRTM | OpenTopoMap"
+  }).addTo(leafletMap);
+
+  leafletLayers = {
+    control: L.layerGroup().addTo(leafletMap),
+    movements: L.layerGroup().addTo(leafletMap),
+    admin: L.layerGroup().addTo(leafletMap),
+    events: L.layerGroup().addTo(leafletMap),
+    resources: L.layerGroup().addTo(leafletMap)
+  };
+
+  controlZones.forEach((zone) => {
+    L.polygon(lonLatToLeaflet(zone.coordinates[0]), {
+      color: zone.actor === "ru" ? "#ff816e" : "#75c8f5",
+      weight: 2,
+      fillColor: zone.actor === "ru" ? "#c2413d" : "#377fa8",
+      fillOpacity: 0.24
+    }).addTo(leafletLayers.control);
+  });
+  if (frontLine.length > 1) {
+    L.polyline(lonLatToLeaflet(frontLine), { color: "#f4d897", weight: 3, dashArray: "5 6", opacity: 0.95 }).addTo(leafletLayers.control);
+  }
+
+  movementArrows.forEach((movement) => {
+    L.polyline(lonLatToLeaflet(movement.coordinates), {
+      color: movement.actor === "ru" ? "#e77867" : "#71aee8",
+      weight: 2.2,
+      opacity: 0.85,
+      dashArray: "8 6"
+    }).bindTooltip(movement.phase, { sticky: true }).addTo(leafletLayers.movements);
+  });
+
+  if (config.adminGeoJSON) {
+    Promise.all([
+      fetch("./data/ukraine-oblasts.geojson").then((response) => response.json()),
+      fetch("./data/ukraine-districts.geojson").then((response) => response.json())
+    ]).then(([oblasts, districts]) => {
+      L.geoJSON(oblasts, { style: { color: "#eff7f1", weight: 1.25, opacity: 0.75, fillOpacity: 0 } }).addTo(leafletLayers.admin);
+      L.geoJSON(districts, { style: { color: "#d1dfd6", weight: 0.65, opacity: 0.48, dashArray: "3 4", fillOpacity: 0 } }).addTo(leafletLayers.admin);
+      syncLeafletLayers();
+    }).catch((error) => console.warn("Administrative GeoJSON unavailable.", error.message));
+  }
+
+  if (config.resources) {
+    resourceMarkers.forEach((item) => {
+      L.circleMarker([item.lat, item.lon], {
+        radius: 5 + Math.sqrt(item.score) * 0.55,
+        color: item.color,
+        weight: 1.5,
+        fillColor: item.color,
+        fillOpacity: 0.58
+      }).bindTooltip(item.place).on("click", () => renderIntel(item)).addTo(leafletLayers.resources);
+    });
+  } else {
+    events.forEach((event) => {
+      const color = event.kind === "ground" ? "#79d6a0" : event.kind === "air" ? "#e77867" : "#ad8de3";
+      L.circleMarker([event.lat, event.lon], {
+        radius: event.id === state.selected ? 8 : 6,
+        color: "#07100d",
+        weight: 2,
+        fillColor: color,
+        fillOpacity: 0.95
+      }).bindTooltip(event.place.split(" · ")[0]).on("click", () => renderIntel(event)).addTo(leafletLayers.events);
+    });
+  }
+
+  leafletMap.on("zoomend", () => {
+    const z = leafletMap.getZoom();
+    byId("zoomDetailState").textContent = z >= 9 ? "DETALLE · LOCAL" : z >= 6 ? "DETALLE · REGIONAL" : "DETALLE · TEATRO";
+  });
+  syncLeafletLayers();
+  setTimeout(() => leafletMap?.invalidateSize(), 50);
+}
+
+function syncLeafletLayers() {
+  if (!leafletMap) return;
+  Object.entries(leafletLayers).forEach(([name, layer]) => {
+    const visible = name === "events" || (name === "resources" && currentTheater().resources) || state.layers.has(name);
+    if (visible && !leafletMap.hasLayer(layer)) layer.addTo(leafletMap);
+    if (!visible && leafletMap.hasLayer(layer)) leafletMap.removeLayer(layer);
   });
 }
 
@@ -1245,6 +1366,7 @@ function addStrategicLayers() {
 }
 
 function syncMapLayers() {
+  syncLeafletLayers();
   document.querySelectorAll(".map-layer").forEach((layer) => {
     const name = [...layer.classList].find((className) => className.startsWith("layer-"))?.replace("layer-", "");
     layer.classList.toggle("hidden", !state.layers.has(name));
@@ -1262,12 +1384,17 @@ function syncMapLayers() {
 }
 
 function changeMapZoom(direction) {
-  if (atlasMap) direction > 0 ? atlasMap.zoomIn({ duration: 220 }) : atlasMap.zoomOut({ duration: 220 });
+  if (leafletMap) direction > 0 ? leafletMap.zoomIn() : leafletMap.zoomOut();
+  else if (atlasMap) direction > 0 ? atlasMap.zoomIn({ duration: 220 }) : atlasMap.zoomOut({ duration: 220 });
   else if (fallbackSvg && fallbackZoom) fallbackSvg.transition().duration(220).call(fallbackZoom.scaleBy, direction > 0 ? 1.5 : 1 / 1.5);
 }
 
 function resetMapZoom() {
-  if (atlasMap) atlasMap.easeTo({ center: state.view === "theater" ? currentTheater().center : [20, 30], zoom: state.view === "theater" ? 4.65 : 1.15, bearing: 0, pitch: 0, duration: 300 });
+  if (leafletMap) {
+    const config = currentTheater();
+    const center = state.view === "theater" ? config.center : [20, 30];
+    leafletMap.setView([center[1], center[0]], state.view === "theater" ? 5 : 2);
+  } else if (atlasMap) atlasMap.easeTo({ center: state.view === "theater" ? currentTheater().center : [20, 30], zoom: state.view === "theater" ? 4.65 : 1.15, bearing: 0, pitch: 0, duration: 300 });
   else if (fallbackSvg && fallbackZoom) fallbackSvg.transition().duration(260).call(fallbackZoom.transform, d3.zoomIdentity);
 }
 
