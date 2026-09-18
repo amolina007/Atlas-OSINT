@@ -14,7 +14,11 @@ const decodeXml = (value = "") => value
   .replace(/&lt;/g, "<").replace(/&gt;/g, ">")
   .replace(/&#(\d+);/g, (_, code) => String.fromCharCode(Number(code)));
 
-const clean = (value = "") => decodeXml(value.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim());
+const clean = (value = "") => decodeXml(decodeXml(value))
+  .replace(/<[^>]+>/g, " ")
+  .replace(/&nbsp;/gi, " ")
+  .replace(/\s+/g, " ")
+  .trim();
 
 const tag = (xml, name) => {
   const match = xml.match(new RegExp(`<${name}(?:\\s[^>]*)?>([\\s\\S]*?)<\\/${name}>`, "i"));
@@ -27,6 +31,8 @@ const sourceTag = (xml) => {
 };
 
 const classify = (text) => categoryRules.find(([, pattern]) => pattern.test(text))?.[0] || "territory";
+const nonNewsPattern = /\b(trainee|oferta(?:s)? de empleo|bolsa de trabajo|vacante|postula|postulaci[oó]n|descuento|cup[oó]n|promoci[oó]n comercial|hor[oó]scopo)\b/i;
+const cleanTitle = (title, source) => title.replace(new RegExp(`\\s+-\\s+${source.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")}\\s*$`,"i"),"").trim();
 
 const extractMeta = async (url) => {
   const controller = new AbortController();
@@ -67,7 +73,7 @@ export default async (req) => {
   const lon = Number(url.searchParams.get("lon"));
   const queries = [
     `"${location}" when:3d`,
-    `"${country}" (economía OR seguridad OR tecnología OR salud OR infraestructura) when:3d`,
+    `"${location.split(",").pop()?.trim() || country}" (economía OR seguridad OR tecnología OR salud OR infraestructura) when:3d`,
     "(geopolitics OR economy OR technology OR climate OR security) when:1d"
   ];
 
@@ -82,21 +88,27 @@ export default async (req) => {
       const key = article.title.toLocaleLowerCase();
       if (article.title && article.url && !unique.has(key)) unique.set(key,article);
     });
-    const base = [...unique.values()].slice(0,18);
+    const base = [...unique.values()]
+      .filter((article) => !nonNewsPattern.test(article.title))
+      .slice(0,18);
     const descriptions = await Promise.all(base.slice(0,12).map((article) => extractMeta(article.url)));
     const now = Date.now();
     const articles = base.map((article,index) => {
       const published = Date.parse(article.publishedAt);
       const age = Number.isFinite(published) ? Math.max(0,Math.round((now-published)/3600000)) : 0;
-      const summary = descriptions[index] || article.rssDescription || `Cobertura publicada por ${article.source.name}. Abre la fuente original para consultar el texto completo y sus actualizaciones.`;
-      const category = classify(`${article.title} ${summary}`);
+      const title = cleanTitle(article.title, article.source.name);
+      const extracted = clean(descriptions[index] || "");
+      const rssText = clean(article.rssDescription || "");
+      const usefulRss = rssText && rssText !== article.title && rssText.length > title.length + article.source.name.length + 20 ? rssText : "";
+      const summary = extracted || usefulRss || `${article.source.name} publicó esta información: “${title}”. Consulta la fuente original para conocer los antecedentes, declaraciones y actualizaciones completas.`;
+      const category = classify(`${title} ${summary}`);
       return {
-        id:`LIVE-${index}-${Math.abs([...article.title].reduce((hash,char) => ((hash<<5)-hash)+char.charCodeAt(0),0))}`,
-        title:article.title,
+        id:`LIVE-${index}-${Math.abs([...title].reduce((hash,char) => ((hash<<5)-hash)+char.charCodeAt(0),0))}`,
+        title,
         place:location,
         lat:Number.isFinite(lat) ? lat : 0,
         lon:Number.isFinite(lon) ? lon : 0,
-        category, type:"HECHO", age, relevance:Math.max(55,94-index*2),
+        category, type:"NOTICIA", age, relevance:Math.max(55,94-index*2),
         summary:summary.slice(0,520),
         analysis:"Titular y descripción procedentes del medio enlazado. Atlas no sustituye la lectura de la publicación original ni confirma de manera independiente todas sus afirmaciones.",
         hashtags:[`#${category}`,`#${country}`,"#Actualidad"],
