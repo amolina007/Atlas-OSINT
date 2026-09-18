@@ -2232,6 +2232,17 @@ function distanceKm(a, b) {
   return radius * 2 * Math.atan2(Math.sqrt(x), Math.sqrt(1 - x));
 }
 
+function escapeNewsText(value = "") {
+  return String(value).replace(/[&<>"']/g, (character) => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" })[character]);
+}
+
+function newsSourceUrl(value = "") {
+  try {
+    const url = new URL(value, location.origin);
+    return ["http:","https:"].includes(url.protocol) ? url.href : "#";
+  } catch { return "#"; }
+}
+
 function renderNews() {
   const feed = byId("newsFeed");
   if (!feed) return;
@@ -2242,15 +2253,15 @@ function renderNews() {
   items.sort((a,b) => sort === "recent" ? a.age-b.age : sort === "relevance" ? b.relevance-a.relevance : newsLocation ? a.distance-b.distance : b.relevance-a.relevance);
   currentNewsItems = items;
   feed.innerHTML = items.length ? items.map((item, index) => `
-    <article class="news-card" data-news-id="${item.id}" tabindex="0">
+    <article class="news-card" data-news-id="${escapeNewsText(item.id)}" tabindex="0">
       <div class="news-rank">${String(index + 1).padStart(2,"0")}</div>
       <div class="news-card-body">
-        <div class="news-meta"><span class="news-type ${item.type.toLowerCase()}">${item.type}</span><span class="news-section-tag">${newsCategoryLabels[item.category] || item.category}</span><span>${item.place}</span><span>hace ${item.age} h</span></div>
-        <h2>${item.title}</h2>
-        <div class="news-editorial-tags">${Object.values(newsEditorialMeta[item.id] || {scope:item.live ? "Actualidad" : "Regional",urgency:item.age <= 6 ? "Última hora" : "Seguimiento",format:item.live ? "Noticia" : "Análisis"}).map((value) => `<span>${value}</span>`).join("")}</div>
-        <p class="news-card-excerpt">${item.summary.length > 150 ? item.summary.slice(0, 147).trimEnd() + "…" : item.summary}</p>
-        <div class="news-hashtags">${item.hashtags.map((tag) => `<span>${tag}</span>`).join("")}</div>
-        <div class="news-source"><a href="${item.sourceUrl}" target="_blank" rel="noreferrer">${item.source} ↗</a><b>${item.distance === null ? "Orden global" : item.distance < 1 ? "En tu zona" : Math.round(item.distance).toLocaleString("es-CL") + " km"}</b></div>
+        <div class="news-meta"><span class="news-type ${escapeNewsText(item.type.toLowerCase())}">${escapeNewsText(item.type)}</span><span class="news-section-tag">${escapeNewsText(newsCategoryLabels[item.category] || item.category)}</span><span>${escapeNewsText(item.place)}</span><span>hace ${item.age} h</span></div>
+        <h2>${escapeNewsText(item.title)}</h2>
+        <div class="news-editorial-tags">${Object.values(newsEditorialMeta[item.id] || {scope:item.live ? "Actualidad" : "Regional",urgency:item.age <= 6 ? "Última hora" : "Seguimiento",format:item.live ? "Noticia" : "Análisis"}).map((value) => `<span>${escapeNewsText(value)}</span>`).join("")}</div>
+        <p class="news-card-excerpt">${escapeNewsText(item.summary.length > 280 ? item.summary.slice(0, 277).trimEnd() + "…" : item.summary)}</p>
+        <div class="news-hashtags">${item.hashtags.map((tag) => `<span>${escapeNewsText(tag)}</span>`).join("")}</div>
+        <div class="news-source"><a href="${newsSourceUrl(item.sourceUrl)}" target="_blank" rel="noreferrer" aria-label="Profundizar en ${escapeNewsText(item.source)}">Profundizar en ${escapeNewsText(item.source)} ↗</a><b>${item.distance === null ? "Orden global" : item.distance < 1 ? "En tu zona" : Math.round(item.distance).toLocaleString("es-CL") + " km"}</b></div>
         <small class="news-open-hint">Doble clic para abrir la ficha completa</small>
       </div>
     </article>`).join("") : '<div class="news-empty">No hay noticias dentro de este filtro territorial.</div>';
@@ -2458,8 +2469,8 @@ function openNewsDialog(item, alreadyOpen = false) {
   byId("newsDialogSummary").textContent = item.summary;
   byId("newsDialogHashtags").innerHTML = item.hashtags.map((tag) => `<span>${tag}</span>`).join("");
   byId("newsDialogAnalysis").textContent = item.analysis || "Contexto editorial pendiente.";
-  byId("newsDialogSource").textContent = `Abrir ${item.source} ↗`;
-  byId("newsDialogSource").href = item.sourceUrl;
+  byId("newsDialogSource").textContent = `Profundizar en ${item.source} ↗`;
+  byId("newsDialogSource").href = newsSourceUrl(item.sourceUrl);
   renderNewsMarketIndicators(item);
   updateNewsPreferenceControls(item);
   const available = (currentNewsItems.length ? currentNewsItems : atlasNews).length > 1;
