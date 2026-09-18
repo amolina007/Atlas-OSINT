@@ -31,6 +31,50 @@ const sourceTag = (xml) => {
 };
 
 const classify = (text) => categoryRules.find(([, pattern]) => pattern.test(text))?.[0] || "territory";
+
+const newsGazetteer = [
+  { pattern:/\bmaip[uú]\b/i, place:"Maipú, Chile", lat:-33.5106, lon:-70.7573, scope:"local" },
+  { pattern:/\bsantiago\b|regi[oó]n metropolitana/i, place:"Santiago, Chile", lat:-33.4489, lon:-70.6693, scope:"metro" },
+  { pattern:/\bvalpara[ií]so\b/i, place:"Valparaíso, Chile", lat:-33.0472, lon:-71.6127, scope:"local" },
+  { pattern:/\bsan antonio\b/i, place:"San Antonio, Chile", lat:-33.5922, lon:-71.6055, scope:"local" },
+  { pattern:/\bconcepci[oó]n\b|\bbiob[ií]o\b/i, place:"Concepción, Chile", lat:-36.8201, lon:-73.0444, scope:"regional" },
+  { pattern:/\bantofagasta\b|\bcalama\b/i, place:"Antofagasta, Chile", lat:-23.6509, lon:-70.3975, scope:"regional" },
+  { pattern:/\bla serena\b|\bcoquimbo\b/i, place:"Coquimbo, Chile", lat:-29.9533, lon:-71.3395, scope:"regional" },
+  { pattern:/\btemuco\b|\baraucan[ií]a\b/i, place:"Temuco, Chile", lat:-38.7359, lon:-72.5904, scope:"regional" },
+  { pattern:/\bpuerto montt\b|\blos lagos\b/i, place:"Puerto Montt, Chile", lat:-41.4689, lon:-72.9411, scope:"regional" },
+  { pattern:/\bpunta arenas\b|\bmagallanes\b/i, place:"Punta Arenas, Chile", lat:-53.1638, lon:-70.9171, scope:"regional" },
+  { pattern:/\brancagua\b|\bo['’]?higgins\b/i, place:"Rancagua, Chile", lat:-34.1708, lon:-70.7444, scope:"regional" },
+  { pattern:/\btalca\b|\bmaule\b/i, place:"Talca, Chile", lat:-35.4264, lon:-71.6554, scope:"regional" },
+  { pattern:/\brosario\b|marcelo bielsa/i, place:"Rosario, Argentina", lat:-32.9442, lon:-60.6505, scope:"local" },
+  { pattern:/\bmontevideo\b/i, place:"Montevideo, Uruguay", lat:-34.9011, lon:-56.1645, scope:"local" },
+  { pattern:/\bchile\b|\bla roja\b/i, place:"Chile", lat:-33.4489, lon:-70.6693, scope:"national" },
+  { pattern:/\blima\b|\bper[uú]\b/i, place:"Lima, Perú", lat:-12.0464, lon:-77.0428, scope:"national" },
+  { pattern:/\bbuenos aires\b|\bargentina\b/i, place:"Buenos Aires, Argentina", lat:-34.6037, lon:-58.3816, scope:"national" },
+  { pattern:/\bbrasili?a\b|\bbrasil\b/i, place:"Brasilia, Brasil", lat:-15.7939, lon:-47.8828, scope:"national" },
+  { pattern:/\bwashington\b|estados unidos|\bee\.?\s?uu\.?\b/i, place:"Washington, Estados Unidos", lat:38.9072, lon:-77.0369, scope:"national" },
+  { pattern:/\bkyiv\b|\bkiev\b|\bucrania\b/i, place:"Kyiv, Ucrania", lat:50.4501, lon:30.5234, scope:"national" },
+  { pattern:/\bmosc[uú]\b|\brusia\b/i, place:"Moscú, Rusia", lat:55.7558, lon:37.6173, scope:"national" },
+  { pattern:/\bgaza\b|\bisrael\b/i, place:"Gaza y sur de Israel", lat:31.5, lon:34.47, scope:"regional" },
+  { pattern:/\bbeijing\b|\bpek[ií]n\b|\bchina\b/i, place:"Beijing, China", lat:39.9042, lon:116.4074, scope:"national" },
+  { pattern:/\btokio\b|\bjap[oó]n\b/i, place:"Tokio, Japón", lat:35.6762, lon:139.6503, scope:"national" },
+  { pattern:/\blondres\b|\binglaterra\b|reino unido/i, place:"Londres, Reino Unido", lat:51.5072, lon:-0.1276, scope:"national" },
+  { pattern:/\bpar[ií]s\b|\bfrancia\b|\bmbapp[eé]\b|\bzidane\b/i, place:"París, Francia", lat:48.8566, lon:2.3522, scope:"national" },
+  { pattern:/\bmadrid\b|\bespa[nñ]a\b/i, place:"Madrid, España", lat:40.4168, lon:-3.7038, scope:"national" }
+];
+
+const resolveArticleGeo = (text, fallback) => newsGazetteer.find((entry) => entry.pattern.test(text)) || fallback;
+
+const mapContextFor = ({ category, text, geo }) => {
+  if (/partido|selecci[oó]n|copa|campeonato|estadio|gol\b|juegos|golf|team chile|capit[aá]n/i.test(text)) return { layer:"SEDE Y ÁMBITO DEPORTIVO", insight:`La vista localiza la sede o el país protagonista en ${geo.place}; no dibuja rutas o riesgos sin relación con la noticia.`, layers:["admin"], scope:geo.scope };
+  if (/sismo|temblor|terremoto|volc[aá]n/i.test(text)) return { layer:"RELIEVE Y AMENAZA SÍSMICA", insight:`El mapa centra el evento en ${geo.place} y prioriza relieve y referencia tectónica; no representa intensidad ni daños sin datos oficiales.`, layers:["terrain","admin"], scope:geo.scope };
+  if (/lluvia|tormenta|inundaci[oó]n|r[ií]o|embalse|sequ[ií]a|agua/i.test(text)) return { layer:"HIDROGRAFÍA Y CLIMA", insight:`La lectura territorial de ${geo.place} prioriza cuencas, costa y relieve vinculados al fenómeno informado.`, layers:["water","terrain","admin"], scope:geo.scope };
+  if (/incendio|evacuaci[oó]n|emergencia/i.test(text)) return { layer:"EMERGENCIA Y ACCESIBILIDAD", insight:`El encuadre localiza ${geo.place} y muestra relieve y divisiones administrativas útiles para interpretar acceso y respuesta.`, layers:["terrain","admin","routes"], scope:geo.scope };
+  if (/puerto|carretera|metro|tren|aeropuerto|transporte|log[ií]stica/i.test(text) || category === "infrastructure") return { layer:"TRANSPORTE Y CORREDORES", insight:`El mapa sitúa el hecho en ${geo.place} y prioriza conexiones de transporte y límites administrativos.`, layers:["routes","admin","water"], scope:geo.scope };
+  if (/guerra|ataque|militar|frontera|conflicto/i.test(text) || category === "geopolitics") return { layer:"FRONTERAS Y CONTEXTO ESTRATÉGICO", insight:`La vista ubica ${geo.place} con fronteras y rasgos físicos relevantes; no implica control territorial ni atribución.`, layers:["admin","terrain","routes"], scope:geo.scope };
+  if (category === "economy" || /mercado|bolsa|cobre|petr[oó]leo|minero/i.test(text)) return { layer:"NODOS ECONÓMICOS Y RECURSOS", insight:`La noticia se contextualiza en ${geo.place}; se priorizan corredores, costa y relieve ligados a actividad económica.`, layers:["routes","water","terrain"], scope:geo.scope };
+  if (category === "health") return { layer:"COBERTURA SANITARIA Y POBLACIÓN", insight:`El mapa sitúa el ámbito informado en ${geo.place} y muestra divisiones administrativas para interpretar cobertura, sin representar datos personales.`, layers:["admin","routes"], scope:geo.scope };
+  return { layer:"CONTEXTO ADMINISTRATIVO", insight:`La vista se centra en ${geo.place}, ubicación identificada en el contenido de la noticia, y conserva sólo referencias territoriales pertinentes.`, layers:["admin","terrain"], scope:geo.scope };
+};
 const nonNewsPattern = /\b(trainee|oferta(?:s)? de empleo|bolsa de trabajo|vacante|postula|postulaci[oó]n|descuento|cup[oó]n|promoci[oó]n comercial|hor[oó]scopo|revisi[oó]n profesional prioritaria|recomendaci[oó]n autom[aá]tica|herramienta en desarrollo|consultar con tu profesional)\b/i;
 const cleanTitle = (title, source) => title.replace(new RegExp(`\\s+-\\s+${source.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")}\\s*$`,"i"),"").trim();
 const genericMetaPattern = /google news|javascript|cookies|navegador|browser|sign in|iniciar sesi[oó]n|página no disponible/i;
@@ -226,15 +270,18 @@ export default async (req) => {
       const detail = details[index] || { url:article.url, description:"", body:"" };
       const summary = informativeSummary({ body:detail.body, extracted:detail.description, title });
       const category = classify(`${title} ${summary}`);
+      const articleText = `${title} ${summary}`;
+      const geo = resolveArticleGeo(articleText,{ place:"Ubicación no identificada", lat:null, lon:null, scope:"regional" });
       return {
         id:`LIVE-${index}-${Math.abs([...title].reduce((hash,char) => ((hash<<5)-hash)+char.charCodeAt(0),0))}`,
         title,
-        place:location,
-        lat:Number.isFinite(lat) ? lat : 0,
-        lon:Number.isFinite(lon) ? lon : 0,
+        place:geo.place,
+        lat:geo.lat,
+        lon:geo.lon,
         category, type:"NOTICIA", age, relevance:Math.max(55,94-index*2),
         summary,
         analysis:contextualLimit({ category, title, summary, source:article.source.name }),
+        mapContext:mapContextFor({ category, text:articleText, geo }),
         hashtags:[`#${category}`,`#${country}`,"#Actualidad"],
         source:article.source.name, sourceUrl:detail.url, publishedAt:article.publishedAt, live:true
       };
