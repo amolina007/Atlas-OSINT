@@ -476,7 +476,7 @@ dialog { width: min(760px, calc(100% - 32px)); color: var(--ink); background: #0
 
 
 /* Global territorial context */
-.global-context{position:sticky;top:58px;z-index:45;display:grid;grid-template-columns:minmax(210px,.8fr) minmax(420px,1.5fr) minmax(190px,.55fr);gap:18px;align-items:center;padding:13px 22px;border-bottom:1px solid rgba(132,166,151,.16);background:rgba(6,16,12,.96);backdrop-filter:blur(14px)}
+.global-context{position:relative;z-index:45;display:grid;grid-template-columns:minmax(210px,.8fr) minmax(420px,1.5fr) minmax(190px,.55fr);gap:18px;align-items:center;padding:13px 22px;border-bottom:1px solid rgba(132,166,151,.16);background:rgba(6,16,12,.96);backdrop-filter:blur(14px)}
 .global-context-copy{display:flex;flex-direction:column;gap:2px}.global-context-copy strong{font-size:.92rem}.global-context-copy small,.location-search>small,.global-language small{color:#687e73;font-size:.66rem}
 .location-search>label,.global-language>span{display:block;margin-bottom:5px;color:#79d6a0;font:600 .62rem var(--mono);letter-spacing:.09em}
 .location-search>div{display:flex;gap:6px}.location-search input{min-width:0;flex:1;padding:9px 11px;border:1px solid rgba(132,166,151,.24);border-radius:7px;background:#081510;color:#dce8e1}
