@@ -813,12 +813,28 @@ function createLeafletAtlas(container) {
     preferCanvas: true
   });
 
-  L.tileLayer("https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png", {
-    subdomains: "abc",
-    maxZoom: 16,
-    opacity: 0.9,
-    attribution: "© OpenStreetMap contributors · SRTM | OpenTopoMap"
+  const fallbackTiles = L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    maxZoom: 19,
+    opacity: 0.82,
+    attribution: "© OpenStreetMap contributors"
   }).addTo(leafletMap);
+
+  const transparentTile = "data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=";
+  const topographicTiles = L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}", {
+    maxZoom: 18,
+    opacity: 0.88,
+    errorTileUrl: transparentTile,
+    attribution: "Esri World Topographic Map · Sources: Esri, USGS, NOAA"
+  }).addTo(leafletMap);
+
+  let topographicErrors = 0;
+  topographicTiles.on("tileerror", () => {
+    topographicErrors += 1;
+    if (topographicErrors >= 4 && leafletMap.hasLayer(topographicTiles)) {
+      leafletMap.removeLayer(topographicTiles);
+      console.warn("Topographic tiles unavailable; OpenStreetMap fallback remains active.");
+    }
+  });
 
   leafletLayers = {
     control: L.layerGroup().addTo(leafletMap),
