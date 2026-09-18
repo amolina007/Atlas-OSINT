@@ -250,6 +250,7 @@ function applyAtlasContext(context, { suggestLanguage = true } = {}) {
   document.querySelectorAll(".segmented button").forEach((button) => button.classList.toggle("active", button.dataset.view === "world"));
   applyAnalysisContext();
   renderNews();
+  loadLiveNews();
   if (marketSnapshot.size) renderMarketTiles([...marketSnapshot.values()], marketSnapshotUpdatedAt);
   createMap();
 }
@@ -1986,7 +1987,7 @@ async function loadMarketHeatmap() {
 loadMarketHeatmap();
 
 
-const atlasNews = [
+const demoAtlasNews = [
   { id:"N-CL-01", title:"Actividad metropolitana y servicios en Santiago", place:"Santiago, Chile", lat:-33.4489, lon:-70.6693, category:"territory", type:"HECHO", age:1, relevance:82, summary:"La Región Metropolitana concentra señales que afectan la vida diaria: movilidad, continuidad de servicios públicos, decisiones municipales y eventos de impacto territorial. Atlas reúne estos antecedentes para mostrar qué ocurre, dónde sucede y qué organismo debe responder, evitando confundir un reporte inicial con una conclusión definitiva.", analysis:"La ficha territorial reúne señales locales y exige confirmar fecha, organismo responsable y alcance antes de convertirlas en una conclusión.", hashtags:["#Santiago","#ServiciosPúblicos","#Territorio"], source:"Gobierno Regional Metropolitano", sourceUrl:"https://www.gobiernosantiago.cl/" },
   { id:"N-CL-02", title:"Señales económicas relevantes para Chile", place:"Santiago, Chile", lat:-33.4489, lon:-70.6693, category:"economy", type:"ANÁLISIS", age:3, relevance:78, summary:"El desempeño del cobre, el tipo de cambio, las tasas de interés y la actividad interna forman una lectura conectada de la economía chilena. Atlas presenta estas variables como señales complementarias: un movimiento aislado no demuestra una causa, pero su convergencia puede anticipar presiones sobre precios, empleo, crédito o ingresos fiscales.", analysis:"La cercanía geográfica no prueba impacto económico directo. Deben contrastarse cobre, dólar, tasas y actividad con series oficiales.", hashtags:["#Chile","#Economía","#Cobre"], source:"Banco Central de Chile", sourceUrl:"https://www.bcentral.cl/" },
   { id:"N-UA-01", title:"Evolución del frente ruso-ucraniano", place:"Kyiv, Ucrania", lat:50.4501, lon:30.5234, category:"geopolitics", type:"HECHO", age:2, relevance:96, summary:"El seguimiento del frente ruso-ucraniano combina cambios territoriales, ataques de largo alcance, presión logística y señales diplomáticas. Cada dato se clasifica según su corroboración y procedencia, porque una declaración militar, una imagen geolocalizada y una evaluación independiente no tienen el mismo peso probatorio ni describen necesariamente la misma escala.", analysis:"La situación cambia rápidamente. Atlas distingue hechos corroborados, afirmaciones de cada actor e inferencias editoriales.", hashtags:["#Ucrania","#Rusia","#OSINT"], source:"OCHA Ukraine", sourceUrl:"https://www.unocha.org/ukraine" },
@@ -1998,6 +1999,44 @@ const atlasNews = [
   { id:"N-HEALTH-01", title:"Señales de salud pública y presión territorial sobre la red", place:"Maipú, Chile", lat:-33.5106, lon:-70.7573, category:"health", type:"HECHO", age:3, relevance:81, summary:"La vigilancia sanitaria territorial permite relacionar circulación de enfermedades, demanda asistencial y capacidad de respuesta de la red. Atlas prioriza datos agregados y fuentes institucionales, preserva la privacidad y diferencia una señal epidemiológica temprana de una tendencia confirmada por series comparables.", analysis:"La incidencia, gravedad y presión asistencial deben analizarse por población, periodo y territorio; los casos aislados no describen por sí solos una tendencia.", hashtags:["#SaludPública","#Maipú","#Vigilancia"], source:"Ministerio de Salud de Chile", sourceUrl:"https://www.minsal.cl/" },
   { id:"N-INFRA-01", title:"Puertos y corredores logísticos de la zona central", place:"Valparaíso, Chile", lat:-33.0472, lon:-71.6127, category:"infrastructure", type:"ANÁLISIS", age:5, relevance:83, summary:"Los puertos de Valparaíso y San Antonio, junto con las rutas hacia Santiago y los pasos cordilleranos, forman una red crítica para abastecimiento y comercio exterior. Atlas contextualiza interrupciones, obras y congestión según su duración, capacidad afectada y alternativas disponibles dentro del sistema logístico.", analysis:"Una interrupción local adquiere relevancia estratégica cuando reduce capacidad, carece de rutas alternativas o coincide con presión sobre otros nodos.", hashtags:["#Puertos","#Logística","#Infraestructura"], source:"Ministerio de Transportes y Telecomunicaciones", sourceUrl:"https://www.mtt.gob.cl/" }
 ];
+let atlasNews = [...demoAtlasNews];
+let liveNewsRequestId = 0;
+
+async function loadLiveNews() {
+  if (!atlasContext) return;
+  const requestId = ++liveNewsRequestId;
+  const feed = byId("newsFeed");
+  if (feed) feed.setAttribute("aria-busy","true");
+  const stateNode = byId("newsLocationState");
+  if (stateNode) stateNode.innerHTML = `<span class="location-pulse searching"></span><div><strong>ACTUALIZANDO NOTICIAS</strong><small>${atlasContext.name}</small></div>`;
+  try {
+    const params = new URLSearchParams({
+      location:atlasContext.name,
+      country:atlasContext.country || "CL",
+      language:state.language || "es",
+      lat:String(atlasContext.lat),
+      lon:String(atlasContext.lon)
+    });
+    const response = await fetch(`/api/news?${params}`, { headers:{ Accept:"application/json" } });
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    const payload = await response.json();
+    if (requestId !== liveNewsRequestId) return;
+    if (!Array.isArray(payload.articles) || !payload.articles.length) throw new Error("Sin artículos");
+    atlasNews = payload.articles;
+    currentNewsId = null;
+    renderNews();
+    if (stateNode) stateNode.innerHTML = `<span class="location-pulse active"></span><div><strong>${atlasContext.name.toUpperCase()}</strong><small>${atlasNews.length} noticias reales · actualización automática</small></div>`;
+  } catch (error) {
+    if (requestId !== liveNewsRequestId) return;
+    atlasNews = [...demoAtlasNews];
+    renderNews();
+    if (stateNode) stateNode.innerHTML = `<span class="location-pulse"></span><div><strong>FUENTE TEMPORALMENTE NO DISPONIBLE</strong><small>Mostrando fichas editoriales de respaldo</small></div>`;
+    console.warn("Live news unavailable; using editorial fallback.", error.message);
+  } finally {
+    if (feed) feed.removeAttribute("aria-busy");
+  }
+}
+
 
 const newsCategoryLabels = {
   territory:"Territorio y Chile",
@@ -2138,7 +2177,17 @@ const newsMarketLinks = {
 function renderNewsMarketIndicators(item) {
   const container = byId("newsMarketIndicators");
   if (!container) return;
-  const links = newsMarketLinks[item.id] || [];
+  const categoryMarketLinks = {
+    territory:[{symbol:"^IPSA",label:"Mercado local",reason:"Contexto territorial"}],
+    geopolitics:[{symbol:"CL=F",label:"Petróleo WTI",reason:"Riesgo geopolítico"},{symbol:"GC=F",label:"Oro",reason:"Activo defensivo"}],
+    economy:[{symbol:"^GSPC",label:"S&P 500",reason:"Mercado global"},{symbol:"HG=F",label:"Cobre",reason:"Actividad industrial"}],
+    security:[{symbol:"GC=F",label:"Oro",reason:"Percepción de riesgo"}],
+    technology:[{symbol:"^IXIC",label:"Nasdaq",reason:"Sector tecnológico"}],
+    resources:[{symbol:"HG=F",label:"Cobre",reason:"Materias primas"},{symbol:"CL=F",label:"Petróleo WTI",reason:"Energía"}],
+    health:[{symbol:"^GSPC",label:"S&P 500",reason:"Entorno económico"}],
+    infrastructure:[{symbol:"HG=F",label:"Cobre",reason:"Infraestructura"},{symbol:"CL=F",label:"Petróleo WTI",reason:"Transporte"}]
+  };
+  const links = newsMarketLinks[item.id] || categoryMarketLinks[item.category] || [];
   container.innerHTML = links.map((link) => {
     const quote = marketSnapshot.get(link.symbol);
     const change = Number(quote?.changePercent);
@@ -2198,7 +2247,7 @@ function renderNews() {
       <div class="news-card-body">
         <div class="news-meta"><span class="news-type ${item.type.toLowerCase()}">${item.type}</span><span class="news-section-tag">${newsCategoryLabels[item.category] || item.category}</span><span>${item.place}</span><span>hace ${item.age} h</span></div>
         <h2>${item.title}</h2>
-        <div class="news-editorial-tags">${Object.values(newsEditorialMeta[item.id] || {}).map((value) => `<span>${value}</span>`).join("")}</div>
+        <div class="news-editorial-tags">${Object.values(newsEditorialMeta[item.id] || {scope:item.live ? "Actualidad" : "Regional",urgency:item.age <= 6 ? "Última hora" : "Seguimiento",format:item.live ? "Noticia" : "Análisis"}).map((value) => `<span>${value}</span>`).join("")}</div>
         <p class="news-card-excerpt">${item.summary.length > 150 ? item.summary.slice(0, 147).trimEnd() + "…" : item.summary}</p>
         <div class="news-hashtags">${item.hashtags.map((tag) => `<span>${tag}</span>`).join("")}</div>
         <div class="news-source"><a href="${item.sourceUrl}" target="_blank" rel="noreferrer">${item.source} ↗</a><b>${item.distance === null ? "Orden global" : item.distance < 1 ? "En tu zona" : Math.round(item.distance).toLocaleString("es-CL") + " km"}</b></div>
