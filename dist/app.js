@@ -164,6 +164,20 @@ const resourceRegions = {
   "east-asia-pacific": { label: "Asia oriental y Pacífico", center: [122, 5], scale: 0.78, countries: ["Australia", "China", "Indonesia", "Vietnam", "Tailandia", "Myanmar", "Filipinas"] }
 };
 const byId = (id) => document.getElementById(id);
+const atlasSupabase = window.supabase?.createClient && window.ATLAS_SUPABASE
+  ? window.supabase.createClient(
+      window.ATLAS_SUPABASE.url,
+      window.ATLAS_SUPABASE.publishableKey,
+      {
+        auth: {
+          persistSession: true,
+          autoRefreshToken: true,
+          detectSessionInUrl: true,
+          storageKey: "convergencia-aura-auth"
+        }
+      }
+    )
+  : null;
 let atlasMap = null;
 let leafletMap = null;
 let leafletLayers = {};
@@ -1516,14 +1530,9 @@ function normalizePublicEvent(event, index) {
 
 async function loadPublishedEvents() {
   if (currentTheater().resources) return;
-  if (!window.supabase?.createClient || !window.ATLAS_SUPABASE) return;
+  if (!atlasSupabase) return;
 
-  const client = window.supabase.createClient(
-    window.ATLAS_SUPABASE.url,
-    window.ATLAS_SUPABASE.publishableKey,
-    { auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false } }
-  );
-  const { data, error } = await client
+  const { data, error } = await atlasSupabase
     .from("atlas_events")
     .select("id, conflict_slug, occurred_at, event_type, title, summary, location_name, latitude, longitude, verification_status, confidence, created_at")
     .order("occurred_at", { ascending: false, nullsFirst: false });
@@ -2094,3 +2103,87 @@ byId("newsNext")?.addEventListener("click", () => navigateNews(1));
 byId("newsDialog")?.addEventListener("click", (event) => {
   if (event.target === byId("newsDialog")) byId("newsDialog").close();
 });
+
+
+function authInitial(email) {
+  return (email || "A").trim().charAt(0).toUpperCase();
+}
+
+function renderAtlasAuth(session) {
+  const user = session?.user || null;
+  const signedOut = byId("authSignedOut");
+  const signedIn = byId("authSignedIn");
+  if (signedOut) signedOut.hidden = Boolean(user);
+  if (signedIn) signedIn.hidden = !user;
+  if (user) {
+    const initial = authInitial(user.email);
+    byId("authAvatar").textContent = initial;
+    byId("authDialogAvatar").textContent = initial;
+    byId("authButtonLabel").textContent = user.email?.split("@")[0] || "Mi cuenta";
+    byId("authUserEmail").textContent = user.email || "Usuario autenticado";
+    byId("authButton").classList.add("signed-in");
+  } else {
+    byId("authAvatar").textContent = "◎";
+    byId("authButtonLabel").textContent = "Ingresar";
+    byId("authButton").classList.remove("signed-in");
+  }
+}
+
+async function initAtlasAuth() {
+  if (!atlasSupabase) {
+    byId("authStatus").textContent = "El servicio de identidad no está disponible.";
+    return;
+  }
+  const { data } = await atlasSupabase.auth.getSession();
+  renderAtlasAuth(data.session);
+  atlasSupabase.auth.onAuthStateChange((event, session) => {
+    renderAtlasAuth(session);
+    if (event === "SIGNED_IN" && byId("authDialog")?.open) {
+      byId("authStatus").textContent = "Sesión iniciada correctamente.";
+    }
+  });
+}
+
+byId("authButton")?.addEventListener("click", () => byId("authDialog")?.showModal());
+byId("authDialogClose")?.addEventListener("click", () => byId("authDialog")?.close());
+byId("authDialog")?.addEventListener("click", (event) => {
+  if (event.target === byId("authDialog")) byId("authDialog").close();
+});
+byId("magicLinkForm")?.addEventListener("submit", async (event) => {
+  event.preventDefault();
+  if (!atlasSupabase) return;
+  const email = byId("authEmail").value.trim();
+  const submit = byId("magicLinkSubmit");
+  const status = byId("authStatus");
+  submit.disabled = true;
+  submit.textContent = "Enviando…";
+  status.textContent = "";
+  const redirectTo = `${location.origin}${location.pathname}#map`;
+  const { error } = await atlasSupabase.auth.signInWithOtp({
+    email,
+    options: { emailRedirectTo: redirectTo, shouldCreateUser: true }
+  });
+  if (error) {
+    status.textContent = `No se pudo enviar el enlace: ${error.message}`;
+    status.className = "auth-status error";
+  } else {
+    status.textContent = "Enlace enviado. Revisa tu bandeja de entrada y spam.";
+    status.className = "auth-status success";
+  }
+  submit.disabled = false;
+  submit.textContent = "Enviar Magic Link";
+});
+byId("authSignOut")?.addEventListener("click", async () => {
+  if (!atlasSupabase) return;
+  const button = byId("authSignOut");
+  button.disabled = true;
+  button.textContent = "Cerrando…";
+  const { error } = await atlasSupabase.auth.signOut({ scope:"global" });
+  button.disabled = false;
+  button.textContent = "Cerrar sesión";
+  if (!error) {
+    renderAtlasAuth(null);
+    byId("authDialog")?.close();
+  }
+});
+initAtlasAuth();
