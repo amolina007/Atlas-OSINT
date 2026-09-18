@@ -407,3 +407,28 @@ dialog { width: min(760px, calc(100% - 32px)); color: var(--ink); background: #0
 .news-market-indicator:hover{background:rgba(121,214,160,.045)}
 .news-market-context>p{margin:0;padding:8px 14px;border-top:1px solid rgba(132,166,151,.1);color:#5f746a;font-size:.62rem;line-height:1.45}
 @media(max-width:620px){.news-market-context__heading{align-items:flex-start;flex-direction:column;gap:5px}.news-market-context__heading small{text-align:left}.news-market-indicators{grid-template-columns:1fr}.news-market-indicator{border-right:0;border-bottom:1px solid rgba(132,166,151,.1)}.news-market-indicator:last-child{border-bottom:0}}
+
+
+/* Atlas identity / Magic Link */
+.auth-button{display:flex;align-items:center;gap:8px;padding:7px 11px;border:1px solid rgba(132,166,151,.22);border-radius:999px;background:rgba(132,166,151,.04);color:#a8bbb1;font:600 .72rem var(--mono);cursor:pointer}
+.auth-button:hover,.auth-button.signed-in{border-color:rgba(121,214,160,.45);color:#dcebe3;background:rgba(121,214,160,.07)}
+.auth-avatar{display:grid;place-items:center;width:25px;height:25px;border-radius:50%;background:rgba(121,214,160,.12);color:#79d6a0;font:700 .7rem var(--mono)}
+.auth-avatar.large{width:42px;height:42px;font-size:1rem}
+.auth-dialog{width:min(470px,calc(100vw - 28px));padding:28px;border:1px solid rgba(132,166,151,.3);border-radius:16px;background:#091612;color:#e7eee9;box-shadow:0 30px 90px rgba(0,0,0,.6)}
+.auth-dialog::backdrop{background:rgba(2,7,5,.76);backdrop-filter:blur(5px)}
+.auth-dialog h2{margin:7px 34px 10px 0;font-size:1.55rem}
+.auth-dialog section>p:not(.eyebrow){color:#91a59b;line-height:1.6}
+.auth-brand{display:flex;align-items:center;gap:10px;padding-bottom:18px;margin-bottom:22px;border-bottom:1px solid rgba(132,166,151,.14)}
+.auth-brand div{display:flex;flex-direction:column;gap:3px}.auth-brand strong{font:700 .7rem var(--mono);letter-spacing:.08em}.auth-brand small{color:#687d73}
+#magicLinkForm{display:grid;gap:9px;margin-top:20px}
+#magicLinkForm label{font:600 .68rem var(--mono);color:#9fcdb6}
+#magicLinkForm input{width:100%;box-sizing:border-box;padding:12px;border:1px solid rgba(132,166,151,.25);border-radius:8px;background:#06100d;color:#edf4ef;font:500 .82rem var(--mono)}
+#magicLinkForm input:focus{outline:2px solid rgba(121,214,160,.28);border-color:#79d6a0}
+#magicLinkForm button,.auth-signout{padding:11px 13px;border:1px solid #79d6a0;border-radius:8px;background:#79d6a0;color:#06100d;font:700 .76rem var(--mono);cursor:pointer}
+#magicLinkForm button:disabled,.auth-signout:disabled{opacity:.55;cursor:wait}
+.auth-status{min-height:20px;margin:13px 0 0;color:#81978c;font-size:.72rem}.auth-status.success{color:#79d6a0}.auth-status.error{color:#e68478}
+.auth-user-card{display:flex;align-items:center;gap:12px;padding:14px;margin:18px 0;border:1px solid rgba(121,214,160,.2);border-radius:10px;background:rgba(121,214,160,.05)}
+.auth-user-card div{display:flex;min-width:0;flex-direction:column;gap:4px}.auth-user-card strong{overflow:hidden;text-overflow:ellipsis}.auth-user-card small{color:#71877d}
+.auth-signout{background:transparent;color:#e68478;border-color:rgba(230,132,120,.45)}
+.auth-sso-note{margin:22px 0 0;padding-top:15px;border-top:1px solid rgba(132,166,151,.12);color:#5f746a;font-size:.66rem;line-height:1.5}
+@media(max-width:760px){.auth-button #authButtonLabel{display:none}.auth-button{padding:6px}.auth-dialog{padding:22px}}
