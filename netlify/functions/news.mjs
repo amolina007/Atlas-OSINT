@@ -31,7 +31,7 @@ const sourceTag = (xml) => {
 };
 
 const classify = (text) => categoryRules.find(([, pattern]) => pattern.test(text))?.[0] || "territory";
-const nonNewsPattern = /\b(trainee|oferta(?:s)? de empleo|bolsa de trabajo|vacante|postula|postulaci[oó]n|descuento|cup[oó]n|promoci[oó]n comercial|hor[oó]scopo)\b/i;
+const nonNewsPattern = /\b(trainee|oferta(?:s)? de empleo|bolsa de trabajo|vacante|postula|postulaci[oó]n|descuento|cup[oó]n|promoci[oó]n comercial|hor[oó]scopo|revisi[oó]n profesional prioritaria|recomendaci[oó]n autom[aá]tica|herramienta en desarrollo|consultar con tu profesional)\b/i;
 const cleanTitle = (title, source) => title.replace(new RegExp(`\\s+-\\s+${source.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")}\\s*$`,"i"),"").trim();
 const genericMetaPattern = /google news|javascript|cookies|navegador|browser|sign in|iniciar sesi[oó]n|página no disponible/i;
 
@@ -141,7 +141,7 @@ export default async (req) => {
         hashtags:[`#${category}`,`#${country}`,"#Actualidad"],
         source:article.source.name, sourceUrl:article.url, publishedAt:article.publishedAt, live:true
       };
-    });
+    }).filter((article) => !nonNewsPattern.test(`${article.title} ${article.summary}`));
     return Response.json({ articles, updatedAt:new Date().toISOString(), location }, { headers:{ "Cache-Control":"public, max-age=300, stale-while-revalidate=900" } });
   } catch (error) {
     return Response.json({ error:error instanceof Error ? error.message : "News feed unavailable" }, { status:502 });
