@@ -1720,17 +1720,20 @@ loadMarketHeatmap();
 
 
 const atlasNews = [
-  { id:"N-CL-01", title:"Actividad metropolitana y servicios en Santiago", place:"Santiago, Chile", lat:-33.4489, lon:-70.6693, category:"local", type:"HECHO", age:1, relevance:82, summary:"Cobertura territorial de movilidad, servicios públicos y acontecimientos con impacto directo en la Región Metropolitana.", analysis:"La ficha territorial reúne señales locales y exige confirmar fecha, organismo responsable y alcance antes de convertirlas en una conclusión.", source:"Gobierno Regional Metropolitano", sourceUrl:"https://www.gobiernosantiago.cl/" },
-  { id:"N-CL-02", title:"Señales económicas relevantes para Chile", place:"Santiago, Chile", lat:-33.4489, lon:-70.6693, category:"economy", type:"ANÁLISIS", age:3, relevance:78, summary:"Cobre, tipo de cambio, actividad y decisiones públicas reunidas en una lectura nacional trazable.", analysis:"La cercanía geográfica no prueba impacto económico directo. Deben contrastarse cobre, dólar, tasas y actividad con series oficiales.", source:"Banco Central de Chile", sourceUrl:"https://www.bcentral.cl/" },
-  { id:"N-UA-01", title:"Evolución del frente ruso-ucraniano", place:"Kyiv, Ucrania", lat:50.4501, lon:30.5234, category:"geopolitics", type:"HECHO", age:2, relevance:96, summary:"Cambios territoriales, ataques y diplomacia separados por nivel de confirmación y perspectiva editorial.", analysis:"La situación cambia rápidamente. Atlas distingue hechos corroborados, afirmaciones de cada actor e inferencias editoriales.", source:"OCHA Ukraine", sourceUrl:"https://www.unocha.org/ukraine" },
-  { id:"N-ME-01", title:"Tensiones regionales y rutas energéticas", place:"Amán, Jordania", lat:31.9539, lon:35.9106, category:"geopolitics", type:"ANÁLISIS", age:4, relevance:91, summary:"Seguimiento de seguridad regional, energía, navegación y efectos diplomáticos.", analysis:"Las rutas energéticas y las tensiones regionales deben analizarse con cronología, capacidad material e hipótesis alternativas.", source:"OCHA Middle East", sourceUrl:"https://www.unocha.org/middle-east-and-north-africa" },
-  { id:"N-SD-01", title:"Situación humanitaria y territorial en Sudán", place:"Jartum, Sudán", lat:15.5007, lon:32.5599, category:"security", type:"HECHO", age:5, relevance:88, summary:"Acceso humanitario, desplazamiento y control territorial con advertencias sobre vacíos de información.", analysis:"Los vacíos de acceso y telecomunicaciones producen subregistro. Las cifras deben leerse como mínimos documentados.", source:"OCHA Sudan", sourceUrl:"https://www.unocha.org/sudan" },
-  { id:"N-AS-01", title:"Mercados asiáticos y cadenas de suministro", place:"Singapur", lat:1.3521, lon:103.8198, category:"economy", type:"ANÁLISIS", age:6, relevance:80, summary:"Señales sobre comercio, manufactura, transporte marítimo y demanda de materias primas.", analysis:"Los movimientos de mercado son señales, no explicaciones causales. Deben contrastarse con comercio, fletes e inventarios.", source:"IMF Data", sourceUrl:"https://data.imf.org/" }
+  { id:"N-CL-01", title:"Actividad metropolitana y servicios en Santiago", place:"Santiago, Chile", lat:-33.4489, lon:-70.6693, category:"local", type:"HECHO", age:1, relevance:82, summary:"La Región Metropolitana concentra señales que afectan la vida diaria: movilidad, continuidad de servicios públicos, decisiones municipales y eventos de impacto territorial. Atlas reúne estos antecedentes para mostrar qué ocurre, dónde sucede y qué organismo debe responder, evitando confundir un reporte inicial con una conclusión definitiva.", analysis:"La ficha territorial reúne señales locales y exige confirmar fecha, organismo responsable y alcance antes de convertirlas en una conclusión.", hashtags:["#Santiago","#ServiciosPúblicos","#Territorio"], source:"Gobierno Regional Metropolitano", sourceUrl:"https://www.gobiernosantiago.cl/" },
+  { id:"N-CL-02", title:"Señales económicas relevantes para Chile", place:"Santiago, Chile", lat:-33.4489, lon:-70.6693, category:"economy", type:"ANÁLISIS", age:3, relevance:78, summary:"El desempeño del cobre, el tipo de cambio, las tasas de interés y la actividad interna forman una lectura conectada de la economía chilena. Atlas presenta estas variables como señales complementarias: un movimiento aislado no demuestra una causa, pero su convergencia puede anticipar presiones sobre precios, empleo, crédito o ingresos fiscales.", analysis:"La cercanía geográfica no prueba impacto económico directo. Deben contrastarse cobre, dólar, tasas y actividad con series oficiales.", hashtags:["#Chile","#Economía","#Cobre"], source:"Banco Central de Chile", sourceUrl:"https://www.bcentral.cl/" },
+  { id:"N-UA-01", title:"Evolución del frente ruso-ucraniano", place:"Kyiv, Ucrania", lat:50.4501, lon:30.5234, category:"geopolitics", type:"HECHO", age:2, relevance:96, summary:"El seguimiento del frente ruso-ucraniano combina cambios territoriales, ataques de largo alcance, presión logística y señales diplomáticas. Cada dato se clasifica según su corroboración y procedencia, porque una declaración militar, una imagen geolocalizada y una evaluación independiente no tienen el mismo peso probatorio ni describen necesariamente la misma escala.", analysis:"La situación cambia rápidamente. Atlas distingue hechos corroborados, afirmaciones de cada actor e inferencias editoriales.", hashtags:["#Ucrania","#Rusia","#OSINT"], source:"OCHA Ukraine", sourceUrl:"https://www.unocha.org/ukraine" },
+  { id:"N-ME-01", title:"Tensiones regionales y rutas energéticas", place:"Amán, Jordania", lat:31.9539, lon:35.9106, category:"geopolitics", type:"ANÁLISIS", age:4, relevance:91, summary:"Las tensiones de Oriente Medio conectan seguridad regional, navegación comercial, infraestructura energética y decisiones diplomáticas. Atlas observa cómo un incidente localizado puede alterar rutas, primas de riesgo o posiciones políticas, pero separa el hecho comprobado de las proyecciones sobre escalada para no presentar escenarios posibles como resultados inevitables.", analysis:"Las rutas energéticas y las tensiones regionales deben analizarse con cronología, capacidad material e hipótesis alternativas.", hashtags:["#OrienteMedio","#Energía","#Geopolítica"], source:"OCHA Middle East", sourceUrl:"https://www.unocha.org/middle-east-and-north-africa" },
+  { id:"N-SD-01", title:"Situación humanitaria y territorial en Sudán", place:"Jartum, Sudán", lat:15.5007, lon:32.5599, category:"security", type:"HECHO", age:5, relevance:88, summary:"La crisis en Sudán combina desplazamiento, interrupción de servicios, restricciones de acceso humanitario y control territorial fragmentado. Los reportes disponibles permiten delinear tendencias, aunque la falta de conectividad y acceso produce importantes vacíos de información; por eso las cifras publicadas deben entenderse como mínimos documentados.", analysis:"Los vacíos de acceso y telecomunicaciones producen subregistro. Las cifras deben leerse como mínimos documentados.", hashtags:["#Sudán","#CrisisHumanitaria","#África"], source:"OCHA Sudan", sourceUrl:"https://www.unocha.org/sudan" },
+  { id:"N-AS-01", title:"Mercados asiáticos y cadenas de suministro", place:"Singapur", lat:1.3521, lon:103.8198, category:"economy", type:"ANÁLISIS", age:6, relevance:80, summary:"Los mercados asiáticos entregan señales sobre manufactura, comercio marítimo, demanda de materias primas y funcionamiento de las cadenas de suministro. Atlas relaciona precios, fletes, inventarios y actividad industrial para construir contexto, sin atribuir automáticamente cada variación bursátil a un único evento político o económico.", analysis:"Los movimientos de mercado son señales, no explicaciones causales. Deben contrastarse con comercio, fletes e inventarios.", hashtags:["#Asia","#Mercados","#CadenasDeSuministro"], source:"IMF Data", sourceUrl:"https://data.imf.org/" }
 ];
 
 let newsLocation = null;
 let newsFilter = "all";
 let newsLocationRequested = false;
+let currentNewsItems = [];
+let currentNewsId = null;
+const newsPreferences = JSON.parse(localStorage.getItem("atlas-news-preferences") || "{}");
 const knownNewsPlaces = [
   { name:"Maipú, Región Metropolitana", lat:-33.51, lon:-70.76 },
   { name:"Santiago, Región Metropolitana", lat:-33.45, lon:-70.67 },
@@ -1762,6 +1765,7 @@ function renderNews() {
       : items.filter((item) => item.category === newsFilter);
   }
   items.sort((a,b) => sort === "recent" ? a.age-b.age : sort === "relevance" ? b.relevance-a.relevance : newsLocation ? a.distance-b.distance : b.relevance-a.relevance);
+  currentNewsItems = items;
   feed.innerHTML = items.length ? items.map((item, index) => `
     <article class="news-card" data-news-id="${item.id}" tabindex="0">
       <div class="news-rank">${String(index + 1).padStart(2,"0")}</div>
@@ -1769,6 +1773,7 @@ function renderNews() {
         <div class="news-meta"><span class="news-type ${item.type.toLowerCase()}">${item.type}</span><span>${item.place}</span><span>hace ${item.age} h</span></div>
         <h2>${item.title}</h2>
         <p>${item.summary}</p>
+        <div class="news-hashtags">${item.hashtags.map((tag) => `<span>${tag}</span>`).join("")}</div>
         <div class="news-source"><a href="${item.sourceUrl}" target="_blank" rel="noreferrer">${item.source} ↗</a><b>${item.distance === null ? "Orden global" : item.distance < 1 ? "En tu zona" : Math.round(item.distance).toLocaleString("es-CL") + " km"}</b></div>
         <small class="news-open-hint">Doble clic para abrir la ficha completa</small>
       </div>
@@ -1905,17 +1910,48 @@ async function renderNewsContextMap(item) {
   byId("newsMapScale").textContent = "Vista regional · ubicación aproximada";
 }
 
-function openNewsDialog(item) {
+function updateNewsPreferenceControls(item) {
+  const preference = newsPreferences[item.id] || "";
+  [["newsInterested","interested"],["newsNotInterested","not-interested"]].forEach(([id, value]) => {
+    const button = byId(id);
+    const active = preference === value;
+    button?.classList.toggle("active", active);
+    button?.setAttribute("aria-pressed", String(active));
+  });
+}
+
+function setNewsPreference(value) {
+  if (!currentNewsId) return;
+  newsPreferences[currentNewsId] = newsPreferences[currentNewsId] === value ? "" : value;
+  localStorage.setItem("atlas-news-preferences", JSON.stringify(newsPreferences));
+  const item = atlasNews.find((news) => news.id === currentNewsId);
+  if (item) updateNewsPreferenceControls(item);
+}
+
+function navigateNews(direction) {
+  const items = currentNewsItems.length ? currentNewsItems : atlasNews;
+  const index = items.findIndex((item) => item.id === currentNewsId);
+  if (index < 0) return;
+  openNewsDialog(items[(index + direction + items.length) % items.length], true);
+}
+
+function openNewsDialog(item, alreadyOpen = false) {
   const dialog = byId("newsDialog");
   if (!dialog || !item) return;
+  currentNewsId = item.id;
   byId("newsDialogType").textContent = item.type;
   byId("newsDialogTitle").textContent = item.title;
   byId("newsDialogMeta").textContent = `${item.place} · hace ${item.age} h · relevancia OSINT ${item.relevance}/100`;
   byId("newsDialogSummary").textContent = item.summary;
+  byId("newsDialogHashtags").innerHTML = item.hashtags.map((tag) => `<span>${tag}</span>`).join("");
   byId("newsDialogAnalysis").textContent = item.analysis || "Contexto editorial pendiente.";
   byId("newsDialogSource").textContent = `Abrir ${item.source} ↗`;
   byId("newsDialogSource").href = item.sourceUrl;
-  dialog.showModal();
+  updateNewsPreferenceControls(item);
+  const available = (currentNewsItems.length ? currentNewsItems : atlasNews).length > 1;
+  byId("newsPrevious").disabled = !available;
+  byId("newsNext").disabled = !available;
+  if (!alreadyOpen && !dialog.open) dialog.showModal();
   requestAnimationFrame(() => renderNewsContextMap(item));
 }
 
@@ -1932,6 +1968,10 @@ byId("newsFeed")?.addEventListener("keydown", (event) => {
   openNewsDialog(atlasNews.find((item) => item.id === card.dataset.newsId));
 });
 byId("newsDialogClose")?.addEventListener("click", () => byId("newsDialog").close());
+byId("newsInterested")?.addEventListener("click", () => setNewsPreference("interested"));
+byId("newsNotInterested")?.addEventListener("click", () => setNewsPreference("not-interested"));
+byId("newsPrevious")?.addEventListener("click", () => navigateNews(-1));
+byId("newsNext")?.addEventListener("click", () => navigateNews(1));
 byId("newsDialog")?.addEventListener("click", (event) => {
   if (event.target === byId("newsDialog")) byId("newsDialog").close();
 });
