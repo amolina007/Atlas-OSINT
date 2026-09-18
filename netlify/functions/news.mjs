@@ -44,7 +44,7 @@ const tweetLength = (text, limit = 280) => {
   return `${clipped.slice(0,Math.max(clipped.lastIndexOf(" "),180)).trimEnd()}…`;
 };
 
-const informativeSummary = ({ extracted, rssText, title, source, publishedAt }) => {
+const informativeSummary = ({ extracted, rssText, title, source }) => {
   const headlineKey = clean(title).toLocaleLowerCase().replace(/[^\p{L}\p{N}]+/gu,"");
   const candidates = [extracted,rssText]
     .map(clean)
@@ -56,10 +56,7 @@ const informativeSummary = ({ extracted, rssText, title, source, publishedAt }) 
     })
     .filter((text) => text.length >= Math.min(90,title.length + 25));
   if (candidates[0]) return tweetLength(candidates[0]);
-  const date = Number.isFinite(Date.parse(publishedAt))
-    ? new Intl.DateTimeFormat("es",{ day:"numeric",month:"short",hour:"2-digit",minute:"2-digit",timeZone:"UTC" }).format(new Date(publishedAt)) + " UTC"
-    : "hoy";
-  return tweetLength(`Según ${source}, ${title.replace(/[.!?]+$/g,"")}. La información fue publicada ${date}; abre el enlace del medio para consultar sus antecedentes y actualizaciones.`);
+  return tweetLength(title);
 };
 
 const extractMeta = async (url) => {
@@ -127,7 +124,7 @@ export default async (req) => {
       const title = cleanTitle(article.title, article.source.name);
       const extracted = clean(descriptions[index] || "");
       const rssText = clean(article.rssDescription || "");
-      const summary = informativeSummary({ extracted, rssText, title, source:article.source.name, publishedAt:article.publishedAt });
+      const summary = informativeSummary({ extracted, rssText, title, source:article.source.name });
       const category = classify(`${title} ${summary}`);
       return {
         id:`LIVE-${index}-${Math.abs([...title].reduce((hash,char) => ((hash<<5)-hash)+char.charCodeAt(0),0))}`,
