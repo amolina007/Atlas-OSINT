@@ -1837,6 +1837,74 @@ byId("skipLocation")?.addEventListener("click", () => {
 const initialAtlasSection = location.hash === "#newsroom" ? "news" : location.hash === "#markets" ? "markets" : "map";
 setAtlasSection(initialAtlasSection);
 
+let newsWorldPromise = null;
+
+function loadNewsWorld() {
+  if (!newsWorldPromise) {
+    newsWorldPromise = d3.json("https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json")
+      .then((world) => topojson.feature(world, world.objects.countries).features)
+      .catch(() => []);
+  }
+  return newsWorldPromise;
+}
+
+async function renderNewsContextMap(item) {
+  const container = byId("newsContextMap");
+  if (!container || !window.d3 || !window.topojson || !Number.isFinite(item.lat) || !Number.isFinite(item.lon)) {
+    if (container) container.innerHTML = '<div class="news-context-map__empty">Ubicación cartográfica no disponible</div>';
+    return;
+  }
+
+  container.innerHTML = '<div class="news-context-map__loading">Construyendo contexto territorial…</div>';
+  const width = Math.max(container.clientWidth || 620, 320);
+  const height = Math.max(container.clientHeight || 270, 220);
+  const clipId = `news-map-clip-${item.id.replace(/[^a-z0-9]/gi, "")}`;
+  const projection = d3.geoMercator()
+    .center([item.lon, item.lat])
+    .scale(width * 3.15)
+    .translate([width / 2, height / 2]);
+  const path = d3.geoPath(projection);
+  const countries = await loadNewsWorld();
+  if (!container.isConnected) return;
+
+  const svg = d3.select(container).html("").append("svg")
+    .attr("viewBox", `0 0 ${width} ${height}`)
+    .attr("preserveAspectRatio", "xMidYMid slice");
+  svg.append("defs").append("clipPath").attr("id", clipId)
+    .append("rect").attr("width", width).attr("height", height).attr("rx", 8);
+  const map = svg.append("g").attr("clip-path", `url(#${clipId})`);
+  map.append("rect").attr("class", "news-map-ocean").attr("width", width).attr("height", height);
+  map.append("path").datum(d3.geoGraticule().step([5, 5])()).attr("class", "news-map-graticule").attr("d", path);
+  map.append("g").selectAll("path").data(countries).join("path").attr("class", "news-map-country").attr("d", path);
+
+  const localTerrain = terrainBands.filter((band) => {
+    const points = band.coordinates.flat(2);
+    return points.some((value, index) => index % 2 === 0 && Math.abs(value - item.lon) < 18);
+  });
+  map.append("g").selectAll("path").data(localTerrain).join("path")
+    .attr("class", (band) => `news-map-terrain ${band.level}`)
+    .attr("d", (band) => path({ type:"Polygon", coordinates:normalizedPolygon(band.coordinates) }));
+
+  map.append("g").selectAll("path").data(waterways).join("path")
+    .attr("class", "news-map-water")
+    .attr("d", (river) => path({ type:"LineString", coordinates:river.coordinates }));
+  map.append("g").selectAll("path").data(administrativeLines).join("path")
+    .attr("class", "news-map-admin")
+    .attr("d", (line) => path({ type:"LineString", coordinates:line }));
+
+  const point = projection([item.lon, item.lat]);
+  if (point) {
+    const marker = map.append("g").attr("class", "news-map-marker").attr("transform", `translate(${point[0]},${point[1]})`);
+    marker.append("circle").attr("class", "news-map-range range-outer").attr("r", 62);
+    marker.append("circle").attr("class", "news-map-range range-inner").attr("r", 31);
+    marker.append("circle").attr("class", "news-map-pulse").attr("r", 12);
+    marker.append("circle").attr("class", "news-map-core").attr("r", 4.5);
+  }
+  svg.append("text").attr("class", "news-map-north").attr("x", width - 22).attr("y", 25).text("N");
+  byId("newsMapPlace").textContent = item.place;
+  byId("newsMapScale").textContent = "Vista regional · ubicación aproximada";
+}
+
 function openNewsDialog(item) {
   const dialog = byId("newsDialog");
   if (!dialog || !item) return;
@@ -1848,6 +1916,7 @@ function openNewsDialog(item) {
   byId("newsDialogSource").textContent = `Abrir ${item.source} ↗`;
   byId("newsDialogSource").href = item.sourceUrl;
   dialog.showModal();
+  requestAnimationFrame(() => renderNewsContextMap(item));
 }
 
 byId("newsFeed")?.addEventListener("dblclick", (event) => {
