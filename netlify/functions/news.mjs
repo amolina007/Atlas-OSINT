@@ -33,6 +33,34 @@ const sourceTag = (xml) => {
 const classify = (text) => categoryRules.find(([, pattern]) => pattern.test(text))?.[0] || "territory";
 const nonNewsPattern = /\b(trainee|oferta(?:s)? de empleo|bolsa de trabajo|vacante|postula|postulaci[oó]n|descuento|cup[oó]n|promoci[oó]n comercial|hor[oó]scopo)\b/i;
 const cleanTitle = (title, source) => title.replace(new RegExp(`\\s+-\\s+${source.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")}\\s*$`,"i"),"").trim();
+const genericMetaPattern = /google news|javascript|cookies|navegador|browser|sign in|iniciar sesi[oó]n|página no disponible/i;
+
+const tweetLength = (text, limit = 280) => {
+  const normalized = clean(text).replace(/\s+([,.;:!?])/g,"$1");
+  if (normalized.length <= limit) return normalized;
+  const sentence = normalized.slice(0,limit + 1).match(/^(.{120,279}[.!?])(?:\s|$)/)?.[1];
+  if (sentence) return sentence;
+  const clipped = normalized.slice(0,limit - 1);
+  return `${clipped.slice(0,Math.max(clipped.lastIndexOf(" "),180)).trimEnd()}…`;
+};
+
+const informativeSummary = ({ extracted, rssText, title, source, publishedAt }) => {
+  const headlineKey = clean(title).toLocaleLowerCase().replace(/[^\p{L}\p{N}]+/gu,"");
+  const candidates = [extracted,rssText]
+    .map(clean)
+    .filter((text) => text && !genericMetaPattern.test(text) && text.toLocaleLowerCase() !== title.toLocaleLowerCase())
+    .filter((text) => {
+      const withoutAttribution = text.replace(title,"").replace(source,"").replace(/[^\p{L}\p{N}]+/gu,"");
+      const textKey = text.toLocaleLowerCase().replace(/[^\p{L}\p{N}]+/gu,"");
+      return withoutAttribution.length >= 55 && textKey !== headlineKey;
+    })
+    .filter((text) => text.length >= Math.min(90,title.length + 25));
+  if (candidates[0]) return tweetLength(candidates[0]);
+  const date = Number.isFinite(Date.parse(publishedAt))
+    ? new Intl.DateTimeFormat("es",{ day:"numeric",month:"short",hour:"2-digit",minute:"2-digit",timeZone:"UTC" }).format(new Date(publishedAt)) + " UTC"
+    : "hoy";
+  return tweetLength(`Según ${source}, ${title.replace(/[.!?]+$/g,"")}. La información fue publicada ${date}; abre el enlace del medio para consultar sus antecedentes y actualizaciones.`);
+};
 
 const extractMeta = async (url) => {
   const controller = new AbortController();
@@ -99,8 +127,7 @@ export default async (req) => {
       const title = cleanTitle(article.title, article.source.name);
       const extracted = clean(descriptions[index] || "");
       const rssText = clean(article.rssDescription || "");
-      const usefulRss = rssText && rssText !== article.title && rssText.length > title.length + article.source.name.length + 20 ? rssText : "";
-      const summary = extracted || usefulRss || `${article.source.name} publicó esta información: “${title}”. Consulta la fuente original para conocer los antecedentes, declaraciones y actualizaciones completas.`;
+      const summary = informativeSummary({ extracted, rssText, title, source:article.source.name, publishedAt:article.publishedAt });
       const category = classify(`${title} ${summary}`);
       return {
         id:`LIVE-${index}-${Math.abs([...title].reduce((hash,char) => ((hash<<5)-hash)+char.charCodeAt(0),0))}`,
@@ -109,7 +136,7 @@ export default async (req) => {
         lat:Number.isFinite(lat) ? lat : 0,
         lon:Number.isFinite(lon) ? lon : 0,
         category, type:"NOTICIA", age, relevance:Math.max(55,94-index*2),
-        summary:summary.slice(0,520),
+        summary,
         analysis:"Titular y descripción procedentes del medio enlazado. Atlas no sustituye la lectura de la publicación original ni confirma de manera independiente todas sus afirmaciones.",
         hashtags:[`#${category}`,`#${country}`,"#Actualidad"],
         source:article.source.name, sourceUrl:article.url, publishedAt:article.publishedAt, live:true
