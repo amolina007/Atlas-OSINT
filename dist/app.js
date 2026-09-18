@@ -840,13 +840,30 @@ function createVectorFallback(container) {
 function drawVectorTerrain(svg, projection) {
   const path = d3.geoPath(projection);
   const group = svg.append("g").attr("class", "map-layer layer-terrain");
-  group.selectAll("path").data(terrainBands).join("path")
+  group.selectAll("path.terrain-band").data(terrainBands).join("path")
     .attr("class", (band) => `terrain-band ${band.level}`)
     .attr("d", (band) => path({ type: "Polygon", coordinates: normalizedPolygon(band.coordinates) }));
+
+  const contours = terrainBands.flatMap((band) => {
+    const ring = band.coordinates[0];
+    const center = ring.reduce((sum, point) => [sum[0] + point[0], sum[1] + point[1]], [0, 0]).map((value) => value / ring.length);
+    return [0.82, 0.64, 0.46].map((factor, index) => ({
+      level: band.level,
+      index,
+      coordinates: [ring.map((point) => [
+        center[0] + (point[0] - center[0]) * factor,
+        center[1] + (point[1] - center[1]) * factor
+      ])]
+    }));
+  });
+  group.selectAll("path.terrain-contour").data(contours).join("path")
+    .attr("class", (contour) => `terrain-contour ${contour.level}`)
+    .attr("d", (contour) => path({ type: "Polygon", coordinates: contour.coordinates }));
+
   group.selectAll("text").data(terrainBands).join("text").attr("class", "terrain-label")
     .attr("x", (band) => projection(band.coordinates[0][Math.floor(band.coordinates[0].length / 2)])[0])
     .attr("y", (band) => projection(band.coordinates[0][Math.floor(band.coordinates[0].length / 2)])[1])
-    .text((band) => band.label);
+    .text((band) => `▲ ${band.label}`);
 }
 
 function drawVectorControl(svg, projection) {
@@ -903,7 +920,9 @@ function drawVectorAdministrative(svg, projection) {
 function drawVectorWater(svg, projection) {
   const path = d3.geoPath(projection);
   const group = svg.append("g").attr("class", "map-layer layer-water");
-  group.selectAll("path").data(waterways).join("path").attr("class", "waterway")
+  group.selectAll("path.waterway-casing").data(waterways).join("path").attr("class", "waterway-casing")
+    .attr("d", (river) => path({ type: "LineString", coordinates: river.coordinates }));
+  group.selectAll("path.waterway").data(waterways).join("path").attr("class", "waterway")
     .attr("d", (river) => path({ type: "LineString", coordinates: river.coordinates }));
   group.selectAll("text").data(waterways).join("text").attr("class", "water-label zoom-regional")
     .attr("x", (river) => projection(river.coordinates[Math.floor(river.coordinates.length / 2)])[0] + 4)
