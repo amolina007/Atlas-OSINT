@@ -178,6 +178,7 @@ const atlasSupabase = window.supabase?.createClient && window.ATLAS_SUPABASE
       }
     )
   : null;
+let atlasAuthCallbackPending = /(?:access_token|refresh_token|error_description|error_code|code)=/i.test(location.hash + location.search);
 let atlasMap = null;
 let leafletMap = null;
 let leafletLayers = {};
@@ -1903,7 +1904,9 @@ function setAtlasSection(name) {
     if (!newsLocationRequested) requestNewsLocation();
   }
   if (name === "map") setTimeout(() => { leafletMap?.invalidateSize(); atlasMap?.resize(); }, 40);
-  history.replaceState(null, "", name === "map" ? "#map" : name === "news" ? "#newsroom" : "#markets");
+  if (!atlasAuthCallbackPending) {
+    history.replaceState(null, "", name === "map" ? "#map" : name === "news" ? "#newsroom" : "#markets");
+  }
 }
 
 function requestNewsLocation() {
@@ -2134,12 +2137,29 @@ async function initAtlasAuth() {
     byId("authStatus").textContent = "El servicio de identidad no está disponible.";
     return;
   }
-  const { data } = await atlasSupabase.auth.getSession();
+  const { data, error } = await atlasSupabase.auth.getSession();
   renderAtlasAuth(data.session);
+  if (atlasAuthCallbackPending) {
+    atlasAuthCallbackPending = false;
+    history.replaceState(null, "", "#map");
+    if (error || !data.session) {
+      const status = byId("authStatus");
+      status.textContent = error
+        ? `No se pudo completar el acceso: ${error.message}`
+        : "El enlace no produjo una sesión válida. Solicita uno nuevo.";
+      status.className = "auth-status error";
+      byId("authDialog")?.showModal();
+    }
+  }
   atlasSupabase.auth.onAuthStateChange((event, session) => {
     renderAtlasAuth(session);
-    if (event === "SIGNED_IN" && byId("authDialog")?.open) {
-      byId("authStatus").textContent = "Sesión iniciada correctamente.";
+    if (event === "SIGNED_IN") {
+      atlasAuthCallbackPending = false;
+      history.replaceState(null, "", "#map");
+      if (byId("authDialog")?.open) {
+        byId("authStatus").textContent = "Sesión iniciada correctamente.";
+        byId("authStatus").className = "auth-status success";
+      }
     }
   });
 }
@@ -2158,7 +2178,7 @@ byId("magicLinkForm")?.addEventListener("submit", async (event) => {
   submit.disabled = true;
   submit.textContent = "Enviando…";
   status.textContent = "";
-  const redirectTo = `${location.origin}${location.pathname}#map`;
+  const redirectTo = `${location.origin}${location.pathname}`;
   const { error } = await atlasSupabase.auth.signInWithOtp({
     email,
     options: { emailRedirectTo: redirectTo, shouldCreateUser: true }
