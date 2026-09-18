@@ -1829,13 +1829,41 @@ loadMarketHeatmap();
 
 
 const atlasNews = [
-  { id:"N-CL-01", title:"Actividad metropolitana y servicios en Santiago", place:"Santiago, Chile", lat:-33.4489, lon:-70.6693, category:"local", type:"HECHO", age:1, relevance:82, summary:"La Región Metropolitana concentra señales que afectan la vida diaria: movilidad, continuidad de servicios públicos, decisiones municipales y eventos de impacto territorial. Atlas reúne estos antecedentes para mostrar qué ocurre, dónde sucede y qué organismo debe responder, evitando confundir un reporte inicial con una conclusión definitiva.", analysis:"La ficha territorial reúne señales locales y exige confirmar fecha, organismo responsable y alcance antes de convertirlas en una conclusión.", hashtags:["#Santiago","#ServiciosPúblicos","#Territorio"], source:"Gobierno Regional Metropolitano", sourceUrl:"https://www.gobiernosantiago.cl/" },
+  { id:"N-CL-01", title:"Actividad metropolitana y servicios en Santiago", place:"Santiago, Chile", lat:-33.4489, lon:-70.6693, category:"territory", type:"HECHO", age:1, relevance:82, summary:"La Región Metropolitana concentra señales que afectan la vida diaria: movilidad, continuidad de servicios públicos, decisiones municipales y eventos de impacto territorial. Atlas reúne estos antecedentes para mostrar qué ocurre, dónde sucede y qué organismo debe responder, evitando confundir un reporte inicial con una conclusión definitiva.", analysis:"La ficha territorial reúne señales locales y exige confirmar fecha, organismo responsable y alcance antes de convertirlas en una conclusión.", hashtags:["#Santiago","#ServiciosPúblicos","#Territorio"], source:"Gobierno Regional Metropolitano", sourceUrl:"https://www.gobiernosantiago.cl/" },
   { id:"N-CL-02", title:"Señales económicas relevantes para Chile", place:"Santiago, Chile", lat:-33.4489, lon:-70.6693, category:"economy", type:"ANÁLISIS", age:3, relevance:78, summary:"El desempeño del cobre, el tipo de cambio, las tasas de interés y la actividad interna forman una lectura conectada de la economía chilena. Atlas presenta estas variables como señales complementarias: un movimiento aislado no demuestra una causa, pero su convergencia puede anticipar presiones sobre precios, empleo, crédito o ingresos fiscales.", analysis:"La cercanía geográfica no prueba impacto económico directo. Deben contrastarse cobre, dólar, tasas y actividad con series oficiales.", hashtags:["#Chile","#Economía","#Cobre"], source:"Banco Central de Chile", sourceUrl:"https://www.bcentral.cl/" },
   { id:"N-UA-01", title:"Evolución del frente ruso-ucraniano", place:"Kyiv, Ucrania", lat:50.4501, lon:30.5234, category:"geopolitics", type:"HECHO", age:2, relevance:96, summary:"El seguimiento del frente ruso-ucraniano combina cambios territoriales, ataques de largo alcance, presión logística y señales diplomáticas. Cada dato se clasifica según su corroboración y procedencia, porque una declaración militar, una imagen geolocalizada y una evaluación independiente no tienen el mismo peso probatorio ni describen necesariamente la misma escala.", analysis:"La situación cambia rápidamente. Atlas distingue hechos corroborados, afirmaciones de cada actor e inferencias editoriales.", hashtags:["#Ucrania","#Rusia","#OSINT"], source:"OCHA Ukraine", sourceUrl:"https://www.unocha.org/ukraine" },
   { id:"N-ME-01", title:"Tensiones regionales y rutas energéticas", place:"Amán, Jordania", lat:31.9539, lon:35.9106, category:"geopolitics", type:"ANÁLISIS", age:4, relevance:91, summary:"Las tensiones de Oriente Medio conectan seguridad regional, navegación comercial, infraestructura energética y decisiones diplomáticas. Atlas observa cómo un incidente localizado puede alterar rutas, primas de riesgo o posiciones políticas, pero separa el hecho comprobado de las proyecciones sobre escalada para no presentar escenarios posibles como resultados inevitables.", analysis:"Las rutas energéticas y las tensiones regionales deben analizarse con cronología, capacidad material e hipótesis alternativas.", hashtags:["#OrienteMedio","#Energía","#Geopolítica"], source:"OCHA Middle East", sourceUrl:"https://www.unocha.org/middle-east-and-north-africa" },
   { id:"N-SD-01", title:"Situación humanitaria y territorial en Sudán", place:"Jartum, Sudán", lat:15.5007, lon:32.5599, category:"security", type:"HECHO", age:5, relevance:88, summary:"La crisis en Sudán combina desplazamiento, interrupción de servicios, restricciones de acceso humanitario y control territorial fragmentado. Los reportes disponibles permiten delinear tendencias, aunque la falta de conectividad y acceso produce importantes vacíos de información; por eso las cifras publicadas deben entenderse como mínimos documentados.", analysis:"Los vacíos de acceso y telecomunicaciones producen subregistro. Las cifras deben leerse como mínimos documentados.", hashtags:["#Sudán","#CrisisHumanitaria","#África"], source:"OCHA Sudan", sourceUrl:"https://www.unocha.org/sudan" },
-  { id:"N-AS-01", title:"Mercados asiáticos y cadenas de suministro", place:"Singapur", lat:1.3521, lon:103.8198, category:"economy", type:"ANÁLISIS", age:6, relevance:80, summary:"Los mercados asiáticos entregan señales sobre manufactura, comercio marítimo, demanda de materias primas y funcionamiento de las cadenas de suministro. Atlas relaciona precios, fletes, inventarios y actividad industrial para construir contexto, sin atribuir automáticamente cada variación bursátil a un único evento político o económico.", analysis:"Los movimientos de mercado son señales, no explicaciones causales. Deben contrastarse con comercio, fletes e inventarios.", hashtags:["#Asia","#Mercados","#CadenasDeSuministro"], source:"IMF Data", sourceUrl:"https://data.imf.org/" }
+  { id:"N-AS-01", title:"Mercados asiáticos y cadenas de suministro", place:"Singapur", lat:1.3521, lon:103.8198, category:"economy", type:"ANÁLISIS", age:6, relevance:80, summary:"Los mercados asiáticos entregan señales sobre manufactura, comercio marítimo, demanda de materias primas y funcionamiento de las cadenas de suministro. Atlas relaciona precios, fletes, inventarios y actividad industrial para construir contexto, sin atribuir automáticamente cada variación bursátil a un único evento político o económico.", analysis:"Los movimientos de mercado son señales, no explicaciones causales. Deben contrastarse con comercio, fletes e inventarios.", hashtags:["#Asia","#Mercados","#CadenasDeSuministro"], source:"IMF Data", sourceUrl:"https://data.imf.org/" },
+  { id:"N-TECH-01", title:"Infraestructura digital y exposición a incidentes cibernéticos", place:"Santiago, Chile", lat:-33.4489, lon:-70.6693, category:"technology", type:"ANÁLISIS", age:2, relevance:84, summary:"La continuidad de servicios digitales depende de centros de datos, redes de telecomunicaciones, proveedores de nube y sistemas públicos interconectados. Atlas reúne alertas técnicas y comunicados oficiales para distinguir una vulnerabilidad conocida, un incidente confirmado y una interrupción que efectivamente afecta a personas u organizaciones.", analysis:"Una alerta de vulnerabilidad no demuestra explotación. La evaluación debe identificar producto, alcance, evidencia y medidas de mitigación.", hashtags:["#Ciberseguridad","#InfraestructuraDigital","#Chile"], source:"CSIRT de Gobierno de Chile", sourceUrl:"https://www.csirt.gob.cl/" },
+  { id:"N-RES-01", title:"Cobre, agua y exposición climática del norte minero", place:"Antofagasta, Chile", lat:-23.6509, lon:-70.3975, category:"resources", type:"ANÁLISIS", age:7, relevance:86, summary:"La producción de cobre en el norte de Chile conecta disponibilidad hídrica, energía, puertos, empleo y recaudación fiscal. Atlas superpone instalaciones y corredores productivos con señales climáticas para mostrar dependencias territoriales, evitando convertir variaciones meteorológicas o de precios en predicciones automáticas de producción.", analysis:"El riesgo productivo surge de la convergencia entre clima, agua, energía, operación minera y logística; ninguna variable aislada basta.", hashtags:["#Cobre","#Agua","#Clima"], source:"Comisión Chilena del Cobre", sourceUrl:"https://www.cochilco.cl/" },
+  { id:"N-HEALTH-01", title:"Señales de salud pública y presión territorial sobre la red", place:"Maipú, Chile", lat:-33.5106, lon:-70.7573, category:"health", type:"HECHO", age:3, relevance:81, summary:"La vigilancia sanitaria territorial permite relacionar circulación de enfermedades, demanda asistencial y capacidad de respuesta de la red. Atlas prioriza datos agregados y fuentes institucionales, preserva la privacidad y diferencia una señal epidemiológica temprana de una tendencia confirmada por series comparables.", analysis:"La incidencia, gravedad y presión asistencial deben analizarse por población, periodo y territorio; los casos aislados no describen por sí solos una tendencia.", hashtags:["#SaludPública","#Maipú","#Vigilancia"], source:"Ministerio de Salud de Chile", sourceUrl:"https://www.minsal.cl/" },
+  { id:"N-INFRA-01", title:"Puertos y corredores logísticos de la zona central", place:"Valparaíso, Chile", lat:-33.0472, lon:-71.6127, category:"infrastructure", type:"ANÁLISIS", age:5, relevance:83, summary:"Los puertos de Valparaíso y San Antonio, junto con las rutas hacia Santiago y los pasos cordilleranos, forman una red crítica para abastecimiento y comercio exterior. Atlas contextualiza interrupciones, obras y congestión según su duración, capacidad afectada y alternativas disponibles dentro del sistema logístico.", analysis:"Una interrupción local adquiere relevancia estratégica cuando reduce capacidad, carece de rutas alternativas o coincide con presión sobre otros nodos.", hashtags:["#Puertos","#Logística","#Infraestructura"], source:"Ministerio de Transportes y Telecomunicaciones", sourceUrl:"https://www.mtt.gob.cl/" }
 ];
+
+const newsCategoryLabels = {
+  territory:"Territorio y Chile",
+  geopolitics:"Geopolítica y conflictos",
+  economy:"Economía y mercados",
+  security:"Seguridad y emergencias",
+  technology:"Tecnología y ciberespacio",
+  resources:"Energía, recursos y clima",
+  health:"Salud, ciencia y sociedad",
+  infrastructure:"Infraestructura y logística"
+};
+
+const newsEditorialMeta = {
+  "N-CL-01":{scope:"Local",urgency:"Seguimiento",format:"Noticia"},
+  "N-CL-02":{scope:"Nacional",urgency:"Contexto",format:"Análisis"},
+  "N-UA-01":{scope:"Mundial",urgency:"Seguimiento",format:"Noticia"},
+  "N-ME-01":{scope:"Regional",urgency:"Seguimiento",format:"Análisis"},
+  "N-SD-01":{scope:"Regional",urgency:"Última hora",format:"Noticia"},
+  "N-AS-01":{scope:"Mundial",urgency:"Contexto",format:"Análisis"},
+  "N-TECH-01":{scope:"Nacional",urgency:"Seguimiento",format:"Investigación"},
+  "N-RES-01":{scope:"Regional",urgency:"Contexto",format:"Análisis"},
+  "N-HEALTH-01":{scope:"Local",urgency:"Seguimiento",format:"Noticia"},
+  "N-INFRA-01":{scope:"Regional",urgency:"Seguimiento",format:"Análisis"}
+};
 
 const newsMapContexts = {
   "N-CL-01": {
@@ -1876,6 +1904,33 @@ const newsMapContexts = {
   }
 };
 
+Object.assign(newsMapContexts, {
+  "N-TECH-01": {
+    layer:"INFRAESTRUCTURA DIGITAL",
+    insight:"Santiago concentra servicios públicos y empresariales; los enlaces internacionales y centros de datos conectan la continuidad local con proveedores globales.",
+    points:[{name:"Santiago",lon:-70.67,lat:-33.45,role:"Demanda digital"},{name:"Valparaíso",lon:-71.62,lat:-33.05,role:"Enlaces costeros"},{name:"Maipú",lon:-70.76,lat:-33.51,role:"Servicios urbanos"}],
+    lines:[{name:"Red metropolitana",coordinates:[[-71.62,-33.05],[-70.67,-33.45],[-70.76,-33.51]]}]
+  },
+  "N-RES-01": {
+    layer:"RECURSOS Y CLIMA",
+    insight:"Antofagasta conecta faenas mineras interiores con desalación, energía y puertos del Pacífico.",
+    points:[{name:"Antofagasta",lon:-70.40,lat:-23.65,role:"Puerto y servicios"},{name:"Calama",lon:-68.93,lat:-22.46,role:"Nodo minero"},{name:"Mejillones",lon:-70.45,lat:-23.10,role:"Energía y puerto"}],
+    lines:[{name:"Corredor minero-portuario",coordinates:[[-68.93,-22.46],[-69.65,-23.1],[-70.45,-23.10],[-70.40,-23.65]]}]
+  },
+  "N-HEALTH-01": {
+    layer:"RED SANITARIA TERRITORIAL",
+    insight:"Maipú forma parte de una red metropolitana donde movilidad, densidad y capacidad asistencial condicionan la respuesta sanitaria.",
+    points:[{name:"Maipú",lon:-70.76,lat:-33.51,role:"Cobertura local"},{name:"Santiago",lon:-70.67,lat:-33.45,role:"Red metropolitana"},{name:"Pudahuel",lon:-70.77,lat:-33.44,role:"Conectividad"}],
+    lines:[{name:"Continuidad de red",coordinates:[[-70.77,-33.44],[-70.76,-33.51],[-70.67,-33.45]]}]
+  },
+  "N-INFRA-01": {
+    layer:"PUERTOS Y CORREDORES",
+    insight:"Valparaíso y San Antonio conectan el comercio marítimo con Santiago y los pasos hacia Argentina.",
+    points:[{name:"Valparaíso",lon:-71.61,lat:-33.05,role:"Puerto"},{name:"San Antonio",lon:-71.61,lat:-33.59,role:"Puerto"},{name:"Santiago",lon:-70.67,lat:-33.45,role:"Centro de demanda"},{name:"Los Andes",lon:-70.60,lat:-32.83,role:"Paso terrestre"}],
+    lines:[{name:"Sistema logístico central",coordinates:[[-71.61,-33.59],[-70.67,-33.45],[-70.60,-32.83]]},{name:"Eje Valparaíso",coordinates:[[-71.61,-33.05],[-70.67,-33.45]]}]
+  }
+});
+
 const newsMarketLinks = {
   "N-CL-01":[
     {symbol:"^IPSA",label:"IPSA",reason:"Actividad local"},
@@ -1904,6 +1959,21 @@ const newsMarketLinks = {
     {symbol:"^HSI",label:"Hang Seng",reason:"Comercio asiático"},
     {symbol:"000001.SS",label:"Shanghai",reason:"Manufactura china"},
     {symbol:"^N225",label:"Nikkei 225",reason:"Industria regional"}
+  ],
+  "N-TECH-01":[
+    {symbol:"^IXIC",label:"Nasdaq",reason:"Sector tecnológico"},
+    {symbol:"^GSPC",label:"S&P 500",reason:"Exposición digital"}
+  ],
+  "N-RES-01":[
+    {symbol:"HG=F",label:"Cobre",reason:"Recurso estratégico"},
+    {symbol:"^IPSA",label:"IPSA",reason:"Exposición minera"}
+  ],
+  "N-HEALTH-01":[
+    {symbol:"^IPSA",label:"IPSA",reason:"Entorno económico local"}
+  ],
+  "N-INFRA-01":[
+    {symbol:"HG=F",label:"Cobre",reason:"Carga exportadora"},
+    {symbol:"^IPSA",label:"IPSA",reason:"Actividad chilena"}
   ]
 };
 
@@ -1930,6 +2000,7 @@ function renderNewsMarketIndicators(item) {
 
 let newsLocation = null;
 let newsFilter = "all";
+let newsNearbyOnly = false;
 let newsLocationRequested = false;
 let currentNewsItems = [];
 let currentNewsId = null;
@@ -1959,19 +2030,17 @@ function renderNews() {
   if (!feed) return;
   const sort = byId("newsSort")?.value || "distance";
   let items = atlasNews.map((item) => ({ ...item, distance: newsLocation ? distanceKm(newsLocation, item) : null }));
-  if (newsFilter !== "all") {
-    items = newsFilter === "local"
-      ? items.filter((item) => item.distance !== null && item.distance <= 500)
-      : items.filter((item) => item.category === newsFilter);
-  }
+  if (newsFilter !== "all") items = items.filter((item) => item.category === newsFilter);
+  if (newsNearbyOnly) items = items.filter((item) => item.distance !== null && item.distance <= 500);
   items.sort((a,b) => sort === "recent" ? a.age-b.age : sort === "relevance" ? b.relevance-a.relevance : newsLocation ? a.distance-b.distance : b.relevance-a.relevance);
   currentNewsItems = items;
   feed.innerHTML = items.length ? items.map((item, index) => `
     <article class="news-card" data-news-id="${item.id}" tabindex="0">
       <div class="news-rank">${String(index + 1).padStart(2,"0")}</div>
       <div class="news-card-body">
-        <div class="news-meta"><span class="news-type ${item.type.toLowerCase()}">${item.type}</span><span>${item.place}</span><span>hace ${item.age} h</span></div>
+        <div class="news-meta"><span class="news-type ${item.type.toLowerCase()}">${item.type}</span><span class="news-section-tag">${newsCategoryLabels[item.category] || item.category}</span><span>${item.place}</span><span>hace ${item.age} h</span></div>
         <h2>${item.title}</h2>
+        <div class="news-editorial-tags">${Object.values(newsEditorialMeta[item.id] || {}).map((value) => `<span>${value}</span>`).join("")}</div>
         <p class="news-card-excerpt">${item.summary.length > 150 ? item.summary.slice(0, 147).trimEnd() + "…" : item.summary}</p>
         <div class="news-hashtags">${item.hashtags.map((tag) => `<span>${tag}</span>`).join("")}</div>
         <div class="news-source"><a href="${item.sourceUrl}" target="_blank" rel="noreferrer">${item.source} ↗</a><b>${item.distance === null ? "Orden global" : item.distance < 1 ? "En tu zona" : Math.round(item.distance).toLocaleString("es-CL") + " km"}</b></div>
@@ -2031,8 +2100,17 @@ document.querySelector(".market-nav-button")?.addEventListener("click", (event) 
 document.querySelectorAll("[data-news-filter]").forEach((button) => button.addEventListener("click", () => {
   newsFilter = button.dataset.newsFilter;
   document.querySelectorAll("[data-news-filter]").forEach((item) => item.classList.toggle("active", item === button));
+  byId("newsroom")?.querySelector(".news-more-sections")?.classList.toggle("has-active-filter", button.closest(".news-more-sections") !== null);
+  const details = button.closest(".news-more-sections");
+  if (details) details.open = false;
   renderNews();
 }));
+byId("newsNearbyToggle")?.addEventListener("click", (event) => {
+  newsNearbyOnly = !newsNearbyOnly;
+  event.currentTarget.classList.toggle("active", newsNearbyOnly);
+  event.currentTarget.setAttribute("aria-pressed", String(newsNearbyOnly));
+  renderNews();
+});
 byId("newsSort")?.addEventListener("change", renderNews);
 byId("allowLocation")?.addEventListener("click", requestNewsLocation);
 byId("skipLocation")?.addEventListener("click", () => {
