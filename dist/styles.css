@@ -377,7 +377,8 @@ dialog { width: min(760px, calc(100% - 32px)); color: var(--ink); background: #0
 
 
 /* Concise feed and thematic news-map layer */
-.news-card-excerpt{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden;max-width:72ch}
+.news-card-excerpt{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:5;overflow:hidden;max-width:72ch;min-height:4.4em}
+.news-source a{font-weight:650}
 .news-map-context-route{fill:none;stroke:#e7b567;stroke-width:2.4;stroke-dasharray:7 4;opacity:.9;vector-effect:non-scaling-stroke;filter:drop-shadow(0 0 3px rgba(231,181,103,.35))}
 .news-map-context-route.route-1{stroke:#e6786e;stroke-dasharray:3 3}
 .news-map-context-node circle{fill:#e7b567;stroke:#07100d;stroke-width:2;vector-effect:non-scaling-stroke}
