@@ -148,9 +148,20 @@ const state = {
   fog: true,
   conflict: ["russia-ukraine", "middle-east", "sudan", "world-resources"].includes(localStorage.getItem("atlas-conflict")) ? localStorage.getItem("atlas-conflict") : "russia-ukraine",
   resource: ["copper", "lithium", "iron", "oil", "gas", "wheat", "maize", "rice"].includes(localStorage.getItem("atlas-resource")) ? localStorage.getItem("atlas-resource") : "copper",
+  resourceRegion: ["world", "americas", "europe-central-asia", "mena", "sub-saharan-africa", "south-asia", "east-asia-pacific"].includes(localStorage.getItem("atlas-resource-region")) ? localStorage.getItem("atlas-resource-region") : "world",
   perspective: localStorage.getItem("atlas-perspective") || "neutral",
   language: localStorage.getItem("atlas-language") || "es",
   layers: new Set(["control", "movements", "routes", "rail", "admin", "water", "terrain", "maritime", "aviation", "resources"])
+};
+
+const resourceRegions = {
+  world: { label: "Mundo", countries: null },
+  americas: { label: "Américas", center: [-82, 8], scale: 0.72, countries: ["Estados Unidos", "Canadá", "México", "Venezuela", "Brasil", "Argentina", "Chile", "Perú", "Bolivia"] },
+  "europe-central-asia": { label: "Europa y Asia Central", center: [45, 52], scale: 0.75, countries: ["Rusia", "Francia", "Ucrania", "Turkmenistán"] },
+  mena: { label: "Oriente Medio y Norte de África", center: [35, 27], scale: 1.5, countries: ["Arabia Saudita", "Irán", "Irak", "Emiratos Árabes Unidos", "Kuwait", "Libia", "Qatar"] },
+  "sub-saharan-africa": { label: "África subsahariana", center: [22, -5], scale: 0.9, countries: ["R. D. del Congo", "Zimbabue"] },
+  "south-asia": { label: "Asia meridional", center: [78, 24], scale: 2, countries: ["India", "Pakistán", "Bangladés"] },
+  "east-asia-pacific": { label: "Asia oriental y Pacífico", center: [122, 5], scale: 0.78, countries: ["Australia", "China", "Indonesia", "Vietnam", "Tailandia", "Myanmar", "Filipinas"] }
 };
 const byId = (id) => document.getElementById(id);
 let atlasMap = null;
@@ -325,7 +336,9 @@ const resourceCatalog = {
 
 function buildResourceEvents(resourceKey) {
   const resource = resourceCatalog[resourceKey] || resourceCatalog.copper;
-  return resource.entries.map(([country, region, lon, lat, score, tier], index) => ({
+  const selectedRegion = resourceRegions[state.resourceRegion] || resourceRegions.world;
+  const entries = selectedRegion.countries ? resource.entries.filter(([country]) => selectedRegion.countries.includes(country)) : resource.entries;
+  return entries.map(([country, region, lon, lat, score, tier], index) => ({
     id: `RES-${resourceKey.toUpperCase()}-${String(index + 1).padStart(2, "0")}`,
     kind: "ground", kindLabel: resource.category === "agriculture" ? "PRODUCCIÓN AGRÍCOLA" : resource.category === "energy" ? "RESERVA ENERGÉTICA" : "RECURSO MINERAL",
     time: resource.year, place: country, lon, lat, title: `${resource.name} · ${country}`, short: `${country} · ${tier}`,
@@ -333,7 +346,7 @@ function buildResourceEvents(resourceKey) {
     confidence: "medium", confidenceLabel: "MEDIA",
     facts: [["Recurso", resource.name], ["Medida", resource.metric], ["Zona representativa", region], ["Escala relativa", `${score}/100`]],
     assessment: "La posición es representativa a escala nacional o regional. No delimita un yacimiento, cultivo o reserva exacta y no sustituye cartografía geológica o agrícola especializada.",
-    sources: [[resource.sourceName, resource.year, "INSTITUCIONAL"]]
+    sources: [[resource.sourceName, resource.year, "INSTITUCIONAL"]], score, tier, color: resource.color
   }));
 }
 
@@ -516,7 +529,7 @@ function applyTheaterData() {
   if (resourceMode) {
     const resource = resourceCatalog[state.resource] || resourceCatalog.copper;
     events = buildResourceEvents(state.resource);
-    resourceMarkers = events.map((event, index) => ({ ...event, score: resource.entries[index][4], tier: resource.entries[index][5], color: resource.color }));
+    resourceMarkers = events;
     state.perspective = "neutral";
   } else {
     events = config.events;
@@ -566,14 +579,22 @@ function applyTheaterData() {
   document.querySelector(".force-compare").hidden = state.conflict !== "russia-ukraine";
   if (resourceMode) {
     const resource = resourceCatalog[state.resource] || resourceCatalog.copper;
+    const region = resourceRegions[state.resourceRegion] || resourceRegions.world;
+    byId("resourceRegionSelect").value = state.resourceRegion;
     byId("resourceSelect").value = state.resource;
     byId("resourceMetric").textContent = `${resource.metric} · ${resource.year}`;
-    byId("resourceDescription").textContent = resource.description;
+    byId("resourceDescription").textContent = `${region.label}: ${resource.description}`;
     byId("resourceSource").textContent = `${resource.sourceName} ↗`;
     byId("resourceSource").href = resource.sourceUrl;
+    byId("statusLabel1").textContent = "REGIÓN";
+    byId("statusValue1").textContent = region.label;
+    byId("statusTrend1").textContent = state.resourceRegion === "world" ? "vista global" : "vista regional";
+    byId("statusLabel4").textContent = "UBICACIONES";
+    byId("statusValue4").textContent = String(events.length);
+    byId("statusTrend4").textContent = resource.name.toLowerCase();
   }
   byId("dataNotice").textContent = resourceMode
-    ? "Vista mundial · Posiciones nacionales o regionales aproximadas · Selecciona un marcador para revisar medida y fuente."
+    ? `${resourceRegions[state.resourceRegion].label} · ${events.length} ubicaciones visibles · Posiciones nacionales o regionales aproximadas.`
     : state.conflict === "russia-ukraine"
     ? "Prototipo editorial · Datos de demostración · No sustituye fuentes oficiales ni asesoramiento de seguridad."
     : "Cobertura base · Fichas editoriales de referencia · Pendiente de eventos publicados y verificados.";
@@ -627,6 +648,20 @@ function applyAnalysisContext() {
 }
 
 function renderIntel(event) {
+  if (!event) {
+    state.selected = null;
+    byId("eventCode").textContent = "SIN DATOS";
+    byId("eventKind").textContent = "COBERTURA REGIONAL";
+    byId("eventTitle").textContent = "Sin ubicaciones en esta capa";
+    byId("eventSummary").textContent = "La combinación de región y recurso seleccionada no contiene nodos en la cobertura actual.";
+    byId("eventAssessment").textContent = "Prueba otra materia prima o vuelve a la vista mundial para consultar todas las ubicaciones disponibles.";
+    byId("eventConfidence").textContent = "N/D";
+    byId("eventConfidence").className = "confidence-badge medium";
+    byId("eventFacts").innerHTML = "";
+    byId("sourceCount").textContent = "0 fuentes";
+    byId("sourceList").innerHTML = "";
+    return;
+  }
   state.selected = event.id;
   syncEventSelection();
   byId("eventCode").textContent = event.id;
@@ -758,7 +793,11 @@ function createVectorFallback(container) {
   });
   svg.call(fallbackZoom).on("dblclick.zoom", null);
   const config = currentTheater();
-  const projection = state.view === "theater"
+  const selectedRegion = resourceRegions[state.resourceRegion] || resourceRegions.world;
+  const regionalResourceView = Boolean(config.resources && state.resourceRegion !== "world");
+  const projection = regionalResourceView
+    ? d3.geoMercator().center(selectedRegion.center).scale(width * selectedRegion.scale).translate([width / 2, height / 2])
+    : state.view === "theater"
     ? d3.geoMercator().center(config.center).scale(width * config.scale).translate([width / 2, height / 2])
     : d3.geoNaturalEarth1().scale(width / 6.35).translate([width / 2, height / 2]);
   const path = d3.geoPath(projection);
@@ -1357,6 +1396,15 @@ byId("conflictSelect").addEventListener("change", (event) => {
 byId("resourceSelect").addEventListener("change", (event) => {
   state.resource = event.target.value;
   localStorage.setItem("atlas-resource", state.resource);
+  applyTheaterData();
+  applyAnalysisContext();
+  renderTimeline();
+  renderIntel(events[0]);
+  createMap();
+});
+byId("resourceRegionSelect").addEventListener("change", (event) => {
+  state.resourceRegion = event.target.value;
+  localStorage.setItem("atlas-resource-region", state.resourceRegion);
   applyTheaterData();
   applyAnalysisContext();
   renderTimeline();
