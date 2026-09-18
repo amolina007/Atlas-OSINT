@@ -1999,23 +1999,24 @@ const demoAtlasNews = [
   { id:"N-HEALTH-01", title:"Señales de salud pública y presión territorial sobre la red", place:"Maipú, Chile", lat:-33.5106, lon:-70.7573, category:"health", type:"HECHO", age:3, relevance:81, summary:"La vigilancia sanitaria territorial permite relacionar circulación de enfermedades, demanda asistencial y capacidad de respuesta de la red. Atlas prioriza datos agregados y fuentes institucionales, preserva la privacidad y diferencia una señal epidemiológica temprana de una tendencia confirmada por series comparables.", analysis:"La incidencia, gravedad y presión asistencial deben analizarse por población, periodo y territorio; los casos aislados no describen por sí solos una tendencia.", hashtags:["#SaludPública","#Maipú","#Vigilancia"], source:"Ministerio de Salud de Chile", sourceUrl:"https://www.minsal.cl/" },
   { id:"N-INFRA-01", title:"Puertos y corredores logísticos de la zona central", place:"Valparaíso, Chile", lat:-33.0472, lon:-71.6127, category:"infrastructure", type:"ANÁLISIS", age:5, relevance:83, summary:"Los puertos de Valparaíso y San Antonio, junto con las rutas hacia Santiago y los pasos cordilleranos, forman una red crítica para abastecimiento y comercio exterior. Atlas contextualiza interrupciones, obras y congestión según su duración, capacidad afectada y alternativas disponibles dentro del sistema logístico.", analysis:"Una interrupción local adquiere relevancia estratégica cuando reduce capacidad, carece de rutas alternativas o coincide con presión sobre otros nodos.", hashtags:["#Puertos","#Logística","#Infraestructura"], source:"Ministerio de Transportes y Telecomunicaciones", sourceUrl:"https://www.mtt.gob.cl/" }
 ];
-let atlasNews = [...demoAtlasNews];
+let atlasNews = [];
 let liveNewsRequestId = 0;
+const defaultNewsContext = { name:"Chile", country:"CL", lat:-33.4489, lon:-70.6693 };
 
 async function loadLiveNews() {
-  if (!atlasContext) return;
+  const feedContext = atlasContext || defaultNewsContext;
   const requestId = ++liveNewsRequestId;
   const feed = byId("newsFeed");
   if (feed) feed.setAttribute("aria-busy","true");
   const stateNode = byId("newsLocationState");
-  if (stateNode) stateNode.innerHTML = `<span class="location-pulse searching"></span><div><strong>ACTUALIZANDO NOTICIAS</strong><small>${atlasContext.name}</small></div>`;
+  if (stateNode) stateNode.innerHTML = `<span class="location-pulse searching"></span><div><strong>ACTUALIZANDO NOTICIAS</strong><small>${feedContext.name}</small></div>`;
   try {
     const params = new URLSearchParams({
-      location:atlasContext.name,
-      country:atlasContext.country || "CL",
+      location:feedContext.name,
+      country:feedContext.country || "CL",
       language:state.language || "es",
-      lat:String(atlasContext.lat),
-      lon:String(atlasContext.lon)
+      lat:String(feedContext.lat),
+      lon:String(feedContext.lon)
     });
     const response = await fetch(`/api/news?${params}`, { headers:{ Accept:"application/json" } });
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
@@ -2025,13 +2026,13 @@ async function loadLiveNews() {
     atlasNews = payload.articles;
     currentNewsId = null;
     renderNews();
-    if (stateNode) stateNode.innerHTML = `<span class="location-pulse active"></span><div><strong>${atlasContext.name.toUpperCase()}</strong><small>${atlasNews.length} noticias reales · actualización automática</small></div>`;
+    if (stateNode) stateNode.innerHTML = `<span class="location-pulse active"></span><div><strong>${feedContext.name.toUpperCase()}</strong><small>${atlasNews.length} noticias reales · actualización automática</small></div>`;
   } catch (error) {
     if (requestId !== liveNewsRequestId) return;
-    atlasNews = [...demoAtlasNews];
+    atlasNews = [];
     renderNews();
-    if (stateNode) stateNode.innerHTML = `<span class="location-pulse"></span><div><strong>FUENTE TEMPORALMENTE NO DISPONIBLE</strong><small>Mostrando fichas editoriales de respaldo</small></div>`;
-    console.warn("Live news unavailable; using editorial fallback.", error.message);
+    if (stateNode) stateNode.innerHTML = `<span class="location-pulse"></span><div><strong>FUENTE TEMPORALMENTE NO DISPONIBLE</strong><small>No se mostrarán descripciones de relleno</small></div>`;
+    console.warn("Live news unavailable.", error.message);
   } finally {
     if (feed) feed.removeAttribute("aria-busy");
   }
@@ -2264,7 +2265,7 @@ function renderNews() {
         <div class="news-source"><a href="${newsSourceUrl(item.sourceUrl)}" target="_blank" rel="noreferrer" aria-label="Profundizar en ${escapeNewsText(item.source)}">Profundizar en ${escapeNewsText(item.source)} ↗</a><b>${item.distance === null ? "Orden global" : item.distance < 1 ? "En tu zona" : Math.round(item.distance).toLocaleString("es-CL") + " km"}</b></div>
         <small class="news-open-hint">Doble clic para abrir la ficha completa</small>
       </div>
-    </article>`).join("") : '<div class="news-empty">No hay noticias dentro de este filtro territorial.</div>';
+    </article>`).join("") : '<div class="news-empty"><strong>No hay noticias verificables disponibles.</strong><span>Atlas descartó fichas genéricas o contenido sin información periodística suficiente.</span></div>';
 }
 
 function setAtlasSection(name) {
@@ -2626,5 +2627,6 @@ if (atlasContext) {
     state.language = browserLanguage;
     localStorage.setItem("atlas-language", state.language);
   }
+  loadLiveNews();
   detectAtlasLocation();
 }
