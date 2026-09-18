@@ -1728,6 +1728,45 @@ const atlasNews = [
   { id:"N-AS-01", title:"Mercados asiáticos y cadenas de suministro", place:"Singapur", lat:1.3521, lon:103.8198, category:"economy", type:"ANÁLISIS", age:6, relevance:80, summary:"Los mercados asiáticos entregan señales sobre manufactura, comercio marítimo, demanda de materias primas y funcionamiento de las cadenas de suministro. Atlas relaciona precios, fletes, inventarios y actividad industrial para construir contexto, sin atribuir automáticamente cada variación bursátil a un único evento político o económico.", analysis:"Los movimientos de mercado son señales, no explicaciones causales. Deben contrastarse con comercio, fletes e inventarios.", hashtags:["#Asia","#Mercados","#CadenasDeSuministro"], source:"IMF Data", sourceUrl:"https://data.imf.org/" }
 ];
 
+const newsMapContexts = {
+  "N-CL-01": {
+    layer:"MOVILIDAD Y SERVICIOS",
+    insight:"El eje Santiago–Maipú concentra población y desplazamientos; Valparaíso y San Antonio conectan la capital con puertos y abastecimiento.",
+    points:[{name:"Maipú",lon:-70.76,lat:-33.51,role:"Nodo urbano"},{name:"Santiago",lon:-70.67,lat:-33.45,role:"Centro metropolitano"},{name:"Valparaíso",lon:-71.62,lat:-33.05,role:"Puerto"},{name:"San Antonio",lon:-71.61,lat:-33.59,role:"Puerto"}],
+    lines:[{name:"Corredor central–puertos",coordinates:[[-70.76,-33.51],[-70.95,-33.47],[-71.3,-33.35],[-71.62,-33.05]]}]
+  },
+  "N-CL-02": {
+    layer:"CORREDORES ECONÓMICOS",
+    insight:"La lectura económica conecta el centro financiero de Santiago con puertos exportadores y el corredor cordillerano hacia Argentina.",
+    points:[{name:"Santiago",lon:-70.67,lat:-33.45,role:"Centro financiero"},{name:"Valparaíso",lon:-71.62,lat:-33.05,role:"Comercio exterior"},{name:"San Antonio",lon:-71.61,lat:-33.59,role:"Comercio exterior"},{name:"Los Andes",lon:-70.60,lat:-32.83,role:"Paso logístico"}],
+    lines:[{name:"Eje exportador",coordinates:[[-71.62,-33.05],[-70.67,-33.45],[-70.60,-32.83]]}]
+  },
+  "N-UA-01": {
+    layer:"FRENTE Y LOGÍSTICA",
+    insight:"Kyiv funciona como centro político y logístico; Dnipró articula la retaguardia y Limán se ubica próximo al frente oriental.",
+    points:[{name:"Kyiv",lon:30.52,lat:50.45,role:"Centro político"},{name:"Dnipro",lon:35.05,lat:48.46,role:"Nodo logístico"},{name:"Limán",lon:37.80,lat:48.99,role:"Sector del frente"}],
+    lines:[{name:"Eje logístico oriental",coordinates:[[30.52,50.45],[32.0,49.5],[35.05,48.46],[37.80,48.99]]},{name:"Frente aproximado",coordinates:[[37.0,51.0],[37.6,49.5],[36.9,47.7]]}]
+  },
+  "N-ME-01": {
+    layer:"ENERGÍA Y CONECTIVIDAD",
+    insight:"Amán se sitúa entre el Levante y los corredores hacia el mar Rojo; Suez y Bab el-Mandeb son pasos críticos para energía y comercio.",
+    points:[{name:"Amán",lon:35.91,lat:31.95,role:"Centro regional"},{name:"Suez",lon:32.55,lat:29.97,role:"Paso marítimo"},{name:"Aqaba",lon:35.01,lat:29.53,role:"Puerto energético"},{name:"Bab el-Mandeb",lon:43.35,lat:12.58,role:"Estrecho crítico"}],
+    lines:[{name:"Ruta mar Rojo",coordinates:[[32.55,29.97],[34.8,27.5],[38.5,20.0],[43.35,12.58]]}]
+  },
+  "N-SD-01": {
+    layer:"ACCESO HUMANITARIO",
+    insight:"Jartum concentra la crisis urbana; Puerto Sudán sostiene la entrada de suministros y Darfur reúne graves restricciones de acceso.",
+    points:[{name:"Jartum",lon:32.56,lat:15.50,role:"Crisis urbana"},{name:"Puerto Sudán",lon:37.22,lat:19.62,role:"Entrada de ayuda"},{name:"Darfur",lon:24.90,lat:13.20,role:"Acceso restringido"}],
+    lines:[{name:"Corredor de abastecimiento",coordinates:[[37.22,19.62],[34.6,17.5],[32.56,15.50]]}]
+  },
+  "N-AS-01": {
+    layer:"CADENAS DE SUMINISTRO",
+    insight:"Singapur y el estrecho de Malaca forman un cuello de botella entre el Índico y el Pacífico para energía, contenedores y manufacturas.",
+    points:[{name:"Singapur",lon:103.82,lat:1.35,role:"Hub portuario"},{name:"Malaca",lon:102.25,lat:2.20,role:"Paso marítimo"},{name:"Johor",lon:103.76,lat:1.49,role:"Nodo industrial"}],
+    lines:[{name:"Estrecho de Malaca",coordinates:[[99.8,5.7],[101.2,3.8],[102.25,2.20],[103.82,1.35],[104.6,0.5]]}]
+  }
+};
+
 let newsLocation = null;
 let newsFilter = "all";
 let newsLocationRequested = false;
@@ -1772,7 +1811,7 @@ function renderNews() {
       <div class="news-card-body">
         <div class="news-meta"><span class="news-type ${item.type.toLowerCase()}">${item.type}</span><span>${item.place}</span><span>hace ${item.age} h</span></div>
         <h2>${item.title}</h2>
-        <p>${item.summary}</p>
+        <p class="news-card-excerpt">${item.summary.length > 150 ? item.summary.slice(0, 147).trimEnd() + "…" : item.summary}</p>
         <div class="news-hashtags">${item.hashtags.map((tag) => `<span>${tag}</span>`).join("")}</div>
         <div class="news-source"><a href="${item.sourceUrl}" target="_blank" rel="noreferrer">${item.source} ↗</a><b>${item.distance === null ? "Orden global" : item.distance < 1 ? "En tu zona" : Math.round(item.distance).toLocaleString("es-CL") + " km"}</b></div>
         <small class="news-open-hint">Doble clic para abrir la ficha completa</small>
@@ -1897,6 +1936,23 @@ async function renderNewsContextMap(item) {
     .attr("class", "news-map-admin")
     .attr("d", (line) => path({ type:"LineString", coordinates:line }));
 
+  const context = newsMapContexts[item.id];
+  if (context) {
+    const layer = map.append("g").attr("class", "news-map-context-layer");
+    layer.selectAll("path.news-map-context-route").data(context.lines || []).join("path")
+      .attr("class", (route, index) => `news-map-context-route route-${index}`)
+      .attr("d", (route) => path({ type:"LineString", coordinates:route.coordinates }));
+    const nodes = layer.selectAll("g.news-map-context-node").data(context.points || []).join("g")
+      .attr("class", "news-map-context-node")
+      .attr("transform", (node) => {
+        const coords = projection([node.lon,node.lat]);
+        return coords ? `translate(${coords[0]},${coords[1]})` : "translate(-999,-999)";
+      });
+    nodes.append("circle").attr("r", 4);
+    nodes.append("text").attr("x", 7).attr("y", -6).text((node) => node.name);
+    nodes.append("text").attr("class", "news-map-context-role").attr("x", 7).attr("y", 5).text((node) => node.role);
+  }
+
   const point = projection([item.lon, item.lat]);
   if (point) {
     const marker = map.append("g").attr("class", "news-map-marker").attr("transform", `translate(${point[0]},${point[1]})`);
@@ -1907,7 +1963,9 @@ async function renderNewsContextMap(item) {
   }
   svg.append("text").attr("class", "news-map-north").attr("x", width - 22).attr("y", 25).text("N");
   byId("newsMapPlace").textContent = item.place;
-  byId("newsMapScale").textContent = "Vista regional · ubicación aproximada";
+  byId("newsMapScale").textContent = context?.layer || "Vista regional";
+  const insight = byId("newsMapInsight");
+  if (insight) insight.textContent = context?.insight || "La ubicación aporta contexto territorial a la noticia.";
 }
 
 function updateNewsPreferenceControls(item) {
