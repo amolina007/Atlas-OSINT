@@ -2012,7 +2012,7 @@ async function loadLiveNews() {
   if (stateNode) stateNode.innerHTML = `<span class="location-pulse searching"></span><div><strong>ACTUALIZANDO NOTICIAS</strong><small>${feedContext.name}</small></div>`;
   try {
     const params = new URLSearchParams({
-      format:"content-v3",
+      format:"content-v4-geo",
       location:feedContext.name,
       country:feedContext.country || "CL",
       language:state.language || "es",
@@ -2257,7 +2257,10 @@ function renderNews() {
   const feed = byId("newsFeed");
   if (!feed) return;
   const sort = byId("newsSort")?.value || "distance";
-  let items = atlasNews.map((item) => ({ ...item, distance: newsLocation ? distanceKm(newsLocation, item) : null }));
+  let items = atlasNews.map((item) => ({
+    ...item,
+    distance:newsLocation && Number.isFinite(item.lat) && Number.isFinite(item.lon) ? distanceKm(newsLocation,item) : null
+  }));
   if (newsFilter !== "all") items = items.filter((item) => item.category === newsFilter);
   if (newsNearbyOnly) items = items.filter((item) => item.distance !== null && item.distance <= 500);
   items.sort((a,b) => sort === "recent" ? a.age-b.age : sort === "relevance" ? b.relevance-a.relevance : newsLocation ? a.distance-b.distance : b.relevance-a.relevance);
@@ -2382,9 +2385,11 @@ async function renderNewsContextMap(item) {
   const width = Math.max(container.clientWidth || 620, 320);
   const height = Math.max(container.clientHeight || 270, 220);
   const clipId = `news-map-clip-${item.id.replace(/[^a-z0-9]/gi, "")}`;
+  const context = item.mapContext || newsMapContexts[item.id];
+  const scopeScale = { local:5.8, metro:5.2, regional:4.1, national:2.8 };
   const projection = d3.geoMercator()
     .center([item.lon, item.lat])
-    .scale(width * 3.15)
+    .scale(width * (scopeScale[context?.scope] || 3.15))
     .translate([width / 2, height / 2]);
   const path = d3.geoPath(projection);
   const countries = await loadNewsWorld();
@@ -2404,18 +2409,18 @@ async function renderNewsContextMap(item) {
     const points = band.coordinates.flat(2);
     return points.some((value, index) => index % 2 === 0 && Math.abs(value - item.lon) < 18);
   });
-  map.append("g").selectAll("path").data(localTerrain).join("path")
+  const activeLayers = new Set(context?.layers || ["terrain","water","admin","routes"]);
+  map.append("g").selectAll("path").data(activeLayers.has("terrain") ? localTerrain : []).join("path")
     .attr("class", (band) => `news-map-terrain ${band.level}`)
     .attr("d", (band) => path({ type:"Polygon", coordinates:normalizedPolygon(band.coordinates) }));
 
-  map.append("g").selectAll("path").data(waterways).join("path")
+  map.append("g").selectAll("path").data(activeLayers.has("water") ? waterways : []).join("path")
     .attr("class", "news-map-water")
     .attr("d", (river) => path({ type:"LineString", coordinates:river.coordinates }));
-  map.append("g").selectAll("path").data(administrativeLines).join("path")
+  map.append("g").selectAll("path").data(activeLayers.has("admin") ? administrativeLines : []).join("path")
     .attr("class", "news-map-admin")
     .attr("d", (line) => path({ type:"LineString", coordinates:line }));
 
-  const context = newsMapContexts[item.id];
   if (context) {
     const layer = map.append("g").attr("class", "news-map-context-layer");
     layer.selectAll("path.news-map-context-route").data(context.lines || []).join("path")
