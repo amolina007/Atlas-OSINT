@@ -1799,6 +1799,10 @@ function requestNewsLocation() {
 }
 
 document.querySelectorAll("[data-atlas-section]").forEach((button) => button.addEventListener("click", () => setAtlasSection(button.dataset.atlasSection)));
+document.querySelector(".market-nav-button")?.addEventListener("click", (event) => {
+  event.preventDefault();
+  setAtlasSection("markets");
+});
 document.querySelectorAll("[data-news-filter]").forEach((button) => button.addEventListener("click", () => {
   newsFilter = button.dataset.newsFilter;
   document.querySelectorAll("[data-news-filter]").forEach((item) => item.classList.toggle("active", item === button));
