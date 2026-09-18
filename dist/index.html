@@ -20,6 +20,7 @@
         <span><strong>ATLAS</strong><small>OSINT CONFLICT INTELLIGENCE</small></span>
       </a>
       <nav class="top-actions" aria-label="Controles principales">
+        <a class="ghost-button market-nav-button" href="#markets"><span class="button-icon">⌁</span> Mercados</a>
         <button class="ghost-button" id="methodButton"><span class="button-icon">◎</span> Metodología</button>
         <button class="turn-pill" id="turnButton"><span class="pulse"></span><span>Turno activo</span><strong>16 SEP 2026</strong></button>
       </nav>
@@ -405,6 +406,112 @@
             <p><b>Destruido:</b> evidencia visual de pérdida irreversible.</p><p><b>Dañado:</b> condición observada, recuperación desconocida.</p><p><b>Abandonado/capturado:</b> pérdida de control, no necesariamente destrucción.</p>
           </div>
           <p class="force-source">Fuente: <a href="https://www.oryxspioenkop.com/2022/02/attack-on-europe-documenting-equipment.html" target="_blank" rel="noreferrer">Oryx · pérdidas rusas</a> y <a href="https://www.oryxspioenkop.com/2022/02/attack-on-europe-documenting-ukrainian.html" target="_blank" rel="noreferrer">Oryx · pérdidas ucranianas</a>, consulta 17 sep 2026. Son mínimos confirmados visualmente; las pérdidas reales son mayores y el sesgo de disponibilidad de imágenes no es uniforme.</p>
+        </div>
+      </section>
+
+
+      <section class="market-console" id="markets" aria-labelledby="markets-title">
+        <div class="market-heading">
+          <div>
+            <p class="eyebrow">ECONOMÍA GLOBAL · SEÑALES DE MERCADO</p>
+            <h2 id="markets-title">Mercados bursátiles</h2>
+            <p>Monitor para relacionar precios financieros con conflictos, sanciones, energía y cadenas de suministro. Los datos pueden ser indicativos o diferidos según bolsa y proveedor.</p>
+          </div>
+          <div class="market-status">
+            <span class="market-status-dot" aria-hidden="true"></span>
+            <div><strong>DATOS EXTERNOS</strong><small>TradingView · horario y retraso según mercado</small></div>
+          </div>
+        </div>
+
+        <div class="market-ticker" aria-label="Cotizaciones destacadas">
+          <div class="tradingview-widget-container">
+            <div class="tradingview-widget-container__widget"></div>
+            <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-ticker-tape.js" async>
+            {
+              "symbols": [
+                {"proName":"FOREXCOM:SPXUSD","title":"S&P 500"},
+                {"proName":"NASDAQ:NDX","title":"Nasdaq 100"},
+                {"proName":"DJ:DJI","title":"Dow Jones"},
+                {"proName":"INDEX:STOXX50E","title":"Euro Stoxx 50"},
+                {"proName":"TVC:NI225","title":"Nikkei 225"},
+                {"proName":"BCS:SP_IPSA","title":"IPSA Chile"},
+                {"proName":"TVC:DXY","title":"Dólar DXY"},
+                {"proName":"TVC:USOIL","title":"Petróleo WTI"},
+                {"proName":"TVC:GOLD","title":"Oro"},
+                {"proName":"COMEX:HG1!","title":"Cobre"}
+              ],
+              "showSymbolLogo": true,
+              "isTransparent": true,
+              "displayMode": "adaptive",
+              "colorTheme": "dark",
+              "locale": "es"
+            }
+            </script>
+          </div>
+        </div>
+
+        <div class="market-grid">
+          <article class="market-widget-card market-overview-card">
+            <div class="market-card-heading"><span>MAPA DE MERCADOS</span><small>índices, futuros, divisas y bonos</small></div>
+            <div class="tradingview-widget-container market-widget-frame">
+              <div class="tradingview-widget-container__widget"></div>
+              <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-market-overview.js" async>
+              {
+                "colorTheme":"dark",
+                "dateRange":"1D",
+                "showChart":true,
+                "locale":"es",
+                "width":"100%",
+                "height":"100%",
+                "largeChartUrl":"",
+                "isTransparent":true,
+                "showSymbolLogo":true,
+                "showFloatingTooltip":false,
+                "tabs":[
+                  {"title":"Índices","symbols":[
+                    {"s":"FOREXCOM:SPXUSD","d":"S&P 500"},
+                    {"s":"NASDAQ:NDX","d":"Nasdaq 100"},
+                    {"s":"DJ:DJI","d":"Dow Jones"},
+                    {"s":"INDEX:STOXX50E","d":"Euro Stoxx 50"},
+                    {"s":"TVC:NI225","d":"Nikkei 225"},
+                    {"s":"BCS:SP_IPSA","d":"IPSA Chile"}
+                  ]},
+                  {"title":"Materias primas","symbols":[
+                    {"s":"TVC:USOIL","d":"Petróleo WTI"},
+                    {"s":"TVC:UKOIL","d":"Petróleo Brent"},
+                    {"s":"TVC:GOLD","d":"Oro"},
+                    {"s":"COMEX:HG1!","d":"Cobre"},
+                    {"s":"CBOT:ZW1!","d":"Trigo"},
+                    {"s":"CBOT:ZC1!","d":"Maíz"}
+                  ]},
+                  {"title":"Divisas y bonos","symbols":[
+                    {"s":"TVC:DXY","d":"Índice dólar"},
+                    {"s":"FX:EURUSD","d":"EUR/USD"},
+                    {"s":"FX_IDC:USDCLP","d":"USD/CLP"},
+                    {"s":"TVC:US10Y","d":"Bono EEUU 10 años"},
+                    {"s":"TVC:DE10Y","d":"Bono Alemania 10 años"},
+                    {"s":"TVC:JP10Y","d":"Bono Japón 10 años"}
+                  ]}
+                ]
+              }
+              </script>
+            </div>
+          </article>
+
+          <aside class="market-intel">
+            <div class="market-card-heading"><span>LECTURA OSINT</span><small>qué observar</small></div>
+            <article><i>01</i><div><strong>Riesgo global</strong><p>Contrasta acciones, oro, dólar y volatilidad. Un movimiento aislado no confirma causalidad geopolítica.</p></div></article>
+            <article><i>02</i><div><strong>Energía y sanciones</strong><p>Brent, WTI y divisas de exportadores ayudan a detectar presión sobre oferta, rutas y expectativas.</p></div></article>
+            <article><i>03</i><div><strong>Alimentos y estabilidad</strong><p>Trigo y maíz conectan clima, puertos, guerra y seguridad alimentaria; deben compararse con inventarios y fletes.</p></div></article>
+            <article><i>04</i><div><strong>Chile y cobre</strong><p>Cobre, USD/CLP e IPSA ofrecen una lectura conjunta de demanda china, términos de intercambio y apetito por riesgo.</p></div></article>
+            <div class="market-caution"><strong>Regla de evidencia</strong><span>Precio = señal, no explicación. Toda atribución requiere cronología, fuentes independientes y una hipótesis alternativa.</span></div>
+          </aside>
+        </div>
+
+        <div class="market-source-line">
+          <span>Proveedor visual: <a href="https://www.tradingview.com/markets/" target="_blank" rel="noreferrer">TradingView ↗</a></span>
+          <span>Referencia institucional: <a href="https://data.imf.org/" target="_blank" rel="noreferrer">FMI Data ↗</a></span>
+          <span>No constituye asesoría financiera.</span>
         </div>
       </section>
 
