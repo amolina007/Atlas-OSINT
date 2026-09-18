@@ -2012,7 +2012,7 @@ async function loadLiveNews() {
   if (stateNode) stateNode.innerHTML = `<span class="location-pulse searching"></span><div><strong>ACTUALIZANDO NOTICIAS</strong><small>${feedContext.name}</small></div>`;
   try {
     const params = new URLSearchParams({
-      format:"content-v4-geo",
+      format:"content-v5-geo",
       location:feedContext.name,
       country:feedContext.country || "CL",
       language:state.language || "es",
