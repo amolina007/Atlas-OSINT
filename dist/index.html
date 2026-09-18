@@ -576,6 +576,7 @@
     <h2 id="newsDialogTitle">Detalle de la noticia</h2>
     <div class="news-dialog-meta" id="newsDialogMeta"></div>
     <p class="news-dialog-summary" id="newsDialogSummary"></p>
+    <div class="news-dialog-hashtags" id="newsDialogHashtags" aria-label="Etiquetas de la noticia"></div>
     <figure class="news-context-map">
       <div class="news-context-map__heading">
         <div><span>CONTEXTO TERRITORIAL</span><strong id="newsMapPlace">Ubicación aproximada</strong></div>
@@ -587,6 +588,16 @@
     <div class="news-dialog-analysis">
       <span>CONTEXTO Y LÍMITES</span>
       <p id="newsDialogAnalysis"></p>
+    </div>
+    <div class="news-dialog-actions">
+      <div class="news-feedback" aria-label="Valorar noticia">
+        <button id="newsInterested" type="button" aria-pressed="false">＋ Me interesa</button>
+        <button id="newsNotInterested" type="button" aria-pressed="false">− No me interesa</button>
+      </div>
+      <div class="news-navigation" aria-label="Navegar noticias">
+        <button id="newsPrevious" type="button">← Anterior</button>
+        <button id="newsNext" type="button">Siguiente →</button>
+      </div>
     </div>
     <a class="news-dialog-source" id="newsDialogSource" href="#" target="_blank" rel="noreferrer">Abrir fuente original ↗</a>
   </dialog>
