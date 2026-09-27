@@ -862,17 +862,20 @@ function applyFilter(kind) {
 
 function createMap() {
   const container = byId("map");
-  if (!maplibregl?.Map) return fallbackMap("Cartografía no disponible");
-  if (atlasMap) atlasMap.remove();
-  container.innerHTML = "";
+  if (atlasMap) { atlasMap.remove(); atlasMap = null; }
   fallbackSvg = null;
   fallbackZoom = null;
-  // Modo estable: cartografía SVG local sin teselas externas ni WebGL.
-  // Evita lienzos negros y cuadros de imagen rota en despliegues de rama.
-  if (leafletMap) {
-    leafletMap.remove();
-    leafletMap = null;
+  // Base real: teselas topográficas (Esri World Topographic Map) + administrativas
+  // (OpenStreetMap) vía Leaflet, con respaldo vectorial local si Leaflet no carga.
+  if (window.L?.map) {
+    try {
+      createLeafletAtlas(container);
+      return;
+    } catch (error) {
+      console.warn("Leaflet no disponible; usando cartografía vectorial de respaldo.", error?.message);
+    }
   }
+  container.innerHTML = "";
   createVectorFallback(container);
   return;
   if (!document.createElement("canvas").getContext("webgl2")) {
@@ -1077,15 +1080,6 @@ function createVectorFallback(container) {
   const width = Math.max(container.clientWidth, 500);
   const height = Math.max(container.clientHeight, 500);
   const svg = d3.select(container).html("").append("svg").attr("viewBox", `0 0 ${width} ${height}`).attr("aria-label", "Mapa vectorial de respaldo");
-  const defs = svg.append("defs");
-  const contourPattern = defs.append("pattern")
-    .attr("id", "atlasTopoContours").attr("width", 46).attr("height", 46)
-    .attr("patternUnits", "userSpaceOnUse").attr("patternTransform", "rotate(12)");
-  [10, 24, 38].forEach((y, index) => {
-    contourPattern.append("path")
-      .attr("d", `M-6 ${y} Q 5.5 ${y - (index % 2 ? 9 : 6)} 17 ${y} T 40 ${y} T 63 ${y}`)
-      .attr("class", "topo-contour-line").attr("data-tier", index);
-  });
   const viewport = svg.append("g").attr("class", "map-viewport");
   fallbackSvg = svg;
   fallbackZoom = d3.zoom().scaleExtent([1, 8]).on("zoom", (event) => {
@@ -1141,19 +1135,11 @@ function createVectorFallback(container) {
   };
   d3.json("https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json").then((world) => {
     const countries = topojson.feature(world, world.objects.countries).features;
-    const countryGroup = viewport.insert("g", ":first-child");
-    countryGroup.selectAll("path.country").data(countries).join("path")
+    viewport.insert("g", ":first-child").selectAll("path").data(countries).join("path")
       .attr("class", (country) => `country${config.focusCountryIds.includes(Number(country.id)) ? " focus-ua" : ""}`).attr("d", path);
-    // Textura topográfica (curvas de nivel) sobre el relleno administrativo de cada país:
-    // el mapa combina límites/colores administrativos con relieve topográfico, tanto en la
-    // vista mundo como en cada teatro, ya que ambas comparten este mismo pipeline de dibujo.
-    countryGroup.append("g").attr("class", "topo-texture").selectAll("path").data(countries).join("path")
-      .attr("d", path).attr("fill", "url(#atlasTopoContours)").attr("stroke", "none");
     finish();
   }).catch(() => {
-    const fallbackFeature = { type: "Feature", geometry: { type: "Polygon", coordinates: [[[20,44],[48,44],[51,59],[22,61],[20,44]]] } };
-    viewport.append("path").datum(fallbackFeature).attr("class", "country focus-ua").attr("d", path);
-    viewport.append("path").datum(fallbackFeature).attr("d", path).attr("fill", "url(#atlasTopoContours)").attr("stroke", "none").attr("class", "topo-texture-fallback");
+    viewport.append("path").datum({ type: "Feature", geometry: { type: "Polygon", coordinates: [[[20,44],[48,44],[51,59],[22,61],[20,44]]] } }).attr("class", "country focus-ua").attr("d", path);
     finish();
   });
 }
