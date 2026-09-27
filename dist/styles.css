@@ -109,7 +109,7 @@ h1 { margin: 0; font-size: clamp(32px, 4vw, 54px); line-height: 1; letter-spacin
 .country { fill: #111b20; stroke: #263943; stroke-width: .55; transition: .3s; }.country.focus-ua { fill: #153747; stroke: rgba(101,174,210,.68); stroke-width: 1.15; }.country.focus-ru { fill: #251b1d; stroke: rgba(147,92,91,.42); }
 .graticule { fill: none; stroke: rgba(134,181,197,.09); stroke-width: .5; }
 .map-layer { transition: opacity .2s; }.map-layer.hidden { opacity: 0 !important; pointer-events: none; }.zoom-regional, .zoom-detail { opacity: 0; pointer-events: none; transition: opacity .2s; }.zoom-regional.zoom-visible, .zoom-detail.zoom-visible { opacity: 1; pointer-events: auto; }
-.terrain-band { stroke: rgba(190,176,126,.2); stroke-width: .7; vector-effect: non-scaling-stroke; }.terrain-band.high { fill: rgba(184,151,91,.12); }.terrain-band.mid { fill: rgba(157,144,98,.055); }.terrain-label { fill: rgba(215,200,150,.56); font: 600 7px var(--mono); letter-spacing: .08em; paint-order: stroke; stroke: #07100d; stroke-width: 2px; }
+.terrain-band { stroke-width: .7; vector-effect: non-scaling-stroke; }.terrain-band.high { fill: rgba(107,84,58,.24); stroke: rgba(196,168,128,.4); }.terrain-band.mid { fill: rgba(129,133,78,.2); stroke: rgba(196,196,132,.35); }.terrain-label { fill: rgba(224,214,180,.64); font: 600 7px var(--mono); letter-spacing: .08em; paint-order: stroke; stroke: #07100d; stroke-width: 2px; }
 .control-zone { vector-effect: non-scaling-stroke; }.control-zone.ru { fill: rgba(194,65,61,.48); stroke: rgba(255,129,110,.92); stroke-width: 1.8; filter: drop-shadow(0 0 7px rgba(194,65,61,.22)); }.front-buffer { fill: none; stroke: rgba(241,209,141,.15); stroke-width: 12; vector-effect: non-scaling-stroke; }.front-line { fill: none; stroke: #f4d897; stroke-width: 2.4; stroke-dasharray: 2 3; vector-effect: non-scaling-stroke; filter: drop-shadow(0 0 4px rgba(241,209,141,.48)); }.control-label { font: 700 8px var(--mono); letter-spacing: .11em; paint-order: stroke; stroke: #07100d; stroke-width: 3px; }.control-label.ua { fill: #8ed9ff; }.control-label.ru { fill: #ff9b88; }
 .admin-line { fill: none; stroke: rgba(208,220,211,.21); stroke-width: .6; stroke-dasharray: 2 2; vector-effect: non-scaling-stroke; shape-rendering: optimizeSpeed; }.admin-line-oblast { stroke: rgba(224,235,227,.5); stroke-width: 1; stroke-dasharray: none; }.admin-line-district { stroke: rgba(190,207,196,.34); stroke-width: .55; stroke-dasharray: 1.5 1.5; }.admin-label { fill: rgba(218,230,221,.7); font: 600 6px var(--mono); letter-spacing: .05em; text-anchor: middle; paint-order: stroke; stroke: #07100d; stroke-width: 2.5px; stroke-linejoin: round; }.waterway { fill: none; stroke: rgba(99,189,221,.74); stroke-width: 1.4; vector-effect: non-scaling-stroke; }.water-label { fill: rgba(116,205,235,.72); font: italic 500 6px var(--mono); paint-order: stroke; stroke: #07100d; stroke-width: 2px; }
 .strategic-route { fill: none; stroke-linecap: round; stroke-linejoin: round; vector-effect: non-scaling-stroke; }.strategic-route.routes { stroke: rgba(231,181,103,.78); stroke-width: 2; }.strategic-route.rail { stroke: rgba(113,174,232,.72); stroke-width: 1.5; stroke-dasharray: 5 4; }.route-label { fill: rgba(233,239,231,.78); font: 500 7px var(--mono); paint-order: stroke; stroke: #07100d; stroke-width: 3px; }.rail-label { fill: rgba(137,190,238,.8); }.critical-zone .zone-halo { fill: rgba(231,181,103,.06); stroke: var(--amber); stroke-width: 1; stroke-dasharray: 3 3; vector-effect: non-scaling-stroke; }.critical-zone .zone-core { fill: var(--amber); }.critical-zone.civic .zone-halo { stroke: var(--green); fill: rgba(121,214,160,.06); }.critical-zone.civic .zone-core { fill: var(--green); }.critical-zone.communications .zone-halo { stroke: var(--purple); fill: rgba(173,141,227,.06); }.critical-zone.communications .zone-core { fill: var(--purple); }
@@ -273,14 +273,21 @@ dialog { width: min(760px, calc(100% - 32px)); color: var(--ink); background: #0
 .market-map-legend span{display:flex;align-items:center;gap:6px}.market-map-legend small{margin-left:auto;color:#687d73}.market-swatch{width:9px;height:9px;border-radius:2px}.market-swatch.gain{background:#197d4e}.market-swatch.flat{background:#4b5c55}.market-swatch.loss{background:#993734}
 @media(max-width:760px){.native-market-map{grid-template-columns:repeat(6,minmax(0,1fr));grid-auto-rows:86px}.market-tile.size-xl{grid-column:span 6}.market-tile.size-lg{grid-column:span 3}.market-tile.size-md{grid-column:span 3}.market-tile.size-sm{grid-column:span 3}.market-map-legend small{width:100%;margin-left:0}}
 
-/* Strong administrative-topographic visibility */
-.layer-terrain{mix-blend-mode:screen}
-.terrain-band{stroke:rgba(232,205,132,.72);stroke-width:1.25;filter:drop-shadow(0 0 5px rgba(205,174,92,.18))}
-.terrain-band.high{fill:rgba(186,143,65,.30)}
-.terrain-band.mid{fill:rgba(157,144,98,.17)}
-.terrain-contour{fill:none;stroke:rgba(244,218,151,.48);stroke-width:.7;vector-effect:non-scaling-stroke}
-.terrain-contour.high{stroke:rgba(255,218,126,.66)}
-.terrain-label{fill:#f3d890;font-size:8px;font-weight:700;stroke:#07100d;stroke-width:3px}
+/* Relieve hipsométrico: cada anillo de contorno concéntrico representa una banda
+   de elevación real (bajo → alto), con la paleta clásica de mapas topográficos
+   (verde-oliva/tostado en colinas, café → blanco de nieve en cumbres). */
+.layer-terrain{mix-blend-mode:normal}
+.terrain-band{stroke-width:1.1;filter:drop-shadow(0 0 4px rgba(0,0,0,.35))}
+.terrain-band.high{fill:rgba(122,92,60,.42);stroke:rgba(214,182,136,.58)}
+.terrain-band.mid{fill:rgba(133,140,78,.36);stroke:rgba(206,206,138,.52)}
+.terrain-contour{fill:none;stroke-width:.85;vector-effect:non-scaling-stroke}
+.terrain-contour.mid[data-ring="0"]{stroke:rgba(150,163,94,.55)}
+.terrain-contour.mid[data-ring="1"]{stroke:rgba(196,186,120,.62)}
+.terrain-contour.mid[data-ring="2"]{stroke:rgba(230,217,175,.72);stroke-width:1}
+.terrain-contour.high[data-ring="0"]{stroke:rgba(150,110,72,.62)}
+.terrain-contour.high[data-ring="1"]{stroke:rgba(196,150,96,.68)}
+.terrain-contour.high[data-ring="2"]{stroke:rgba(241,239,231,.8);stroke-width:1.1;filter:drop-shadow(0 0 2px rgba(241,239,231,.4))}
+.terrain-label{fill:#e7ddc4;font-size:8px;font-weight:700;stroke:#07100d;stroke-width:3px}
 .waterway-casing{fill:none;stroke:rgba(2,17,24,.88);stroke-width:4.4;vector-effect:non-scaling-stroke}
 .waterway{fill:none;stroke:#58c7ee;stroke-width:2.2;vector-effect:non-scaling-stroke;filter:drop-shadow(0 0 3px rgba(70,191,232,.55))}
 .water-label{fill:#8ee1ff;font-size:7px;font-weight:700;stroke:#061016;stroke-width:3px}

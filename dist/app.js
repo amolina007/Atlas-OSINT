@@ -1160,6 +1160,7 @@ function drawVectorTerrain(svg, projection) {
   });
   group.selectAll("path.terrain-contour").data(contours).join("path")
     .attr("class", (contour) => `terrain-contour ${contour.level}`)
+    .attr("data-ring", (contour) => contour.index)
     .attr("d", (contour) => path({ type: "Polygon", coordinates: contour.coordinates }));
 
   group.selectAll("text").data(terrainBands).join("text").attr("class", "terrain-label")
