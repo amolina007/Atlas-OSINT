@@ -1,5 +1,10 @@
 import * as maplibregl from "https://cdn.jsdelivr.net/npm/maplibre-gl@6.10.0/dist/maplibre-gl.mjs";
 
+// Clave de MapTiler restringida por origen (dev--atlas-osint.netlify.app,
+// atlas.convergenciaaura.cl, localhost). Es segura de exponer en el cliente:
+// MapTiler valida el header Origin/Referer contra esa lista en cada solicitud.
+const MAPTILER_KEY = "bSLrugJo7IlpNx9oPidT";
+
 const demoEvents = [
   {
     id: "EVT-0916-01", kind: "ground", kindLabel: "OPERACIÓN TERRESTRE", time: "06:40 UTC", place: "Eje de Limán", lon: 37.8, lat: 49.0,
@@ -866,76 +871,81 @@ function createMap() {
   if (leafletMap) { leafletMap.remove(); leafletMap = null; }
   fallbackSvg = null;
   fallbackZoom = null;
-  // Modo estable: cartografía SVG local, sin teselas externas.
-  // Los proveedores gratuitos (tile.openstreetmap.org, server.arcgisonline.com)
-  // bloquean o degradan solicitudes desde dominios de hosting como *.netlify.app,
-  // lo que produjo pantallas negras y cuadros de imagen rota en despliegues reales.
+
+  // Base real: teselas topográficas de MapTiler (relieve + administrativo),
+  // con clave restringida por origen (plan pensado para producción, a
+  // diferencia de OpenStreetMap/Esri "crudos" que bloquean *.netlify.app).
+  // Si WebGL o MapTiler fallan por cualquier motivo, cae al mapa vectorial
+  // local (sin dependencias externas) para nunca mostrar pantalla rota.
+  if (document.createElement("canvas").getContext("webgl2")) {
+    try {
+      container.innerHTML = "";
+      atlasMap = new maplibregl.Map({
+        container,
+        center: state.view === "theater" ? [31.5, 49.1] : [20, 30],
+        zoom: state.view === "theater" ? 4.65 : 1.15,
+        minZoom: 1,
+        maxZoom: 17,
+        attributionControl: false,
+        style: {
+          version: 8,
+          sources: {
+            topo: {
+              type: "raster",
+              tiles: [`https://api.maptiler.com/maps/topo-v2/{z}/{x}/{y}.png?key=${MAPTILER_KEY}`],
+              tileSize: 512,
+              maxzoom: 20,
+              attribution: "© MapTiler © OpenStreetMap contributors"
+            }
+          },
+          layers: [
+            { id: "atlas-background", type: "background", paint: { "background-color": "#07100d" } },
+            {
+              id: "topographic-base",
+              type: "raster",
+              source: "topo",
+              paint: {
+                "raster-opacity": 0.92,
+                "raster-saturation": -0.32,
+                "raster-contrast": 0.15,
+                "raster-brightness-min": 0.06,
+                "raster-brightness-max": 0.78
+              }
+            }
+          ]
+        }
+      });
+      atlasMap.addControl(new maplibregl.AttributionControl({ compact: true }), "bottom-right");
+      atlasMap.on("load", () => {
+        addAdministrativeTopographicLayers();
+        addStrategicLayers();
+        addFogLayer();
+        addEventLayers();
+        syncMapLayers();
+        syncEventFilter();
+      });
+      let tileErrorCount = 0;
+      atlasMap.on("error", (event) => {
+        console.warn("ATLAS map warning:", event?.error?.message);
+        tileErrorCount += 1;
+        // Si las teselas fallan repetidamente (bloqueo/cuota), pasa al respaldo local
+        // en vez de dejar el lienzo negro o con cuadros de imagen rota.
+        if (tileErrorCount >= 8) {
+          console.warn("MapTiler no responde correctamente; usando cartografía vectorial de respaldo.");
+          atlasMap.remove();
+          atlasMap = null;
+          container.innerHTML = "";
+          createVectorFallback(container);
+        }
+      });
+      return;
+    } catch (error) {
+      console.warn("MapLibre no está disponible; usando cartografía vectorial de respaldo.", error?.message);
+      atlasMap = null;
+    }
+  }
   container.innerHTML = "";
   createVectorFallback(container);
-  return;
-  if (!document.createElement("canvas").getContext("webgl2")) {
-    createVectorFallback(container);
-    return;
-  }
-
-  try {
-    atlasMap = new maplibregl.Map({
-      container,
-      center: state.view === "theater" ? [31.5, 49.1] : [20, 30],
-      zoom: state.view === "theater" ? 4.65 : 1.15,
-      minZoom: 1,
-      maxZoom: 12,
-      attributionControl: false,
-      style: {
-        version: 8,
-        sources: {
-          topo: {
-            type: "raster",
-            tiles: [
-              "https://a.tile.opentopomap.org/{z}/{x}/{y}.png",
-              "https://b.tile.opentopomap.org/{z}/{x}/{y}.png",
-              "https://c.tile.opentopomap.org/{z}/{x}/{y}.png"
-            ],
-            tileSize: 256,
-            maxzoom: 17,
-            attribution: "© OpenStreetMap contributors · SRTM | OpenTopoMap"
-          }
-        },
-        layers: [
-          { id: "atlas-background", type: "background", paint: { "background-color": "#07100d" } },
-          {
-            id: "topographic-base",
-            type: "raster",
-            source: "topo",
-            paint: {
-              "raster-opacity": 0.82,
-              "raster-saturation": -0.38,
-              "raster-contrast": 0.18,
-              "raster-brightness-min": 0.08,
-              "raster-brightness-max": 0.72
-            }
-          }
-        ]
-      }
-    });
-  } catch (error) {
-    console.warn("MapLibre no está disponible; usando cartografía vectorial de respaldo.", error.message);
-    atlasMap = null;
-    createVectorFallback(container);
-    return;
-  }
-  atlasMap.addControl(new maplibregl.AttributionControl({ compact: true }), "bottom-right");
-  atlasMap.on("load", () => {
-    addAdministrativeTopographicLayers();
-    addStrategicLayers();
-    addFogLayer();
-    addEventLayers();
-    syncMapLayers();
-    syncEventFilter();
-  });
-  atlasMap.on("error", (event) => {
-    if (event?.error?.message) console.warn("ATLAS map warning:", event.error.message);
-  });
 }
 
 function lonLatToLeaflet(coordinates) {
