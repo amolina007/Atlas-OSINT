@@ -863,18 +863,13 @@ function applyFilter(kind) {
 function createMap() {
   const container = byId("map");
   if (atlasMap) { atlasMap.remove(); atlasMap = null; }
+  if (leafletMap) { leafletMap.remove(); leafletMap = null; }
   fallbackSvg = null;
   fallbackZoom = null;
-  // Base real: teselas topográficas (Esri World Topographic Map) + administrativas
-  // (OpenStreetMap) vía Leaflet, con respaldo vectorial local si Leaflet no carga.
-  if (window.L?.map) {
-    try {
-      createLeafletAtlas(container);
-      return;
-    } catch (error) {
-      console.warn("Leaflet no disponible; usando cartografía vectorial de respaldo.", error?.message);
-    }
-  }
+  // Modo estable: cartografía SVG local, sin teselas externas.
+  // Los proveedores gratuitos (tile.openstreetmap.org, server.arcgisonline.com)
+  // bloquean o degradan solicitudes desde dominios de hosting como *.netlify.app,
+  // lo que produjo pantallas negras y cuadros de imagen rota en despliegues reales.
   container.innerHTML = "";
   createVectorFallback(container);
   return;
