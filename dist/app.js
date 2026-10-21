@@ -323,6 +323,8 @@ const atlasSupabase = window.supabase?.createClient && window.ATLAS_SUPABASE
       }
     )
   : null;
+// Entrar con un correo secundario lleva a la misma identidad Aura (aura-acceso-secundario.js la vigila).
+if (atlasSupabase) window.auraClient = atlasSupabase;
 let atlasAuthCallbackPending = /(?:access_token|refresh_token|error_description|error_code|code)=/i.test(location.hash + location.search);
 let atlasMap = null;
 let leafletMap = null;
