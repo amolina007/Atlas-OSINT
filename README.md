@@ -71,3 +71,14 @@ publicación.
 +diálogo ya existente de Atlas; sin el script compartido conserva ese acceso.
 +Requiere publicar el componente de AuraCore. No se han modificado Supabase ni hosting.
 +
+
+### Selección del panel por entorno
+
+El cargador local del panel elige
+`https://dev--convergencia-aura-core.netlify.app/js/aura-hub.js` para los dominios
+`dev--*.netlify.app`, `dev.convergenciaaura.cl` y localhost. En dominios de
+producción sigue usando `https://core.convergenciaaura.cl/js/aura-hub.js`.
+Esto evita que un despliegue dev cargue accidentalmente el panel antiguo de main.
+Las políticas CSP de los sitios que las requieren permiten únicamente estos
+orígenes concretos de Core en script-src; no se desactiva CSP ni se amplían las
+permisiones de datos. No se cambia main ni se trasladan sesiones entre dominios.
