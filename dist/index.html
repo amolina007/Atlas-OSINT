@@ -26,14 +26,14 @@
 
   <div class="app-shell">
     <header class="topbar">
-      <a class="brand" href="#" aria-label="ATLAS OSINT, inicio">
+      <button type="button" class="brand" data-aura-hub="atlas" aria-label="Atlas: sesión, EXP, saldo de AC y proyectos">
         <span class="brand-mark">A</span>
         <span><strong>ATLAS</strong><small>OSINT CONFLICT INTELLIGENCE</small></span>
-      </a>
+      </button>
       <nav class="top-actions" aria-label="Controles principales">
         <a class="ghost-button market-nav-button" href="#markets"><span class="button-icon">⌁</span> Mercados</a>
         <button class="ghost-button" id="methodButton"><span class="button-icon">◎</span> Metodología</button>
-        <button class="auth-button" id="authButton" type="button" aria-haspopup="dialog">
+        <button class="auth-button" id="authButton" data-aura-hub="atlas" type="button" aria-haspopup="dialog">
           <span class="auth-avatar" id="authAvatar">◎</span>
           <span id="authButtonLabel">Ingresar</span>
         </button>
@@ -762,5 +762,6 @@
   <script src="./supabase-config.js"></script>
   <script src="./aura-acceso-secundario.js"></script>
   <script type="module" src="./app.js"></script>
+  <script defer src="https://core.convergenciaaura.cl/js/aura-hub.js"></script>
 </body>
 </html>

@@ -60,3 +60,14 @@ verlos. No uses `netlify deploy` ni fusiones `dev` con `main` hasta autorizar la
 publicación.
 
 > Prototipo editorial. No sustituye fuentes oficiales ni asesoramiento de seguridad.
+
++
++## Panel compartido de sesión
++
++El logo y el botón de cuenta abren `https://core.convergenciaaura.cl/js/aura-hub.js`.
++Usa el cliente existente `window.auraClient`, muestra el saldo de AC y la EXP
++acumulada de Core por separado, y ocho proyectos con estado y «Ver más».
++No convierte ELO a EXP ni calcula EXP desde el saldo. «Iniciar sesión» abre el
++diálogo ya existente de Atlas; sin el script compartido conserva ese acceso.
++Requiere publicar el componente de AuraCore. No se han modificado Supabase ni hosting.
++

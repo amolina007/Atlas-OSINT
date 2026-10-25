@@ -501,3 +501,9 @@ dialog { width: min(760px, calc(100% - 32px)); color: var(--ink); background: #0
 .map-analysis-controls .perspective-note{margin:12px;padding:11px}
 .atlas-context-marker{pointer-events:none}.atlas-context-halo{fill:rgba(88,199,238,.08);stroke:#58c7ee;stroke-width:1.5;stroke-dasharray:4 3}.atlas-context-core{fill:#d9f99d;stroke:#07100d;stroke-width:2}.atlas-context-marker text{fill:#e7f8ee;font:700 9px var(--mono);paint-order:stroke;stroke:#07100d;stroke-width:3px}
 @media(max-width:900px){.global-context{position:relative;top:auto;grid-template-columns:1fr;padding:14px}.location-search>div{flex-wrap:wrap}.location-search input{flex-basis:100%}.global-context-copy small{display:none}}
+
+/* El logo conserva su diseño y abre el panel de cuenta común de AuraCore. */
+.brand[data-aura-hub] { border: 0; padding: 0; background: none; text-align: left; cursor: pointer; }
+.brand[data-aura-hub]:focus-visible { outline: 2px solid var(--acid); outline-offset: 6px; }
+.brand[data-estado="on"] .brand-mark { border-color: #34d27b; }
+.brand[data-estado="off"] .brand-mark { border-color: #ff4d4d; }

@@ -2587,7 +2587,13 @@ async function initAtlasAuth() {
   });
 }
 
-byId("authButton")?.addEventListener("click", () => byId("authDialog")?.showModal());
+// El panel compartido solicita el diálogo existente solo al pulsar «Iniciar sesión».
+document.querySelectorAll('[data-aura-hub="atlas"]').forEach((boton) => {
+  boton.addEventListener('aura-hub:login', () => byId('authDialog')?.showModal());
+  boton.addEventListener('click', () => {
+    if (!window.AuraHub) byId('authDialog')?.showModal();
+  });
+});
 byId("authDialogClose")?.addEventListener("click", () => byId("authDialog")?.close());
 byId("authDialog")?.addEventListener("click", (event) => {
   if (event.target === byId("authDialog")) byId("authDialog").close();
