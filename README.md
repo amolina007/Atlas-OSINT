@@ -82,3 +82,5 @@ Esto evita que un despliegue dev cargue accidentalmente el panel antiguo de main
 Las políticas CSP de los sitios que las requieren permiten únicamente estos
 orígenes concretos de Core en script-src; no se desactiva CSP ni se amplían las
 permisiones de datos. No se cambia main ni se trasladan sesiones entre dominios.
+
+Las cabeceras de seguridad se publican desde `dist/_headers`, junto al artefacto estático. La CSP permite los orígenes exactos de Core publicado y Core dev para cargar el panel compartido; conserva las demás restricciones. No se mantiene otra definición de cabeceras en `netlify.toml`.
