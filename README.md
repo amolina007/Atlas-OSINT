@@ -61,16 +61,16 @@ publicación.
 
 > Prototipo editorial. No sustituye fuentes oficiales ni asesoramiento de seguridad.
 
-+
-+## Panel compartido de sesión
-+
-+El logo y el botón de cuenta abren `https://core.convergenciaaura.cl/js/aura-hub.js`.
-+Usa el cliente existente `window.auraClient`, muestra el saldo de AC y la EXP
-+acumulada de Core por separado, y ocho proyectos con estado y «Ver más».
-+No convierte ELO a EXP ni calcula EXP desde el saldo. «Iniciar sesión» abre el
-+diálogo ya existente de Atlas; sin el script compartido conserva ese acceso.
-+Requiere publicar el componente de AuraCore. No se han modificado Supabase ni hosting.
-+
+
+## Panel compartido de sesión
+
+El logo y el botón de cuenta abren el panel compartido servido desde AuraCore.
+Usa el cliente existente `window.auraClient`, muestra el saldo de AC y la EXP
+acumulada de Core por separado, y ocho proyectos con estado y «Ver más».
+No convierte ELO a EXP ni calcula EXP desde el saldo. «Iniciar sesión» abre el
+diálogo ya existente de Atlas; sin el script compartido conserva ese acceso.
+Requiere que el componente de AuraCore esté publicado. No modifica Supabase.
+
 
 ### Selección del panel por entorno
 
@@ -79,8 +79,8 @@ El cargador local del panel elige
 `dev--*.netlify.app`, `dev.convergenciaaura.cl` y localhost. En dominios de
 producción sigue usando `https://core.convergenciaaura.cl/js/aura-hub.js`.
 Esto evita que un despliegue dev cargue accidentalmente el panel antiguo de main.
-Las políticas CSP de los sitios que las requieren permiten únicamente estos
-orígenes concretos de Core en script-src; no se desactiva CSP ni se amplían las
-permisiones de datos. No se cambia main ni se trasladan sesiones entre dominios.
+No se cambia main ni se trasladan sesiones entre dominios.
 
 Atlas conserva `script-src self`: `dist/_redirects` sirve el panel mediante rutas del mismo origen (`/aura-core-dev/aura-hub.js` en dev y `/aura-core/aura-hub.js` en producción), con proxy al Core correspondiente. No copia el panel ni permite nuevos orígenes de scripts. Las cabeceras se mantienen en `netlify.toml`.
+
+Verificación: `node --test tests/aura-hub.test.cjs` comprueba cuatro casos de selección de entorno y sus destinos de proxy. En el despliegue dev se verificó el panel anónimo en escritorio y a 390 px: ocho proyectos con estado, «Ver más (3)» despliega once y «Ver menos» vuelve a ocho. Los importes reales se verificaron únicamente en Core con la sesión existente.
