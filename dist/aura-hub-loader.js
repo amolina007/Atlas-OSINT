@@ -9,8 +9,8 @@
     || ['dev.convergenciaaura.cl', 'localhost', '127.0.0.1'].includes(host);
   const script = document.createElement('script');
   script.src = dev
-    ? 'https://dev--convergencia-aura-core.netlify.app/js/aura-hub.js'
-    : 'https://core.convergenciaaura.cl/js/aura-hub.js';
+    ? '/aura-core-dev/aura-hub.js'
+    : '/aura-core/aura-hub.js';
   script.defer = true;
   script.setAttribute('data-aura-hub-core', '');
   document.head.append(script);
