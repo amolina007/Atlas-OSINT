@@ -2578,7 +2578,10 @@ async function initAtlasAuth() {
   });
 }
 
-byId("authButton")?.addEventListener("click", () => byId("authDialog")?.showModal());
+byId("authButton")?.addEventListener("aura-hub:login", () => byId("authDialog")?.showModal());
+byId("authButton")?.addEventListener("click", () => {
+  if (!window.AuraHub) byId("authDialog")?.showModal();
+});
 byId("authDialogClose")?.addEventListener("click", () => byId("authDialog")?.close());
 byId("authDialog")?.addEventListener("click", (event) => {
   if (event.target === byId("authDialog")) byId("authDialog").close();
