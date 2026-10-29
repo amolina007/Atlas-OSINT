@@ -811,7 +811,7 @@ function applyAnalysisContext() {
   byId("theaterLabel").textContent = localized(currentTheater().theater);
   byId("briefing-title").textContent = localized(currentTheater().title);
   byId("briefingLede").textContent = localized(currentTheater().lede);
-  document.title = `${localized(currentTheater().title)} · ATLAS OSINT`;
+  if (document.body.dataset.atlasView === "map") document.title = `${localized(currentTheater().title)} · ATLAS OSINT`;
 }
 
 function renderIntel(event) {
@@ -2311,6 +2311,8 @@ function renderNews() {
 function setAtlasSection(name) {
   name = sectionFromHash(hashForSection(name));
   document.body.dataset.atlasView = name;
+  const pageTitles = { news:"El mundo, en común", territory:"Tu territorio", pulse:"Pulso ciudadano", sources:"Fuentes y evidencia", contribute:"Aportar una mirada", markets:"Mercados" };
+  document.title = `${pageTitles[name] || localized(currentTheater().title)} · Atlas`;
   document.querySelectorAll("[data-atlas-section]").forEach((button) => {
     const active = button.dataset.atlasSection === name;
     button.classList.toggle("active", active);
