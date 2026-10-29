@@ -1,4 +1,5 @@
 import * as maplibregl from "https://cdn.jsdelivr.net/npm/maplibre-gl@6.10.0/dist/maplibre-gl.mjs";
+import { initNewsroom, sectionFromHash, hashForSection } from "./newsroom.mjs";
 
 // Clave de MapTiler restringida por origen (dev--atlas-osint.netlify.app,
 // atlas.convergenciaaura.cl, localhost). Es segura de exponer en el cliente:
@@ -231,6 +232,8 @@ function applyAtlasContext(context, { suggestLanguage = true } = {}) {
   };
   localStorage.setItem("atlas-location-context", JSON.stringify(atlasContext));
   newsLocation = { lat:atlasContext.lat, lon:atlasContext.lon };
+  byId("locationConsent").hidden = true;
+  document.querySelector("#territorySettings > summary span").textContent = atlasContext.name;
   const input = byId("atlasLocationInput");
   if (input) input.value = atlasContext.name;
   const status = byId("atlasLocationStatus");
@@ -238,9 +241,9 @@ function applyAtlasContext(context, { suggestLanguage = true } = {}) {
   const title = byId("globalContextTitle");
   if (title) title.textContent = `Atlas desde ${atlasContext.name}`;
   const newsTitle = byId("news-title");
-  if (newsTitle) newsTitle.textContent = `Noticias desde ${atlasContext.name}`;
+  if (newsTitle && document.body.dataset.atlasView === "territory") newsTitle.textContent = `Desde ${atlasContext.name}`;
   const newsLede = byId("newsLede");
-  if (newsLede) newsLede.textContent = "Prioridad territorial combinada con acontecimientos globales de alta relevancia.";
+  if (newsLede && document.body.dataset.atlasView === "territory") newsLede.textContent = "Publicaciones a un máximo de 500 km de tu ubicación seleccionada. Las posiciones son aproximadas.";
   const marketTitle = byId("markets-title");
   if (marketTitle) marketTitle.textContent = `Mercados relevantes para ${atlasContext.name}`;
   if (byId("resourceRegionSelect")) {
@@ -739,8 +742,8 @@ function applyTheaterData() {
   byId("perspectiveNote").hidden = resourceMode;
   document.querySelector(".traffic-data-note").hidden = resourceMode;
   document.querySelector(".map-disclaimer").hidden = resourceMode;
-  document.querySelector(".strategy-console").hidden = resourceMode;
-  document.querySelector(".force-compare").hidden = state.conflict !== "russia-ukraine";
+  document.querySelector(".strategy-console").hidden = resourceMode || document.body.dataset.atlasView !== "map";
+  document.querySelector(".force-compare").hidden = state.conflict !== "russia-ukraine" || document.body.dataset.atlasView !== "map";
   if (resourceMode) {
     const resource = resourceCatalog[state.resource] || resourceCatalog.copper;
     const region = resourceRegions[state.resourceRegion] || resourceRegions.world;
@@ -849,7 +852,7 @@ function renderIntel(event) {
   byId("sourceList").innerHTML = sortedSources.map(([name, type, label], index) => `<div class="source-item"><span class="source-num">${String(index + 1).padStart(2, "0")}</span><div><strong>${name}</strong><small>${type}</small></div><em>${label}</em></div>`).join("")
     + (missingActorSource ? `<div class="source-item source-gap"><span class="source-num">!</span><div><strong>${currentTheater().perspectiveNames[perspectiveIndex]}</strong><small>${gapText}</small></div><em>GAP</em></div>` : "");
   document.querySelectorAll(".event-marker, .resource-marker, .timeline-card").forEach((node) => node.classList.toggle("selected", node.dataset.id === event.id));
-  if (window.innerWidth < 901) byId("intelPanel").scrollIntoView({ behavior: "smooth", block: "start" });
+  if (window.innerWidth < 901 && document.body.dataset.atlasView === "map") byId("intelPanel").scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
 function renderTimeline() {
@@ -2012,11 +2015,15 @@ const demoAtlasNews = [
 ];
 let atlasNews = [];
 let liveNewsRequestId = 0;
+let newsFeedState = "loading";
+let newsroomUI;
 const defaultNewsContext = { name:"Chile", country:"CL", lat:-33.4489, lon:-70.6693 };
 
 async function loadLiveNews() {
   const feedContext = atlasContext || defaultNewsContext;
   const requestId = ++liveNewsRequestId;
+  newsFeedState = "loading";
+  renderNews();
   const feed = byId("newsFeed");
   if (feed) feed.setAttribute("aria-busy","true");
   const stateNode = byId("newsLocationState");
@@ -2036,17 +2043,19 @@ async function loadLiveNews() {
     if (requestId !== liveNewsRequestId) return;
     if (!Array.isArray(payload.articles) || !payload.articles.length) throw new Error("Sin artículos");
     atlasNews = payload.articles;
+    newsFeedState = "ready";
     currentNewsId = null;
     renderNews();
     if (stateNode) stateNode.innerHTML = `<span class="location-pulse active"></span><div><strong>${feedContext.name.toUpperCase()}</strong><small>${atlasNews.length} noticias reales · actualización automática</small></div>`;
   } catch (error) {
     if (requestId !== liveNewsRequestId) return;
     atlasNews = [];
+    newsFeedState = "error";
     renderNews();
     if (stateNode) stateNode.innerHTML = `<span class="location-pulse"></span><div><strong>FUENTE TEMPORALMENTE NO DISPONIBLE</strong><small>No se mostrarán descripciones de relleno</small></div>`;
     console.warn("Live news unavailable.", error.message);
   } finally {
-    if (feed) feed.removeAttribute("aria-busy");
+    if (feed && requestId === liveNewsRequestId) feed.removeAttribute("aria-busy");
   }
 }
 
@@ -2221,7 +2230,6 @@ function renderNewsMarketIndicators(item) {
 let newsLocation = null;
 let newsFilter = "all";
 let newsNearbyOnly = false;
-let newsLocationRequested = false;
 let currentNewsItems = [];
 let currentNewsId = null;
 const newsPreferences = JSON.parse(localStorage.getItem("atlas-news-preferences") || "{}");
@@ -2272,6 +2280,9 @@ function renderNews() {
     ...item,
     distance:newsLocation && Number.isFinite(item.lat) && Number.isFinite(item.lon) ? distanceKm(newsLocation,item) : null
   }));
+  if (document.body.dataset.atlasView === "territory") {
+    items = newsLocation ? items.filter(item => item.distance !== null && item.distance <= 500) : [];
+  }
   if (newsFilter !== "all") items = items.filter((item) => item.category === newsFilter);
   if (newsNearbyOnly) items = items.filter((item) => item.distance !== null && item.distance <= 500);
   items.sort((a,b) => sort === "recent" ? a.age-b.age : sort === "relevance" ? b.relevance-a.relevance : newsLocation ? a.distance-b.distance : b.relevance-a.relevance);
@@ -2289,12 +2300,17 @@ function renderNews() {
           <span>FUENTE</span>
           <div class="news-source"><a href="${newsSourceUrl(item.sourceUrl)}" target="_blank" rel="noreferrer" aria-label="Leer la noticia en ${escapeNewsText(item.source)}">${escapeNewsText(item.source)} ↗</a><time datetime="${escapeNewsText(item.publishedAt || "")}">${escapeNewsText(newsSourceDate(item.publishedAt))}</time></div>
         </div>
-        <small class="news-open-hint">Doble clic para abrir la ficha completa</small>
+        <p class="news-verification">Publicación de un medio · Sin contraste independiente de Atlas.</p>
+        <button type="button" class="news-open-button" data-open-news="${escapeNewsText(item.id)}">Leer contexto y límites ↗</button>
       </div>
-    </article>`).join("") : '<div class="news-empty"><strong>No hay noticias verificables disponibles.</strong><span>Atlas descartó fichas genéricas o contenido sin información periodística suficiente.</span></div>';
+    </article>`).join("") : `<div class="news-empty"><strong>${document.body.dataset.atlasView === "territory" && !newsLocation ? "Elige tu territorio para ver noticias cercanas." : newsFeedState === "loading" ? "Consultando fuentes abiertas…" : newsFeedState === "error" ? "No pudimos actualizar las fuentes." : "No hay publicaciones para esta selección."}</strong><span>${newsFeedState === "error" ? "Puedes volver a consultar. No se mostrarán noticias de demostración como si fueran actuales." : "Selecciona una ciudad o comuna en Tu territorio e idioma, o ajusta los filtros de temas."}</span><button type="button" class="news-refresh" id="retryNews">Actualizar noticias</button></div>`;
+  byId("retryNews")?.addEventListener("click", loadLiveNews);
+  newsroomUI?.renderSources(atlasNews, newsFeedState);
 }
 
 function setAtlasSection(name) {
+  name = sectionFromHash(hashForSection(name));
+  document.body.dataset.atlasView = name;
   document.querySelectorAll("[data-atlas-section]").forEach((button) => {
     const active = button.dataset.atlasSection === name;
     button.classList.toggle("active", active);
@@ -2302,20 +2318,23 @@ function setAtlasSection(name) {
   });
   document.querySelectorAll(".atlas-section").forEach((section) => {
     const visible = section.classList.contains(`atlas-${name}-section`);
-    section.hidden = !visible;
+    section.hidden = !visible || (section.classList.contains("force-compare") && state.conflict !== "russia-ukraine") || (section.classList.contains("strategy-console") && currentTheater().resources);
   });
-  if (name === "news") {
+  if (name === "news" || name === "territory") {
+    byId("news-title").textContent = name === "news" ? "El mundo, en común." : atlasContext ? `Desde ${atlasContext.name}` : "Tu territorio, de cerca.";
+    byId("newsLede").textContent = name === "news" ? "Lo que pasa, de dónde viene y qué falta por confirmar. Desde tu territorio hacia el mundo." : "Publicaciones a un máximo de 500 km de tu ubicación seleccionada. Las posiciones son aproximadas.";
+    if (name === "territory" && !newsLocation) byId("territorySettings").open = true;
     renderNews();
-    if (!newsLocationRequested) requestNewsLocation();
   }
+  if (name === "pulse") newsroomUI?.renderDrafts();
   if (name === "map") setTimeout(() => { leafletMap?.invalidateSize(); atlasMap?.resize(); }, 40);
   if (!atlasAuthCallbackPending) {
-    history.replaceState(null, "", name === "map" ? "#map" : name === "news" ? "#newsroom" : "#markets");
+    history.replaceState(null, "", hashForSection(name));
   }
+  window.scrollTo({ top:0, behavior:"instant" });
 }
 
 function requestNewsLocation() {
-  newsLocationRequested = true;
   if (atlasContext) {
     newsLocation = { lat:atlasContext.lat, lon:atlasContext.lon };
     byId("locationConsent").hidden = true;
@@ -2333,7 +2352,8 @@ function requestNewsLocation() {
       lat: Math.round(position.coords.latitude * 100) / 100,
       lon: Math.round(position.coords.longitude * 100) / 100
     };
-    const nearest = nearestNewsPlace(newsLocation);
+    const nearest = nearestAtlasProfile(newsLocation);
+    applyAtlasContext({ ...nearest, ...newsLocation });
     byId("locationConsent").hidden = true;
     byId("newsLocationState").innerHTML = `<span class="location-pulse active"></span><div><strong>${nearest.name.toUpperCase()}</strong><small>Ubicación aproximada · ±${Math.max(1, Math.round(position.coords.accuracy / 1000))} km</small></div>`;
     renderNews();
@@ -2371,8 +2391,10 @@ byId("skipLocation")?.addEventListener("click", () => {
   renderNews();
 });
 
-const initialAtlasSection = location.hash === "#newsroom" ? "news" : location.hash === "#markets" ? "markets" : "map";
+newsroomUI = initNewsroom({ navigate:setAtlasSection });
+const initialAtlasSection = sectionFromHash(location.hash);
 setAtlasSection(initialAtlasSection);
+window.addEventListener("hashchange", () => setAtlasSection(sectionFromHash(location.hash)));
 
 let newsWorldPromise = null;
 
@@ -2496,7 +2518,7 @@ function openNewsDialog(item, alreadyOpen = false) {
   byId("newsDialogTitle").textContent = item.title;
   byId("newsDialogMeta").textContent = `${item.place} · relevancia OSINT ${item.relevance}/100`;
   byId("newsDialogSummary").textContent = item.summary;
-  byId("newsDialogHashtags").innerHTML = item.hashtags.map((tag) => `<span>${tag}</span>`).join("");
+  byId("newsDialogHashtags").innerHTML = item.hashtags.map((tag) => `<span>${escapeNewsText(tag)}</span>`).join("");
   byId("newsDialogAnalysis").textContent = item.analysis || "Contexto editorial pendiente.";
   byId("newsDialogSource").textContent = `${item.source} · ${newsSourceDate(item.publishedAt)} ↗`;
   byId("newsDialogSource").href = newsSourceUrl(item.sourceUrl);
@@ -2515,11 +2537,16 @@ byId("newsFeed")?.addEventListener("dblclick", (event) => {
   openNewsDialog(atlasNews.find((item) => item.id === card.dataset.newsId));
 });
 byId("newsFeed")?.addEventListener("keydown", (event) => {
+  if (event.target.closest("a, button")) return;
   if (event.key !== "Enter" && event.key !== " ") return;
   const card = event.target.closest("[data-news-id]");
   if (!card) return;
   event.preventDefault();
   openNewsDialog(atlasNews.find((item) => item.id === card.dataset.newsId));
+});
+byId("newsFeed")?.addEventListener("click", (event) => {
+  const button = event.target.closest("[data-open-news]");
+  if (button) openNewsDialog(atlasNews.find(item => item.id === button.dataset.openNews));
 });
 byId("newsDialogClose")?.addEventListener("click", () => byId("newsDialog").close());
 byId("newsInterested")?.addEventListener("click", () => setNewsPreference("interested"));
@@ -2662,5 +2689,4 @@ if (atlasContext) {
     localStorage.setItem("atlas-language", state.language);
   }
   loadLiveNews();
-  detectAtlasLocation();
 }

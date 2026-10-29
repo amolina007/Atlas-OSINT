@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="ATLAS OSINT — tablero estratégico para seguir conflictos con evidencia, confianza y niebla de guerra.">
-  <title>ATLAS OSINT</title>
+  <meta name="description" content="Atlas · El mundo, en común. Noticias de fuentes abiertas, contexto territorial y una mirada ciudadana desde Convergencia Aura.">
+  <title>Atlas · El mundo, en común</title>
   <link rel="icon" href="./favicon.svg" type="image/svg+xml">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -12,8 +12,10 @@
   <link href="https://cdn.jsdelivr.net/npm/maplibre-gl@6.10.0/dist/maplibre-gl.css" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css" rel="stylesheet">
   <link rel="stylesheet" href="./styles.css">
+  <link rel="stylesheet" href="./newsroom.css">
 </head>
-<body>
+<body data-atlas-view="news">
+  <a class="news-skip-link" href="#newsroom">Saltar al contenido</a>
 <style id="convergencia-aura-banner-style">
   .ca-ecosystem-banner{position:relative;z-index:9999;width:100%;background:linear-gradient(90deg,#071521 0%,#0b2637 55%,#10384a 100%);border-bottom:1px solid rgba(105,220,255,.28);color:#eaf8ff;font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
   .ca-ecosystem-banner__inner{max-width:1200px;margin:0 auto;min-height:42px;padding:7px 20px;display:flex;align-items:center;justify-content:space-between;gap:16px}
@@ -28,7 +30,7 @@
     <header class="topbar">
       <button type="button" class="brand" data-aura-hub="atlas" aria-label="Atlas: sesión, EXP, saldo de AC y proyectos">
         <span class="brand-mark">A</span>
-        <span><strong>ATLAS</strong><small>OSINT CONFLICT INTELLIGENCE</small></span>
+        <span><strong>ATLAS</strong><small>CONVERGENCIA · NOTICIAS ABIERTAS</small></span>
       </button>
       <nav class="top-actions" aria-label="Controles principales">
         <a class="ghost-button market-nav-button" href="#markets"><span class="button-icon">⌁</span> Mercados</a>
@@ -41,11 +43,13 @@
       </nav>
     </header>
 
+    <details class="territory-settings" id="territorySettings">
+      <summary>Tu territorio e idioma <span>Elegir ciudad o comuna</span></summary>
     <section class="global-context" aria-label="Ubicación e idioma de Atlas">
       <div class="global-context-copy">
         <span class="eyebrow">CONTEXTO TERRITORIAL</span>
         <strong id="globalContextTitle">Atlas desde tu ubicación</strong>
-        <small id="globalContextHelp">La ubicación reorganiza el mapa, las noticias y los mercados. Se procesa localmente.</small>
+        <small id="globalContextHelp">Guardamos tu territorio en este navegador y lo usamos para consultar noticias. Puedes escribir una ciudad sin activar el GPS.</small>
       </div>
       <form class="location-search" id="atlasLocationForm">
         <label for="atlasLocationInput">UBICACIÓN</label>
@@ -115,15 +119,18 @@
         <small id="languageHelp">Sugerido por ubicación; puedes modificarlo.</small>
       </label>
     </section>
+    </details>
 
     <nav class="section-nav" aria-label="Secciones de Atlas">
-      <button class="active" type="button" data-atlas-section="map" aria-pressed="true"><span>◫</span> Mapa</button>
-      <button type="button" data-atlas-section="news" aria-pressed="false"><span>◉</span> Noticiero</button>
-      <button type="button" data-atlas-section="markets" aria-pressed="false"><span>⌁</span> Mercados</button>
+      <button class="active" type="button" data-atlas-section="news" aria-pressed="true"><span aria-hidden="true">▤</span> Hoy</button>
+      <button type="button" data-atlas-section="territory" aria-pressed="false"><span aria-hidden="true">◎</span> Territorio</button>
+      <button type="button" data-atlas-section="pulse" aria-pressed="false"><span aria-hidden="true">◉</span> Pulso</button>
+      <button type="button" data-atlas-section="sources" aria-pressed="false"><span aria-hidden="true">▥</span> Fuentes</button>
+      <button type="button" data-atlas-section="contribute" aria-pressed="false"><span aria-hidden="true">⊕</span> Aportar</button>
     </nav>
 
     <main>
-      <section class="briefing atlas-section atlas-map-section" aria-labelledby="briefing-title">
+      <section class="briefing atlas-section atlas-map-section" hidden aria-labelledby="briefing-title">
         <div>
           <p class="eyebrow" id="theaterLabel">TEATRO · EUROPA ORIENTAL</p>
           <h1 id="briefing-title">Guerra ruso-ucraniana</h1>
@@ -137,7 +144,7 @@
         </div>
       </section>
 
-      <section class="workspace atlas-section atlas-map-section">
+      <section class="workspace atlas-section atlas-map-section" hidden>
         <aside class="control-panel">
           <div class="panel-heading">
             <span class="eyebrow">CAPAS</span>
@@ -300,7 +307,7 @@
         </aside>
       </section>
 
-      <section class="strategy-console atlas-section atlas-map-section" aria-labelledby="strategy-title">
+      <section class="strategy-console atlas-section atlas-map-section" hidden aria-labelledby="strategy-title">
         <div class="strategy-heading">
           <div>
             <p class="eyebrow">MODELO ESTRATÉGICO · DEMOSTRACIÓN</p>
@@ -376,7 +383,7 @@
         <p class="model-disclaimer"><strong>Límite del modelo:</strong> los niveles, hitos y capacidades son recursos narrativos de esta maqueta. Deben validarse contra eventos y fuentes antes de usarse para análisis.</p>
       </section>
 
-      <section class="force-compare atlas-section atlas-map-section" aria-labelledby="force-title">
+      <section class="force-compare atlas-section atlas-map-section" hidden aria-labelledby="force-title">
         <div class="force-heading">
           <div>
             <p class="eyebrow">BALANCE DE FUERZAS · ESTIMACIONES ABIERTAS</p>
@@ -498,12 +505,12 @@
 
 
 
-      <section class="news-console atlas-section atlas-news-section" id="newsroom" hidden aria-labelledby="news-title">
+      <section class="news-console atlas-section atlas-news-section atlas-territory-section" id="newsroom" aria-labelledby="news-title">
         <div class="news-heading">
           <div>
-            <p class="eyebrow">NOTICIERO TERRITORIAL · OSINT</p>
-            <h1 id="news-title">Noticias desde tu ubicación</h1>
-            <p id="newsLede">Autoriza una ubicación aproximada para priorizar acontecimientos cercanos sin perder la perspectiva mundial.</p>
+            <p class="eyebrow">ATLAS · UNA MIRADA EN COMÚN</p>
+            <h1 id="news-title">El mundo, en común.</h1>
+            <p id="newsLede">Lo que pasa, de dónde viene y qué falta por confirmar. Desde tu territorio hacia el mundo.</p>
           </div>
           <div class="news-location-state" id="newsLocationState">
             <span class="location-pulse"></span>
@@ -514,7 +521,7 @@
         <div class="location-consent" id="locationConsent">
           <div>
             <strong>¿Usar tu ubicación aproximada?</strong>
-            <p>Atlas la procesa en este navegador para ordenar noticias por cercanía. No la guarda ni la envía a Supabase.</p>
+            <p>Puedes elegir una ciudad arriba o compartir una ubicación aproximada. El territorio se utiliza para consultar y ordenar noticias; no se publica en tus aportes.</p>
           </div>
           <div>
             <button class="primary-location-button" id="allowLocation" type="button">Usar mi ubicación</button>
@@ -522,6 +529,8 @@
           </div>
         </div>
 
+        <details class="news-filters">
+        <summary>Explorar temas y ordenar</summary>
         <div class="news-toolbar">
           <div class="news-filter-stack">
             <div class="news-filter-group" role="group" aria-label="Sección de noticias">
@@ -553,12 +562,13 @@
           </label>
         </div>
 
+        </details>
         <div class="news-layout">
-          <div class="news-feed" id="newsFeed"></div>
+          <div class="news-feed" id="newsFeed" aria-live="polite"><p class="news-empty">Consultando fuentes abiertas…</p></div>
           <aside class="news-brief">
             <p class="eyebrow">CÓMO LEER EL FEED</p>
-            <h2>Proximidad no equivale a importancia</h2>
-            <p>El orden territorial ayuda a detectar impactos locales, pero Atlas mantiene asuntos globales de alta relevancia dentro del flujo.</p>
+            <h2>Una publicación es el inicio.</h2>
+            <p>Cada tarjeta enlaza a su origen. Una noticia recogida de un medio todavía requiere contraste independiente para tratarla como un hecho verificado por Atlas.</p>
             <dl>
               <div><dt>HECHO</dt><dd>Confirmado por evidencia o fuentes independientes.</dd></div>
               <div><dt>AFIRMACIÓN</dt><dd>Declaración atribuida aún no corroborada.</dd></div>
@@ -569,6 +579,35 @@
             </dl>
           </aside>
         </div>
+      </section>
+
+      <section class="community-console atlas-section atlas-pulse-section" id="pulse" hidden aria-labelledby="pulse-title">
+        <div class="community-heading"><p class="eyebrow">PULSO CIUDADANO</p><h1 id="pulse-title">Lo que vemos, importa.</h1><p>Observar, documentar y contrastar antes de amplificar.</p></div>
+        <div class="community-note"><strong>Recepción pública en preparación</strong><p>Aún no hay un canal conectado de reportes ciudadanos. Aquí puedes revisar los borradores que guardes en este navegador. No son noticias ni se comparten con otras personas.</p></div>
+        <div class="community-actions"><button type="button" data-atlas-section="contribute">Preparar un aporte <span aria-hidden="true">↗</span></button></div>
+        <div id="citizenDrafts" aria-live="polite"></div>
+      </section>
+
+      <section class="community-console atlas-section atlas-sources-section" id="sources" hidden aria-labelledby="sources-title">
+        <div class="community-heading"><p class="eyebrow">FUENTES Y EVIDENCIA</p><h1 id="sources-title">Vuelve al origen.</h1><p>La procedencia visible, el alcance claro y las preguntas abiertas.</p></div>
+        <div class="community-note"><strong>Cobertura actual</strong><p>Noticias mediante RSS de medios y búsquedas en Google News. La selección no cubre todas las fuentes públicas; acceso libre no equivale a permiso de republicación. Se muestra una síntesis con enlace al original.</p></div>
+        <h2>En el noticiero de esta sesión</h2><div id="newsSourceDirectory" aria-live="polite"><p>Las fuentes aparecerán cuando termine la consulta de noticias.</p></div>
+        <details class="editorial-method"><summary>Cómo distinguimos la información</summary><dl><dt>Publicación de un medio</dt><dd>Información atribuida al medio enlazado, sin contraste independiente de Atlas.</dd><dt>Reporte ciudadano</dt><dd>Observación aportada por una persona. Requiere contexto, consentimiento y verificación antes de publicarse.</dd><dt>Hecho corroborado</dt><dd>Requiere evidencia y fuentes independientes. La cantidad de mensajes no basta para confirmarlo.</dd></dl></details>
+        <h2>Herramientas de contexto</h2><div class="community-actions"><button type="button" data-atlas-section="map">Mapa estratégico ↗</button><button type="button" data-atlas-section="markets">Mercados ↗</button></div><p class="community-caption">El mapa conserva sus datos editoriales de demostración y sus límites originales.</p>
+      </section>
+
+      <section class="community-console atlas-section atlas-contribute-section" id="contribute" hidden aria-labelledby="contribute-title">
+        <div class="community-heading"><p class="eyebrow">APORTAR UNA MIRADA</p><h1 id="contribute-title">¿Qué está pasando?</h1><p>Prepara una observación con contexto y referencias.</p></div>
+        <div class="community-note"><strong>Borrador privado en este navegador</strong><p>Guardar no envía ni publica tu aporte. Puedes descargarlo o eliminarlo desde Pulso. Evita nombres, domicilios exactos y datos de otras personas.</p></div>
+        <form id="citizenReportForm" class="citizen-form">
+          <label for="citizenTitle">¿Qué observaste?<input id="citizenTitle" name="title" required minlength="8" maxlength="140" placeholder="Un título concreto y descriptivo"></label>
+          <div class="citizen-form-row"><label for="citizenPlace">Comuna o sector<input id="citizenPlace" name="place" required maxlength="100" placeholder="Sin dirección exacta"></label><label for="citizenDate">Fecha del hecho<input id="citizenDate" name="observedOn" type="date" required></label></div>
+          <label for="citizenDetails">Describe lo que sabes de primera mano<textarea id="citizenDetails" name="details" rows="5" required minlength="30" maxlength="4000" placeholder="Qué ocurrió, cuándo y qué falta por comprobar…"></textarea></label>
+          <label for="citizenSource">Enlace público de referencia (opcional)<input id="citizenSource" name="sourceUrl" type="url" maxlength="1000" placeholder="https://…"></label>
+          <label class="citizen-consent"><input type="checkbox" name="localConsent" required> Entiendo que se guarda en este dispositivo, que puede ser compartido, y que el reporte está sin verificar.</label>
+          <button type="submit" class="citizen-save">Guardar borrador privado</button>
+          <p id="citizenReportStatus" role="status" aria-live="polite"></p>
+        </form>
       </section>
 
       <section class="market-console atlas-section atlas-markets-section" hidden id="markets" aria-labelledby="markets-title">
@@ -649,7 +688,7 @@
         </div>
       </section>
 
-      <section class="timeline-section atlas-section atlas-map-section" aria-labelledby="timeline-title">
+      <section class="timeline-section atlas-section atlas-map-section" hidden aria-labelledby="timeline-title">
         <div class="timeline-heading">
           <div><p class="eyebrow">REGISTRO DEL TURNO</p><h2 id="timeline-title">Secuencia de acontecimientos</h2></div>
           <p>Selecciona un evento para inspeccionar sus fuentes y valoración.</p>
@@ -659,7 +698,8 @@
 
       <footer>
         <div><span class="brand-mark small">A</span><strong>ATLAS OSINT</strong></div>
-        <p id="dataNotice">Prototipo editorial · Datos de demostración · No sustituye fuentes oficiales ni asesoramiento de seguridad.</p>
+        <p id="dataNotice">Noticiero de fuentes abiertas · Contraste independiente pendiente · Mapa con datos de demostración.</p>
+        <p id="newsDataNotice">Noticias atribuidas a sus fuentes · Aportes guardados solo en este navegador.</p>
         <button id="aboutButton">Principios editoriales</button>
       </footer>
     </main>

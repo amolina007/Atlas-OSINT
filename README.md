@@ -1,10 +1,19 @@
 # ATLAS OSINT
 
-Sistema experimental de inteligencia de fuentes abiertas para seguir conflictos mediante una interfaz estratégica inspirada en juegos 4X.
+Noticiero de fuentes abiertas de Convergencia Aura, con contexto territorial y herramientas de análisis estratégico.
 
 ## Estado
 
-MVP publicado como sitio privado en ChatGPT Sites. El piloto utiliza la guerra ruso-ucraniana y datos editoriales de demostración.
+La entrada principal de `dev` es «El mundo, en común», con cinco destinos: Hoy, Territorio, Pulso, Fuentes y Aportar. El noticiero utiliza la función RSS existente; no se presenta como una cobertura exhaustiva de todas las fuentes públicas ni como verificación independiente.
+
+- **Hoy:** publicaciones atribuidas a sus medios, síntesis, fecha, enlace y contexto accesible con un toque.
+- **Territorio:** publicaciones a un máximo de 500 km de la ubicación elegida, con geografía aproximada. No se solicita GPS automáticamente.
+- **Pulso / Aportar:** borradores ciudadanos locales, sin verificar y sin envío público. Guardado explícito con consentimiento, descarga JSON y eliminación. El almacenamiento no está cifrado ni separado por cuentas: en un dispositivo compartido pueden verlo otras personas con acceso a ese navegador. Máximo 50 borradores. No hay archivos adjuntos ni recolección de redes sociales.
+- **Fuentes:** directorio derivado de las publicaciones de la consulta actual; no inventa corroboraciones. Conserva los accesos a Mapa estratégico y Mercados.
+
+El mapa mantiene el piloto de la guerra ruso-ucraniana y sus datos editoriales de demostración. `main` y producción requieren autorización independiente.
+
+La participación pública, la moderación, los permisos por identidad y la recepción de evidencias quedan pendientes de conectar a un backend antes de habilitar publicaciones ciudadanas.
 
 ## Principios
 
@@ -19,11 +28,15 @@ MVP publicado como sitio privado en ChatGPT Sites. El piloto utiliza la guerra r
 - `dist/index.html`: interfaz principal.
 - `dist/styles.css`: sistema visual.
 - `dist/app.js`: datos piloto e interacciones.
+- `dist/newsroom.css`: portada móvil y cinta de cinco botones, con adaptación a escritorio.
+- `dist/newsroom.mjs`: navegación, directorio de fuentes y borradores privados locales.
 - `dist/favicon.svg`: identidad mínima.
 - `.openai/hosting.json`: configuración de ChatGPT Sites.
 - `docs/`: especificación funcional y esquema propuesto para Supabase.
 
 ## Desarrollo local con Netlify
+
+Pruebas: `npm test` (Node.js 18.14 o superior).
 
 Requiere Node.js 18.14 o superior. En Windows puede instalarse desde
 [nodejs.org](https://nodejs.org/) o con PowerShell:
