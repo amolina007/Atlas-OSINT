@@ -26,4 +26,11 @@ for (const [host, expected] of [
     ? 'https://dev--convergencia-aura-core.netlify.app/js/aura-hub.js'
     : 'https://core.convergenciaaura.cl/js/aura-hub.js');
   assert.equal(status, '200');
+  // El panel carga el acceso Google como hermano de su propia URL.
+  const googlePath = new URL('aura-google.js', `https://${host}${appended.src}`).pathname;
+  const googleLine = redirects.split('\n').find(line => line.startsWith(`${googlePath} `));
+  assert.ok(googleLine, 'el módulo Google debe tener proxy, además del panel');
+  const [, googleUpstream, googleStatus] = googleLine.split(/\s+/);
+  assert.equal(googleUpstream, upstream.replace('aura-hub.js', 'aura-google.js'));
+  assert.equal(googleStatus, '200');
 });
