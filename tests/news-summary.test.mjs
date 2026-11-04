@@ -16,3 +16,11 @@ test('rejects invented evidence, unsupported paragraph ids, insufficient and mal
  assert.equal(validateSummary({...valid,what:[{...valid.what[0],paragraph:2}]},p),null);
  assert.equal(validateSummary({...valid,what:[{...valid.what[0],evidence:'Texto que no aparece en el artículo real'}]},p),null);
 });
+
+import {resolveEvidence} from '../netlify/lib/news-summary.mjs';
+test('citation ids are derived from unique exact source evidence, never invented by the model',()=>{
+ const p=[{id:1,text:paragraph}];const value={sufficient:true,what:[{text:'El equipo explicó los resultados de su estudio.',evidence:'El equipo presentó los resultados de un estudio'}],context:[]};
+ assert.equal(resolveEvidence(value,p).what[0].paragraph,1);
+ const ambiguous=structuredClone(value);assert.equal(resolveEvidence(ambiguous,[...p,{...p[0],id:2}]).what[0].paragraph,null);
+ assert.equal(validateSummary(ambiguous,p),null);
+});
