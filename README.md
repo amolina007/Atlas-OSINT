@@ -162,3 +162,9 @@ El feed permite agregar titulares a la investigación local y abrirlos en el map
 ### Portada editorial
 
 La portada utiliza tarjetas temáticas originales (no fotografías de los hechos), tipografía editorial y navegación inferior única. En PC incorpora un mapa contextual y una vista de las últimas evidencias de la investigación. En móvil los filtros secundarios se despliegan con Filtros. Siguiendo permite elegir temas; estas preferencias se conservan en localStorage y no se sincronizan con la cuenta. Se mantienen los titulares reales, atribución y acciones sociales.
+
+### Imágenes de los medios
+
+Las tarjetas solicitan metadatos de imagen bajo demanda (hasta tres consultas simultáneas). El servidor solo acepta IDs presentes en el feed público: recupera el sitio del medio indicado por Google News, busca el titular completo en portada o en su RSS anunciado y consulta los metadatos Open Graph/Twitter del artículo correspondiente. Los enlaces deben pertenecer al mismo medio. No se descargan ni se republican artículos completos; la imagen se carga directamente desde su URL pública, sin enviar referrer, con atribución y enlace a la publicación.
+
+La búsqueda no es exhaustiva: una noticia fuera de portada/RSS, un bloqueo del medio, ausencia de metadatos o fallo de imagen conserva la ilustración temática. Se rechazan destinos locales/privados, se valida cada redirección y se limita tiempo/tamaño de respuesta. Los resultados se cachean diez minutos. No se eluden restricciones de acceso.
