@@ -5,3 +5,8 @@ https://dev--atlas-osint.netlify.app/ /observatorio.html 200!
 /aura-core/aura-hub.js https://core.convergenciaaura.cl/js/aura-hub.js 200
 /aura-core-dev/aura-google.js https://dev--convergencia-aura-core.netlify.app/js/aura-google.js 200
 /aura-core/aura-google.js https://core.convergenciaaura.cl/js/aura-google.js 200
+
+/aura-core-dev/globo.js https://dev--convergencia-aura-core.netlify.app/js/globo.js 200
+/aura-core/globo.js https://core.convergenciaaura.cl/js/globo.js 200
+/aura-core-dev/logo-core-96.png https://dev--convergencia-aura-core.netlify.app/icons/logo-core-96.png 200
+/aura-core/logo-core-96.png https://core.convergenciaaura.cl/icons/logo-core-96.png 200
