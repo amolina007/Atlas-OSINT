@@ -24,3 +24,7 @@ test('citation ids are derived from unique exact source evidence, never invented
  const ambiguous=structuredClone(value);assert.equal(resolveEvidence(ambiguous,[...p,{...p[0],id:2}]).what[0].paragraph,null);
  assert.equal(validateSummary(ambiguous,p),null);
 });
+
+import {articlePreview,relatedArticles} from '../netlify/lib/news-summary.mjs';
+test('public descriptions require matching title and are never treated as article body',()=>{const html=`<h1>${title}</h1><meta property="og:description" content="Una descripción pública del estudio sobre el territorio, publicada por el medio responsable.">`;assert.ok(articlePreview(html,title));assert.equal(articlePreview(html,'Otra noticia'),null);assert.equal(extractArticle(html,title),null);});
+test('related links require shared substantive words and exclude the original',()=>{const a={id:'a',title:'Festival música Chillán'};const related=relatedArticles(a,[a,{id:'b',title:'Festival música contemporánea',url:'https://example.com/b'},{id:'c',title:'Economía internacional'}]);assert.equal(related.length,1);assert.equal(related[0].url,'https://example.com/b');});
