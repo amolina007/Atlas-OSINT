@@ -1,15 +1,14 @@
+import { createResearchStore, cleanResearch } from './observatorio-research.mjs';
 import { initNews } from './observatorio-news.mjs';
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const url = s => { try { const u = new URL(s); return u.protocol === 'https:' ? u.href : '#'; } catch { return '#'; } };
 const link = (href, text) => `<a href="${esc(url(href))}" target="_blank" rel="noopener noreferrer">${esc(text)} ↗</a>`;
 const date = s => new Date(s).toLocaleString('es-CL', { dateStyle:'medium', timeStyle:'short' });
-const KEY = 'atlas-observatorio-research-v1';
-let research = { title:'Eventos naturales y territorio', events:[], facts:'', hypotheses:'', questions:'' };
-try { const saved = JSON.parse(localStorage.getItem(KEY)); if (saved && Array.isArray(saved.events) && typeof saved.title === 'string') research = { ...research, ...saved, events:saved.events.filter(e => e && typeof e.id === 'string' && e.title && e.date && e.url).slice(0,100) }; } catch {}
+let research = cleanResearch({title:'Eventos naturales y territorio'}), researchSync, researchList={rows:[]}, pendingEvidence;
 let newsEvents = [], feedMap, feedMarkers;
 let events = [], sources = [], filter = 'all', selected, fetchedAt, map, markers;
-function save() { try { localStorage.setItem(KEY, JSON.stringify(research)); $('save-status').textContent = 'Guardado en este navegador · ' + new Date().toLocaleTimeString('es-CL') + '. Sin sincronización entre dispositivos.'; } catch { $('save-status').textContent = 'No se pudo guardar en el navegador. Exporta tu investigación para conservarla.'; } }
+function save(){researchSync?.change(research);}
 function view(name) { document.querySelectorAll('.view').forEach(el => el.hidden = el.id !== name); document.querySelectorAll('[data-view]').forEach(b => { b.classList.toggle('active', b.dataset.view === name); b.setAttribute('aria-pressed', b.dataset.view === name); }); if(name==='feed'){renderResearchPreview();setTimeout(()=>feedMap?.invalidateSize(),0);} if (name === 'panorama') setTimeout(() => map?.invalidateSize(),0); if (name === 'investigacion') renderResearch(); if(!/(?:access_token|refresh_token|error_description|code)=/.test(location.hash + location.search)) location.hash = name; }
 document.querySelectorAll('[data-view]').forEach(b => b.onclick = () => view(b.dataset.view));
 window.addEventListener('hashchange', () => { const name = location.hash.slice(1); if (['feed','panorama','investigacion','fuentes'].includes(name)) view(name); });
@@ -31,7 +30,7 @@ function render() {
   const days = Array.from({length:7}, (_,i) => { const d = new Date(); d.setUTCDate(d.getUTCDate()-6+i); const key=d.toISOString().slice(0,10); return { label:d.toLocaleDateString('es-CL',{day:'numeric',month:'short',timeZone:'UTC'}), count:rows.filter(e => e.date.startsWith(key)).length }; }); const max=Math.max(1,...days.map(d => d.count)); $('chart').innerHTML=days.map(d => `<div class="bar" style="height:${Math.max(2,d.count/max*75)}px" title="${esc(d.label)}: ${d.count}"><b>${d.count}</b><span>${esc(d.label)}</span></div>`).join('');
 }
 function evidence(e, saved = false) { return `<span class="badge">${esc(e.source)}</span><h2>${esc(e.title)}</h2><p>${esc(e.detail)}</p><dl class="metadata"><dt>Registro</dt><dd>${esc(date(e.date))}</dd><dt>Consulta</dt><dd>${esc(date(e.capturedAt || fetchedAt || new Date()))}</dd><dt>Ubicación</dt><dd>${e.provider==='news'?esc(e.location ? e.location.label+' · '+e.location.method : 'Sin ubicación identificable de forma inequívoca en el titular. No se muestra un punto en el mapa.'):esc(e.coordinates?.[1])+', '+esc(e.coordinates?.[0])}</dd><dt>Corroboración</dt><dd>No evaluada. Registro atribuido a su proveedor.</dd></dl><p>${link(e.url,'Abrir registro original')}</p>${e.links?.length ? '<p>Referencias del proveedor: '+e.links.map(l => link(l.url,l.name)).join(' · ')+'</p>':''}<div class="actions">${saved ? '<button id="remove-evidence">Quitar de investigación</button>' : '<button id="add-evidence" class="primary">＋ Guardar en investigación</button>'}</div>`; }
-function showDetail(e) { selected=e; const saved=research.events.some(x => x.id === e.id); $('detail-content').innerHTML=evidence(e,saved); $('detail').showModal(); const add=$('detail-content').querySelector('#add-evidence'); if(add) add.onclick=() => { if (research.events.length>=100) { add.textContent='Límite de 100 evidencias. Exporta o quita alguna.'; return; } research.events.push({...e,capturedAt:e.capturedAt||fetchedAt}); save(); $('detail').close(); view('investigacion'); }; const remove=$('detail-content').querySelector('#remove-evidence'); if(remove) remove.onclick=() => { research.events=research.events.filter(x=>x.id!==e.id); save(); $('detail').close(); renderResearch(); }; }
+function showDetail(e) { selected=e; const saved=research.events.some(x => x.id === e.id); $('detail-content').innerHTML=evidence(e,saved); $('detail').showModal();const add=$('detail-content').querySelector('#add-evidence');if(add)add.onclick=()=>{$('detail').close();addNews({...e,capturedAt:e.capturedAt||fetchedAt});};const remove=$('detail-content').querySelector('#remove-evidence');if(remove)remove.onclick=()=>{research.events=research.events.filter(x=>x.id!==e.id);save();$('detail').close();renderResearch();};}
 $('close-detail').onclick=()=> $('detail').close();
 function renderResearch() {
   $('research-title').value=research.title; document.querySelectorAll('[data-note]').forEach(el=>el.value=research[el.dataset.note]||'');
@@ -48,15 +47,32 @@ function renderSources() { $('coverage').innerHTML=sources.map(s=>`<div class="c
 async function refresh() { $('refresh').disabled=true; $('status').textContent='Consultando USGS y NASA EONET…'; try { const res=await fetch('/.netlify/functions/observatory',{signal:AbortSignal.timeout(20000)}); if(!res.ok) throw Error(); const data=await res.json(); if(!Array.isArray(data.events)||!Array.isArray(data.sources)) throw Error(); events=data.events; sources=data.sources; fetchedAt=data.fetchedAt; render(); renderSources(); const failed=sources.filter(s=>s.status!=='ok'); $('status').textContent=`Consulta: ${date(fetchedAt)} · ${failed.length ? 'Cobertura parcial: '+failed.map(s=>s.name).join(', ')+' no disponible.' : '2 fuentes conectadas.'} Los conectores se actualizan como máximo cada 5 minutos.`; } catch { $('status').textContent='No se pudo actualizar. '+(events.length?'Se conserva la consulta anterior; revisa su fecha.':'No hay datos disponibles. Usa Actualizar fuentes para reintentar.'); if(!events.length) { render(); $('coverage').textContent='Conexión no disponible'; $('source-list').textContent='No se pudo obtener el estado de las fuentes. Reintenta con Actualizar fuentes.'; } } finally { $('refresh').disabled=false; } }
 $('search').oninput=()=>{ if($('panorama').hidden)view('panorama');render(); }; $('period').onchange=render;
 document.querySelectorAll('[data-filter]').forEach(b=>b.onclick=()=>{filter=b.dataset.filter;document.querySelectorAll('[data-filter]').forEach(x=>{x.classList.toggle('active',x===b);x.setAttribute('aria-pressed',x===b)});render()});
-function addNews(e) {
- if(research.events.some(x=>x.id===e.id)){selected=e;view('investigacion');return;}
- if(research.events.length>=100){showDetail(e);return;}
- research.events.push(e);selected=e;save();view('investigacion');
-}
+function addNews(e){pendingEvidence=e;$('pick-evidence-title').textContent=e.title;$('pick-research-status').textContent='';renderPicker();$('pick-research-dialog').showModal();}
+function renderPicker(){const rows=researchList.rows.filter(r=>!r.archived);$('pick-research-select').innerHTML=rows.map(r=>`<option value="${esc(r.id)}">${esc(r.title)}</option>`).join('')+'<option value="local">Cuaderno local · este navegador</option>'+(researchList.uid&&researchList.loaded?'<option value="new">＋ Crear nueva investigación</option>':'');$('pick-research-select').value=rows.some(r=>r.id===researchSync?.active)?researchSync.active:'local';$('pick-new-label').hidden=true;$('pick-new-title').required=false;$('pick-new-title').value='';}
 function showNewsMap(e){
  view('panorama');filter='news';$('search').value='';
  document.querySelectorAll('[data-filter]').forEach(b=>{b.classList.toggle('active',b.dataset.filter==='news');b.setAttribute('aria-pressed',b.dataset.filter==='news')});
  render();if(e.coordinates)map?.setView([e.coordinates[1],e.coordinates[0]],4);showDetail(e);
 }
 const news = initNews({ view, esc, date, onNews:rows=>{newsEvents=rows;render();renderFeedMap(rows);renderResearchPreview();},addNews,showNewsMap });
+researchSync=createResearchStore({db:window.auraClient,storage:localStorage,enabled:['dev.atlas.convergenciaaura.cl','dev--atlas-osint.netlify.app','localhost','127.0.0.1'].includes(location.hostname),onDocument:doc=>{research=doc;selected=null;renderResearch();renderResearchPreview();},onList:state=>{researchList=state;$('research-select').innerHTML='<option value="local">Cuaderno local · este navegador</option>'+state.rows.map(r=>`<option value="${esc(r.id)}">${esc(r.title)}${r.archived?' (archivada)':''}</option>`).join('');$('research-select').value=state.active;$('archive-research').hidden=state.active==='local';$('archive-research').textContent=state.rows.find(r=>r.id===state.active)?.archived?'Restaurar investigación':'Archivar';$('new-research').disabled=!state.uid||!state.loaded;$('import-research').disabled=!state.uid||!state.loaded;$('research-login').hidden=!!state.uid;$('research-conflict-copy').hidden=!state.conflict;$('research-preview-status').textContent=state.active==='local'?'Cuaderno local · no sincronizado.':'Privada · cuenta de Convergencia.';},onStatus:(text,kind)=>{for(const id of ['research-sync-status','save-status','new-research-status','pick-research-status']){$(id).textContent=text;$(id).classList.toggle('error',['error','conflict'].includes(kind));}}});
+researchSync.start();
+if(window.auraClient){window.auraClient.auth.getSession().then(({data})=>researchSync.session(data?.session?.user));window.auraClient.auth.onAuthStateChange((_event,session)=>{setTimeout(()=>researchSync.session(session?.user),0)});}
+$('research-select').onchange=async e=>{await researchSync.choose(e.target.value);$('research-select').value=researchSync.active;};
+$('sync-research').onclick=()=>researchSync.refresh();
+$('research-login').onclick=()=>$('feed-account').click();
+$('new-research').onclick=()=>{$('new-research-title').value='';$('new-research-status').textContent='';$('new-research-dialog').showModal();};
+$('close-new-research').onclick=()=>$('new-research-dialog').close();
+$('new-research-form').onsubmit=async e=>{e.preventDefault();$('create-research-submit').disabled=true;try{if(await researchSync.create({title:$('new-research-title').value})){$('new-research-dialog').close();view('investigacion');}}finally{$('create-research-submit').disabled=false;}};
+$('import-research').onclick=async()=>{$('import-research').disabled=true;try{await researchSync.create(researchSync.local());}finally{$('import-research').disabled=false;}};
+$('archive-research').onclick=()=>researchSync.archive();
+$('research-conflict-copy').onclick=async()=>{const doc=researchSync.current();doc.title=doc.title.slice(0,135)+' (copia)';await researchSync.create(doc,{resolveConflict:true});};
+$('close-pick-research').onclick=()=>{$('pick-research-dialog').close();pendingEvidence=null;};
+$('pick-research-select').onchange=()=>{$('pick-new-label').hidden=$('pick-research-select').value!=='new';$('pick-new-title').required=$('pick-research-select').value==='new';};
+$('pick-research-form').onsubmit=async e=>{e.preventDefault();const evidence=pendingEvidence;if(!evidence)return;$('pick-research-submit').disabled=true;try{const target=$('pick-research-select').value;if(target==='new'){if(!await researchSync.create({title:$('pick-new-title').value}))return;}else if(!await researchSync.choose(target))return;
+ if(!research.events.some(x=>x.id===evidence.id)){if(research.events.length>=100){$('pick-research-status').textContent='Esta investigación llegó al límite de 100 fuentes.';return;}research.events.push(evidence);selected=evidence;save();await researchSync.flush();}
+ $('pick-research-dialog').close();pendingEvidence=null;view('investigacion');}finally{$('pick-research-submit').disabled=false;}};
+window.addEventListener('online',()=>researchSync.refresh());window.addEventListener('focus',()=>{if(!researchSync.pending)researchSync.refresh();});
+setInterval(()=>{if(!document.hidden&&!researchSync.pending)researchSync.refresh();},30000);
+window.addEventListener('beforeunload',e=>{if(researchSync.pending){e.preventDefault();e.returnValue='';}});
 $('refresh').onclick=()=>Promise.allSettled([refresh(),news.refresh()]); view(['feed','panorama','investigacion','fuentes'].includes(location.hash.slice(1))?location.hash.slice(1):'feed'); refresh();
