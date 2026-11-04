@@ -180,3 +180,11 @@ La lista se actualiza al volver a la ventana, cada 30 segundos mientras está vi
 Validación: 31 pruebas unitarias, incluyendo dos clientes concurrentes, guardado durante escritura, recuperación offline, aislamiento de borradores y archivo reversible. Verificación SQL en transacción revertida: lectura/escritura privada entre dos usuarios temporales, rechazo de anónimos, propietario inmutable y rechazo de versión desactualizada. Sin hallazgos del asesor de seguridad para la nueva tabla/función.
 
 Las tarjetas ya no usan ilustraciones de relleno: priorizan la fotografía del medio. Si no está disponible, solo muestran un mapa cuando el titular incluye un lugar inequívoco con contexto geográfico explícito (por ejemplo «en Gaza»). En los demás casos, la tarjeta es de texto; un fallo de teselas también oculta el mapa. La referencia se etiqueta como aproximada.
+
+### Lectura con síntesis (dev)
+
+El titular y «Leer síntesis y contexto» abren una lectura dentro de Atlas. La función `news-summary` acepta únicamente IDs del feed, resuelve el artículo en el dominio del medio y exige título coincidente y cuerpo de al menos 180 palabras (HTML de artículo o JSON-LD). No usa el titular/descripción como sustituto del cuerpo, ni accede a contenido marcado como de pago. Reutiliza la descarga HTTPS limitada y protección contra destinos privados.
+
+OpenAI mediante Netlify AI Gateway genera una paráfrasis de 100–180 palabras con referencias internas a párrafos. Se comprueban fragmentos de respaldo y una segunda llamada evalúa apoyo factual/atribuciones; si falla, no se muestra síntesis. El contexto procede exclusivamente del texto recuperado. Se indica explícitamente que es una sola fuente y no corroboración independiente: los controles reducen errores, no garantizan exactitud absoluta. No se devuelve el texto íntegro ni citas extensas al navegador. El usuario puede abrir el original o guardar la noticia en una investigación.
+
+Credenciales solo en servidor, modelo `gpt-4.1-mini` confirmado en el catálogo del gateway, SDK oficial, límite 8 solicitudes/minuto por IP y dominio, caché de diez minutos por instancia y cinco minutos HTTP. Dos llamadas por síntesis generan consumo de AI Gateway; no se generan automáticamente al cargar el feed. Producción devuelve 404 para este endpoint.

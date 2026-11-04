@@ -37,3 +37,15 @@ export async function sourceImage(article){
  }catch{}
  if(resultCache.size>600)resultCache.clear();resultCache.set(article.id,{time:Date.now(),value:result});return result;
 }
+
+// Resolve a publisher article even when it has no photograph.
+export async function sourceArticle(article){
+ if(!article.sourceUrl)return null;
+ const home=await cachedPage(article.sourceUrl);if(!home)return null;
+ let link=articleLink(home.text,article.title,home.url);
+ if(!link){const feeds=[...home.text.matchAll(/<link\b[^>]*>/gi)].map(m=>attrs(m[0])).filter(a=>/rss\+xml/.test(a.type||''));const feedUrl=feeds.map(a=>safeImage(a.href,home.url)).find(u=>u&&new URL(u).hostname===new URL(home.url).hostname);if(feedUrl){const feed=await cachedPage(feedUrl);link=feed&&rssMatch(feed.text,article.title,feed.url)?.articleUrl;}}
+ if(!link||new URL(link).hostname.replace(/^www\./,'')!==new URL(home.url).hostname.replace(/^www\./,''))return null;
+ const page=await cachedPage(link);
+ if(!page||new URL(page.url).hostname.replace(/^www\./,'')!==new URL(home.url).hostname.replace(/^www\./,''))return null;
+ return page;
+}
