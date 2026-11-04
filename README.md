@@ -124,7 +124,7 @@ Este cambio permanece local en `dev`; no se publicó ni se modificó `main`.
 ## Noticias y participación de Convergencia (dev, noviembre 2026)
 
 `dev.atlas.convergenciaaura.cl/` abre el observatorio con el feed de noticias;
-`index.html` conserva Atlas anterior. Solo los hosts de desarrollo se reescriben.
+`/atlas-anterior` conserva Atlas anterior. Solo los hosts de desarrollo se reescriben.
 
 - Ocho consultas temáticas de Google News RSS (hasta 25 titulares cada una),
   fuentes atribuidas y enlaces al agregador, deduplicación por URL normalizada,
