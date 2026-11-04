@@ -1,6 +1,7 @@
 // Puntos de referencia aproximados, no coordenadas del hecho noticioso.
 // Solo se usan nombres explícitos en el titular; nunca el país del medio.
 const places = [
+ ['Chillán',[-72.1,-36.61],['chillan']],['Concepción',[-73.05,-36.83],['concepcion']],['Puerto Montt',[-72.94,-41.47],['puerto montt']],['Valdivia',[-73.25,-39.81],['valdivia']],
  ['Aysén',[-73,-45.4],['aysen']],['Santiago de Chile',[-70.67,-33.45],['santiago de chile']],
  ['Valparaíso',[-71.62,-33.05],['valparaiso']],['Temuco',[-72.59,-38.74],['temuco']],
  ['Antofagasta',[-70.4,-23.65],['antofagasta']],['Atacama',[-70,-27.5],['atacama']],
@@ -47,5 +48,6 @@ export function mapFallbackLocation(title){
  const place=locateHeadline(title);if(!place)return null;
  const text=normalized(title);
  const aliases=places.find(p=>p[0]===place.label)?.[2]||[];
+ if(aliases.some(alias=>text.startsWith(alias+' '))&&/\b(tendra|sera sede|acoge|registra|sufre)\b/.test(text))return place;
  return aliases.some(alias=>new RegExp('(?:\\ben|\\bdesde|\\bhacia|\\bcerca de|\\bal norte de|\\bal sur de)\\s+(?:el |la )?'+alias.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'(?:\\b|$)').test(text))?place:null;
 }
