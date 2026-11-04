@@ -154,3 +154,7 @@ comentarios ni likes de prueba con una cuenta real. El servidor local usa
 Atlas incorpora el acceso oficial a Core (sesión, EXP, Aura Coin y proyectos), su globo y una cinta inferior permanente con Noticias, Mapa, Investigación, Fuentes y Mi cuenta. Los recursos Core se resuelven mediante proxies separados para dev y producción.
 
 Se verificaron likes y comentarios con la cuenta real autorizada, incluida persistencia tras recargar y limpieza de los registros de prueba. Compartir ofrece un diálogo con copia del enlace y menú nativo cuando está disponible; informa cancelación o permite copiar manualmente si el navegador restringe el portapapeles.
+
+### Noticias en mapa e investigación
+
+El feed permite agregar titulares a la investigación local y abrirlos en el mapa. Se conservan medio, enlace, fecha de publicación y fecha de consulta; no se duplican evidencias de la misma noticia. El mapa combina USGS/NASA con noticias según los filtros activos del feed. Un índice local de topónimos sitúa únicamente titulares con una sola mención reconocida, como referencia aproximada explícitamente etiquetada; sin ubicación o con varias menciones no se dibuja un punto, pero la noticia permanece en la lista. No es geolocalización confirmada ni cobertura geográfica exhaustiva.
