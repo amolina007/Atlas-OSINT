@@ -7,13 +7,18 @@ const date = s => new Date(s).toLocaleString('es-CL', { dateStyle:'medium', time
 const KEY = 'atlas-observatorio-research-v1';
 let research = { title:'Eventos naturales y territorio', events:[], facts:'', hypotheses:'', questions:'' };
 try { const saved = JSON.parse(localStorage.getItem(KEY)); if (saved && Array.isArray(saved.events) && typeof saved.title === 'string') research = { ...research, ...saved, events:saved.events.filter(e => e && typeof e.id === 'string' && e.title && e.date && e.url).slice(0,100) }; } catch {}
-let newsEvents = [];
+let newsEvents = [], feedMap, feedMarkers;
 let events = [], sources = [], filter = 'all', selected, fetchedAt, map, markers;
 function save() { try { localStorage.setItem(KEY, JSON.stringify(research)); $('save-status').textContent = 'Guardado en este navegador · ' + new Date().toLocaleTimeString('es-CL') + '. Sin sincronización entre dispositivos.'; } catch { $('save-status').textContent = 'No se pudo guardar en el navegador. Exporta tu investigación para conservarla.'; } }
-function view(name) { document.querySelectorAll('.view').forEach(el => el.hidden = el.id !== name); document.querySelectorAll('[data-view]').forEach(b => { b.classList.toggle('active', b.dataset.view === name); b.setAttribute('aria-pressed', b.dataset.view === name); }); if (name === 'panorama') setTimeout(() => map?.invalidateSize(),0); if (name === 'investigacion') renderResearch(); if(!/(?:access_token|refresh_token|error_description|code)=/.test(location.hash + location.search)) location.hash = name; }
+function view(name) { document.querySelectorAll('.view').forEach(el => el.hidden = el.id !== name); document.querySelectorAll('[data-view]').forEach(b => { b.classList.toggle('active', b.dataset.view === name); b.setAttribute('aria-pressed', b.dataset.view === name); }); if(name==='feed'){renderResearchPreview();setTimeout(()=>feedMap?.invalidateSize(),0);} if (name === 'panorama') setTimeout(() => map?.invalidateSize(),0); if (name === 'investigacion') renderResearch(); if(!/(?:access_token|refresh_token|error_description|code)=/.test(location.hash + location.search)) location.hash = name; }
 document.querySelectorAll('[data-view]').forEach(b => b.onclick = () => view(b.dataset.view));
 window.addEventListener('hashchange', () => { const name = location.hash.slice(1); if (['feed','panorama','investigacion','fuentes'].includes(name)) view(name); });
 if (window.L) { map = L.map('map', { worldCopyJump:true, minZoom:2 }).setView([-8,-48],3); L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom:18, attribution:'© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors' }).addTo(map).on('tileerror', () => { $('status').textContent = 'Algunas teselas del mapa no cargaron. Las señales siguen disponibles en la lista.'; }); markers = L.layerGroup().addTo(map); L.control.scale({imperial:false}).addTo(map); } else $('map').innerHTML = '<p class="empty">No se pudo cargar el mapa. Puedes explorar las señales en la lista y reintentar recargando.</p>';
+if(window.L){feedMap=L.map('feed-map',{zoomControl:false,scrollWheelZoom:false,dragging:false,attributionControl:true}).setView([10,0],1);L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© OpenStreetMap'}).addTo(feedMap);feedMarkers=L.layerGroup().addTo(feedMap);}
+function renderResearchPreview(){
+ $('research-preview').innerHTML=`<h3>${esc(research.title)}</h3>`+(research.events.length?research.events.slice(-3).reverse().map(e=>`<div class="saved-source"><span>▤</span><div><strong>${esc(e.title)}</strong><small>${esc(e.source)}</small></div></div>`).join(''):'<p class="muted">Tu próxima pregunta empieza con una fuente. Usa Investigar + en una noticia para guardarla aquí.</p>');
+}
+function renderFeedMap(rows){feedMarkers?.clearLayers();const located=rows.filter(e=>e.coordinates);for(const e of located){if(!feedMarkers)break;const tip=document.createElement('span');tip.textContent=e.title;L.circleMarker([e.coordinates[1],e.coordinates[0]],{radius:4,color:'#fff',weight:1,fillColor:'#7655ab',fillOpacity:.9}).addTo(feedMarkers).bindTooltip(tip).on('click',()=>showNewsMap(e));}$('feed-map-caption').textContent=`${located.length} titulares con lugar reconocido · puntos aproximados, no ubicación confirmada.`;}
 $('chile').onclick = () => map?.setView([-33.45,-70.66],5);
 $('world').onclick = () => map?.setView([8,-35],2);
 function filtered() { const q = $('search').value.trim().toLocaleLowerCase(); const cutoff = Date.now()-Number($('period').value)*86400000; return [...events,...newsEvents].filter(e => (filter === 'all' || e.provider === filter) && Date.parse(e.date) >= cutoff && `${e.title} ${e.source} ${e.category}`.toLocaleLowerCase().includes(q)); }
@@ -53,5 +58,5 @@ function showNewsMap(e){
  document.querySelectorAll('[data-filter]').forEach(b=>{b.classList.toggle('active',b.dataset.filter==='news');b.setAttribute('aria-pressed',b.dataset.filter==='news')});
  render();if(e.coordinates)map?.setView([e.coordinates[1],e.coordinates[0]],4);showDetail(e);
 }
-const news = initNews({ view, esc, date, onNews:rows=>{newsEvents=rows;render();},addNews,showNewsMap });
+const news = initNews({ view, esc, date, onNews:rows=>{newsEvents=rows;render();renderFeedMap(rows);renderResearchPreview();},addNews,showNewsMap });
 $('refresh').onclick=()=>Promise.allSettled([refresh(),news.refresh()]); view(['feed','panorama','investigacion','fuentes'].includes(location.hash.slice(1))?location.hash.slice(1):'feed'); refresh();

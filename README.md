@@ -158,3 +158,7 @@ Se verificaron likes y comentarios con la cuenta real autorizada, incluida persi
 ### Noticias en mapa e investigación
 
 El feed permite agregar titulares a la investigación local y abrirlos en el mapa. Se conservan medio, enlace, fecha de publicación y fecha de consulta; no se duplican evidencias de la misma noticia. El mapa combina USGS/NASA con noticias según los filtros activos del feed. Un índice local de topónimos sitúa únicamente titulares con una sola mención reconocida, como referencia aproximada explícitamente etiquetada; sin ubicación o con varias menciones no se dibuja un punto, pero la noticia permanece en la lista. No es geolocalización confirmada ni cobertura geográfica exhaustiva.
+
+### Portada editorial
+
+La portada utiliza tarjetas temáticas originales (no fotografías de los hechos), tipografía editorial y navegación inferior única. En PC incorpora un mapa contextual y una vista de las últimas evidencias de la investigación. En móvil los filtros secundarios se despliegan con Filtros. Siguiendo permite elegir temas; estas preferencias se conservan en localStorage y no se sincronizan con la cuenta. Se mantienen los titulares reales, atribución y acciones sociales.
