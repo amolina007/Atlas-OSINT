@@ -8,6 +8,7 @@ for (const [host, expected] of [
   ['dev--atlas-osint.netlify.app', '/aura-core-dev/aura-hub.js'],
   ['atlas.convergenciaaura.cl', '/aura-core/aura-hub.js'],
   ['localhost', '/aura-core-dev/aura-hub.js'],
+  ['dev.atlas.convergenciaaura.cl', '/aura-core-dev/aura-hub.js'],
   ['dev--atlas-osint.netlify.app.example.org', '/aura-core/aura-hub.js'],
 ]) test(`panel de ${host} usa el proxy correcto`, () => {
   let appended;

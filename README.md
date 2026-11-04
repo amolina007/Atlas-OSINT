@@ -97,3 +97,54 @@ No se cambia main ni se trasladan sesiones entre dominios.
 Atlas conserva `script-src self`: `dist/_redirects` sirve el panel mediante rutas del mismo origen (`/aura-core-dev/aura-hub.js` en dev y `/aura-core/aura-hub.js` en producción), con proxy al Core correspondiente. No copia el panel ni permite nuevos orígenes de scripts. Las cabeceras se mantienen en `netlify.toml`.
 
 Verificación: `node --test tests/aura-hub.test.cjs` comprueba cuatro casos de selección de entorno y sus destinos de proxy. En el despliegue dev se verificó el panel anónimo en escritorio y a 390 px: ocho proyectos con estado, «Ver más (3)» despliega once y «Ver menos» vuelve a ocho. Los importes reales se verificaron únicamente en Core con la sesión existente.
+
+## Observatorio «Comprender el mundo» (prototipo local en dev)
+
+Nueva entrada: `/observatorio.html`, accesible desde el botón «Observatorio» de Atlas.
+Ejecutar con Node.js 22 o superior: `npm run dev:observatorio`, luego abrir
+`http://127.0.0.1:3998/observatorio.html`. Este servidor sirve el observatorio y su
+conector; para las funciones anteriores de Atlas, usar `npm run dev`.
+
+- Mapa OpenStreetMap/Leaflet con filtros por proveedor, búsqueda y periodo.
+- USGS: feed M≥2,5 de los últimos siete días. NASA EONET v3: hasta 100 eventos
+  en treinta días; se representa la última geometría puntual disponible.
+- Consulta real desde `netlify/functions/observatory.mjs`, sin claves. Caché en
+  memoria de cinco minutos, tiempo límite por proveedor y fallos independientes.
+  No se inventan datos si un proveedor falla; la UI muestra cobertura parcial.
+- Investigación única local: hasta 100 evidencias con copia de metadatos y fecha
+  de consulta, grafo de pertenencia, cronología, notas y exportación JSON.
+  No hay sincronización, corroboración automática ni importación JSON.
+- El título original de cada evento se conserva en el idioma del proveedor.
+  Las notas quedan en localStorage, visible para quien use ese perfil del navegador.
+- Pruebas: `npm test` incluye normalización, coordenadas, enlaces seguros,
+  geometría reciente de NASA, respuesta malformada y caída parcial.
+
+Este cambio permanece local en `dev`; no se publicó ni se modificó `main`.
+
+## Noticias y participación de Convergencia (dev, noviembre 2026)
+
+`dev.atlas.convergenciaaura.cl/` abre el observatorio con el feed de noticias;
+`index.html` conserva Atlas anterior. Solo los hosts de desarrollo se reescriben.
+
+- Ocho consultas temáticas de Google News RSS (hasta 25 titulares cada una),
+  fuentes atribuidas y enlaces al agregador, deduplicación por URL normalizada,
+  orden por fecha/likes/comentarios, búsqueda, medio, periodo y paginación.
+- El feed no implica verificación editorial ni cobertura exhaustiva. Noticias sin
+  coordenadas confiables se mantienen fuera del mapa; USGS y NASA siguen en Panorama.
+- `atlas_dev_news_likes` y `atlas_dev_news_comments` reutilizan Supabase Auth de
+  Convergencia. La interfaz admite Google de Core y contraseña de cuenta existente.
+  Un like por usuario/noticia, comentarios hasta 1500 caracteres, cinco comentarios
+  por minuto, eliminación solo por autor. Conteos mediante RPC agregado.
+- Lectura pública; escrituras requieren usuario autenticado no anónimo. RLS impide
+  suplantar al autor y borrar interacciones ajenas. Sin service-role en cliente.
+  El nombre del comentario procede del perfil de Auth y no acredita identidad verificada.
+- Compartir usa el menú nativo, copia al portapapeles o un enlace seleccionable.
+  Comparte el enlace original del feed; no publica en redes automáticamente.
+- La migración de desarrollo se aplicó en el proyecto compartido sin alterar tablas
+  de producción. Las cuentas son compartidas; las interacciones de Atlas dev no.
+
+Verificación: pruebas unitarias de RSS/deduplicación/fallos parciales; SQL en
+transacción revertida con dos usuarios temporales valida inserción, conteos públicos,
+rechazo de autor falsificado y protección contra borrado ajeno. No se publicaron
+comentarios ni likes de prueba con una cuenta real. El servidor local usa
+`ATLAS_PORT` opcional; su proxy no emula los componentes Core de Netlify.
