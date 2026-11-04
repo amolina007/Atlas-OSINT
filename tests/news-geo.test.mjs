@@ -12,3 +12,12 @@ test('evidencia conserva atribución, enlace y fechas sin exigir coordenadas',()
  const a={id:'abc',title:'Nueva investigación científica',source:'Medio',publishedAt:'2026-11-04T12:00:00Z',capturedAt:'2026-11-04T13:00:00Z',url:'https://example.com/noticia',topics:['ciencia']};
  const e=newsEvidence(a);assert.equal(e.id,'news:abc');assert.equal(e.url,a.url);assert.equal(e.date,a.publishedAt);assert.equal(e.capturedAt,a.capturedAt);assert.equal(e.source,a.source);assert.equal(e.coordinates,null);
 });
+
+import { mapFallbackLocation } from '../dist/observatorio-news-geo.mjs';
+test('map fallback requires explicit geographic context and rejects ambiguous or nominal mentions',()=>{
+ assert.equal(mapFallbackLocation('Ataque en Gaza deja daños').label,'Gaza');
+ assert.equal(mapFallbackLocation('Temporal en Valparaíso').label,'Valparaíso');
+ assert.equal(mapFallbackLocation('Real Madrid gana la final'),null);
+ assert.equal(mapFallbackLocation('Noticias de economía'),null);
+ assert.equal(mapFallbackLocation('Encuentro en Chile y Argentina'),null);
+});

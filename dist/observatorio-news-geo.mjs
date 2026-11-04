@@ -41,3 +41,11 @@ export function newsEvidence(article) {
  const location=locateHeadline(article.title);
  return {id:'news:'+article.id,title:article.title,date:article.publishedAt,url:article.url,source:article.source,provider:'news',category:'Noticia',topics:article.topics||[],coordinates:location?.coordinates||null,location,detail:'Titular atribuido al medio, vía Google News RSS. Contenido y ubicación sin corroboración independiente.',capturedAt:article.capturedAt||new Date().toISOString()};
 }
+
+// Conservative card fallback: require an explicit geographic context, not just a club/person name.
+export function mapFallbackLocation(title){
+ const place=locateHeadline(title);if(!place)return null;
+ const text=normalized(title);
+ const aliases=places.find(p=>p[0]===place.label)?.[2]||[];
+ return aliases.some(alias=>new RegExp('(?:\\ben|\\bdesde|\\bhacia|\\bcerca de|\\bal norte de|\\bal sur de)\\s+(?:el |la )?'+alias.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'(?:\\b|$)').test(text))?place:null;
+}
