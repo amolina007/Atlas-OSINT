@@ -4,13 +4,14 @@ import { isIP } from 'node:net';
 import { clean } from './headlines.mjs';
 export function publicIP(ip){if(isIP(ip)!==4)return false;const [a,b]=ip.split('.').map(Number);return !(a===0||a===10||a===127||a>=224||a===169&&b===254||a===172&&b>=16&&b<=31||a===192&&b===168||a===100&&b>=64&&b<=127||a===198&&(b===18||b===19));}
 export function safeImage(raw,base){if(typeof raw!=='string'||!raw.trim())return null;try{const u=new URL(raw,base);if(u.protocol!=='https:'||u.username||u.password||u.port||isIP(u.hostname)||!u.hostname.includes('.')||/\.(local|internal|localhost)$/i.test(u.hostname))return null;return u.href;}catch{return null;}}
-export async function publicText(raw,redirects=0){
+export async function publicText(raw,redirects=0,binary=false){
  const u=new URL(raw);if(!safeImage(u.href)||redirects>3)throw Error('URL rejected');
  const ips=await lookup(u.hostname,{family:4,all:true});if(!ips.length||ips.some(x=>!publicIP(x.address)))throw Error('Private address');
  return new Promise((resolve,reject)=>{const req=https.get(u,{headers:{'User-Agent':'AtlasNewsPreview/1.0','Accept':'text/html, application/rss+xml, application/xml'},lookup:(_h,opts,cb)=>opts.all?cb(null,[{address:ips[0].address,family:4}]):cb(null,ips[0].address,4)},res=>{
- if(res.statusCode>=300&&res.statusCode<400&&res.headers.location){res.resume();publicText(new URL(res.headers.location,u).href,redirects+1).then(resolve,reject);return;}
+ if(res.statusCode>=300&&res.statusCode<400&&res.headers.location){res.resume();publicText(new URL(res.headers.location,u).href,redirects+1,binary).then(resolve,reject);return;}
+ if(binary&&!/^image\/(jpeg|png|webp|avif|gif)(?:;|$)/i.test(res.headers['content-type']||'')){res.resume();reject(Error('Not an image'));return;}
  if(res.statusCode!==200){res.resume();reject(Error('Unavailable'));return;}
- let size=0,chunks=[];res.on('data',c=>{size+=c.length;if(size>2500000){res.destroy();reject(Error('Too large'));}else chunks.push(c)});res.on('end',()=>resolve({text:Buffer.concat(chunks).toString('utf8'),url:u.href}));res.on('error',reject);
+ let size=0,chunks=[];res.on('data',c=>{size+=c.length;if(size>2500000){res.destroy();reject(Error('Too large'));}else chunks.push(c)});res.on('end',()=>resolve(binary?{bytes:Buffer.concat(chunks),type:res.headers['content-type']}:{text:Buffer.concat(chunks).toString('utf8'),url:u.href}));res.on('error',reject);
  });req.setTimeout(4500,()=>req.destroy(Error('Timeout')));req.on('error',reject);});
 }
 const decode=s=>String(s||'').replace(/&amp;/g,'&').replace(/&quot;/g,'"').replace(/&#39;/g,"'").replace(/&#(\d+);/g,(_,n)=>String.fromCodePoint(Math.min(Number(n),0x10ffff)));
