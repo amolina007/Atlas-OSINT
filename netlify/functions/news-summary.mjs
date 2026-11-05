@@ -1,5 +1,5 @@
 import OpenAI from 'openai';
-import { headlines } from '../lib/headlines.mjs';
+import { articleFromRequest } from '../lib/news-search.mjs';
 import { sourceArticle } from '../lib/news-images.mjs';
 import { extractArticle,validateSummary,articlePreview,relatedArticles } from '../lib/news-summary.mjs';
 import {findCoverage,combineCoverage} from '../lib/news-coverage.mjs';
@@ -8,15 +8,15 @@ export default async function(req){
  if(req.method!=='GET')return new Response('Method not allowed',{status:405});
  if(Netlify.env.get('CONTEXT')==='production')return new Response('Dev only',{status:404});
  const id=new URL(req.url).searchParams.get('id');if(!/^[a-f0-9]{64}$/.test(id||''))return new Response('Invalid article',{status:400});
- const old=cache.get(id);if(old&&Date.now()-old.time<600000)return Response.json(await old.promise,{headers:{'Cache-Control':'public, max-age=300'}});
- const promise=build(id);if(cache.size>300)cache.clear();cache.set(id,{time:Date.now(),promise});
+ const cacheKey=id+'|'+(new URL(req.url).searchParams.get('q')||'');const old=cache.get(cacheKey);if(old&&Date.now()-old.time<600000)return Response.json(await old.promise,{headers:{'Cache-Control':'public, max-age=300'}});
+ const promise=build(id,new URL(req.url).searchParams.get('q'));if(cache.size>300)cache.clear();cache.set(cacheKey,{time:Date.now(),promise});
  return Response.json(await promise,{headers:{'Cache-Control':'public, max-age=300','X-Content-Type-Options':'nosniff'}});
 }
-async function build(id){
+async function build(id,query){
  let source=null,preview=null,related=[],stage='source',coverage=null;
  try{
- const data=await headlines();const article=data.articles.find(a=>a.id===id);if(!article)return {status:'unavailable',reason:'Esta noticia ya no está disponible en el feed. Abre el enlace original.'};
- related=relatedArticles(article,data.articles);source={name:article.source,url:article.url,publishedAt:article.publishedAt};
+ const article=await articleFromRequest(id,query);if(!article)return {status:'unavailable',reason:'Esta noticia ya no está disponible en el feed. Abre el enlace original.'};
+ source={name:article.source,url:article.url,publishedAt:article.publishedAt};
  const client=new OpenAI({timeout:14000,maxRetries:0});
  const page=await sourceArticle(article).catch(()=>null);
  if(page){source.url=page.url;preview=articlePreview(page.text,article.title);}

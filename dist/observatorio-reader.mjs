@@ -12,7 +12,7 @@ export function createNewsReader({esc,date,addNews,newsEvidence,onDiscovery,getA
  body.querySelectorAll('[data-discover-tag]').forEach(b=>b.onclick=()=>{dialog.close();onDiscovery({tag:b.dataset.discoverTag});});body.querySelectorAll('[data-discover-place]').forEach(b=>b.onclick=()=>{const place=articleLocation(article);if(place){dialog.close();onDiscovery({place,radius:100});}});
  body.querySelector('#reader-save').onclick=()=>{dialog.close();addNews(newsEvidence(current));};if(!dialog.open)dialog.showModal();dialog.scrollTop=0;
  const activeController=controller;const timer=setTimeout(()=>activeController.abort(),55000);
- try{const r=await fetch('/.netlify/functions/news-summary?id='+article.id,{signal});if(!r.ok)throw Error(r.status===429?'rate':'request');const data=await r.json();if(signal.aborted)return;
+ try{const r=await fetch('/.netlify/functions/news-summary?id='+article.id+(article.searchQuery?'&q='+encodeURIComponent(article.searchQuery):''),{signal});if(!r.ok)throw Error(r.status===429?'rate':'request');const data=await r.json();if(signal.aborted)return;
  const result=body.querySelector('#reader-result');
  if(data.source?.url)body.querySelector('#reader-source').href=safe(data.source.url);
  if(data.status==='ready'){
