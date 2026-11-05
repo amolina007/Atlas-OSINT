@@ -26,3 +26,5 @@ body{padding-bottom:calc(86px + env(safe-area-inset-bottom));--globo-abajo:calc(
 .reader-navigation{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:0 30px 24px 0}.reader-navigation span{font-size:12px;color:var(--muted)}.reader-navigation button{min-height:44px}.reader-navigation button:disabled{cursor:default}
 
 #news-reader .reader-navigation{display:grid;grid-template-columns:1fr 1.5fr 1fr;gap:8px;position:sticky;bottom:-35px;background:var(--bg);padding:14px 0;margin:24px 0 0;border-top:1px solid var(--line);z-index:2}.reader-navigation button{padding:10px 8px;font-size:12px}.reader-position{text-align:center;margin:0}#news-reader .reader-navigation .primary{background:var(--teal);color:#fff}@media(max-width:800px){#news-reader .reader-navigation{bottom:-22px}.reader-navigation button{font-size:11px;padding:9px 5px}}
+/* Keep loading and empty states together across the masonry columns. */
+#news-feed>.empty{column-span:all;break-inside:avoid;width:100%}
