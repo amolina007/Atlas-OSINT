@@ -42,7 +42,7 @@ export function initNews({view,esc,date,onNews,addNews,showNewsMap}) {
  const script=document.createElement('script');script.src=dev?'/aura-core-dev/aura-google.js':'/aura-core/aura-google.js';script.defer=true;document.head.append(script);
  const hub=document.createElement('script');hub.src='aura-hub-loader.js';hub.defer=true;document.head.append(hub);
  function openAccount(){ $('account-dialog').showModal(); }
- ['core-brand','ribbon-account'].forEach(id=>{const b=$(id);b.addEventListener('aura-hub:login',openAccount);b.addEventListener('click',()=>{if(!window.AuraHub)openAccount();});});
+ ['core-brand'].forEach(id=>{const b=$(id);b.addEventListener('aura-hub:login',openAccount);b.addEventListener('click',()=>{if(!window.AuraHub)openAccount();});});
  $('core-logo').src=dev?'/aura-core-dev/logo-core-96.png':'/aura-core/logo-core-96.png';
  const globe=document.createElement('script');globe.src=dev?'/aura-core-dev/globo.js':'/aura-core/globo.js';globe.dataset.margenMovil='100';globe.defer=true;document.head.append(globe);
  $('account').addEventListener('aura-hub:login',openAccount);$('account').onclick=()=>{if(!window.AuraHub)openAccount();};$('feed-account').onclick=openAccount;
