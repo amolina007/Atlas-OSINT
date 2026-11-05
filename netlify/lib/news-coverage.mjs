@@ -8,8 +8,9 @@ export function coverageCandidates(original,rows){
 export async function findCoverage(article,{read=publicText,resolve=sourceArticle,queries=[]}={}){
  // Search is fixed to the public RSS service, never a URL supplied by the client.
  const q=article.title.replace(/[^\p{L}\p{N}\s]/gu,' ').trim().slice(0,220);
+ const names=(article.title.match(/(?:\p{Lu}\p{Ll}{2,}\s+){1,3}\p{Lu}\p{Ll}{2,}/gu)||[]).sort((a,b)=>b.length-a.length).slice(0,1);
  const keywords=q.split(/\s+/).filter(w=>w.length>3&&!/^(para|como|desde|sobre|entre|tendrá|serán|esta|este|estos|estas|tras|ante|contra)$/i.test(w)).slice(0,4).join(' ');
- try{const groups=await Promise.all([...new Set([...queries.filter(x=>typeof x==='string'&&x.length<=220).slice(0,2),q,keywords])].filter(Boolean).map(async query=>{try{const url='https://news.google.com/rss/search?'+new URLSearchParams({q:query,hl:'es-419',gl:'CL',ceid:'CL:es-419'});const rss=await read(url);return parse(rss.text,'coverage');}catch{return [];}}));const candidates=coverageCandidates(article,groups.flat());
+ try{const groups=await Promise.all([...new Set([...names,...queries.filter(x=>typeof x==='string'&&x.length<=220).slice(0,2),q,keywords])].filter(Boolean).map(async query=>{try{const url='https://news.google.com/rss/search?'+new URLSearchParams({q:query,hl:'es-419',gl:'CL',ceid:'CL:es-419'});const rss=await read(url);return parse(rss.text,'coverage');}catch{return [];}}));const candidates=coverageCandidates(article,groups.flat());
  return (await Promise.all(candidates.map(async a=>{try{const page=await resolve(a);if(!page)return null;const paragraphs=extractArticle(page.text,a.title);return paragraphs?.length?{article:a,url:page.url,paragraphs}:null;}catch{return null;}}))).filter(Boolean);
  }catch{return [];}
 }
