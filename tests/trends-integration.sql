@@ -1,8 +1,10 @@
 begin;
 do $$
-declare u uuid:=gen_random_uuid(); u2 uuid:=gen_random_uuid(); p uuid; oldp uuid; r jsonb; failed boolean; qs jsonb:='[{"title":"Pregunta única de prueba","kind":"single","options":["Sí","No"]},{"title":"Pregunta múltiple de prueba","kind":"multiple","options":["A","B","C"]},{"title":"Pregunta escala de prueba","kind":"scale"},{"title":"Pregunta abierta de prueba","kind":"text"}]'; answers jsonb:='[{"choices":[0],"answer":""},{"choices":[0,2],"answer":""},{"choices":[4],"answer":""},{"choices":[],"answer":"Texto real de prueba"}]';
+declare u uuid; u2 uuid:=gen_random_uuid(); p uuid; oldp uuid; r jsonb; failed boolean; qs jsonb:='[{"title":"Pregunta única de prueba","kind":"single","options":["Sí","No"]},{"title":"Pregunta múltiple de prueba","kind":"multiple","options":["A","B","C"]},{"title":"Pregunta escala de prueba","kind":"scale"},{"title":"Pregunta abierta de prueba","kind":"text"}]'; answers jsonb:='[{"choices":[0],"answer":""},{"choices":[0,2],"answer":""},{"choices":[4],"answer":""},{"choices":[],"answer":"Texto real de prueba"}]';
 begin
- insert into auth.users(id,aud,role) values(u,'authenticated','authenticated'),(u2,'authenticated','authenticated');
+ select auth_user_id into u from public.eslabones where role='captain' and status='active' limit 1;
+ if u is null then raise exception 'Admin fixture required';end if;
+ insert into auth.users(id,aud,role) values(u2,'authenticated','authenticated');
  perform set_config('request.jwt.claims',jsonb_build_object('sub',u,'role','authenticated')::text,true);
  set local role authenticated;
  p:=public.atlas_dev_create_survey('Prueba de cuatro preguntas','','Otros',qs,now()+interval '1 day');
@@ -20,6 +22,7 @@ begin
  perform public.atlas_dev_vote_survey(p,jsonb_set(answers,'{0,choices}','[1]'));
  r:=public.atlas_dev_survey_results(p);
  if (r->>'total')::int<>2 or (r#>>'{questions,0,bars,0,count}')::int<>1 or (r#>>'{questions,0,bars,1,count}')::int<>1 then raise exception 'bad two-account totals';end if;
+ perform set_config('request.jwt.claims',jsonb_build_object('sub',u,'role','authenticated')::text,true);
  oldp:=public.atlas_dev_create_poll('Legacy compatible survey','','Otros','single','["A","B"]',now()+interval '1 day');
  perform public.atlas_dev_vote(oldp,array[1],'');
  r:=public.atlas_dev_survey_results(oldp);if (r#>>'{questions,0,bars,1,count}')::int<>1 then raise exception 'legacy lost';end if;

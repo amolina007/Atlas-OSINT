@@ -27,3 +27,10 @@ test('question editor can combine, reorder and remove questions preserving their
  cards()[0].querySelector('[data-down]').click();assert.equal(cards()[0].querySelector('[data-title]').value,'Primera pregunta');cards()[1].querySelector('[data-remove]').click();assert.equal(cards().length,1);assert.equal(cards()[0].querySelector('[data-remove]').disabled,true);
  }finally{globalThis.document=previous;dom.window.close();}
 });
+import {questionKey} from '../dist/observatorio-trends.mjs';
+test('duplicate review ignores accents, punctuation and case',()=>{assert.equal(questionKey('¿Qué opinas de la educación?'),questionKey('QUE OPINAS DE LA EDUCACION'));assert.throws(()=>surveyInput(base,[{title:'¿Qué opinas de la educación?',kind:'text'},{title:'QUE OPINAS DE LA EDUCACION',kind:'text'}]),/repetidas/);});
+test('ordinary members can propose but publishing controls remain hidden',async()=>{
+ const dom=new JSDOM('<section id="tendencias"></section>');const previous=globalThis.document;globalThis.document=dom.window.document;dom.window.HTMLDialogElement.prototype.close=function(){};
+ const db={auth:{getSession:async()=>({data:{session:{user:{id:'member'}}}}),onAuthStateChange:()=>{}},rpc:async()=>({data:false}),from:()=>({select(){return this;},order(){return this;},limit:async()=>({data:[]})})};
+ try{initTrends({db,esc:String,date:String,login:()=>{}});await new Promise(resolve=>setImmediate(resolve));const d=dom.window.document;assert.equal(d.querySelector('#new-poll').hidden,true);assert.equal(d.querySelector('[data-poll-mode="mine"]').hidden,true);assert.ok(d.querySelector('#propose-question'));assert.ok(d.querySelector('[data-poll-mode="proposals"]'));}finally{globalThis.document=previous;dom.window.close();}
+});

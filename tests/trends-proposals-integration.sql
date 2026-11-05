@@ -1,0 +1,32 @@
+begin;
+do $$
+declare admin_id uuid; member_id uuid:=gen_random_uuid(); proposal uuid; poll uuid; failed boolean; title text:='¿Pregunta técnica de revisión '||gen_random_uuid()::text||'?'; qs jsonb;
+begin
+ select auth_user_id into admin_id from public.eslabones where role='captain' and status='active' limit 1;
+ if admin_id is null then raise exception 'Admin fixture required';end if;
+ insert into auth.users(id,aud,role) values(member_id,'authenticated','authenticated');
+ perform set_config('request.jwt.claims',jsonb_build_object('sub',member_id,'role','authenticated')::text,true);
+ set local role authenticated;
+ if public.atlas_dev_poll_admin() then raise exception 'member classified as admin';end if;
+ proposal:=public.atlas_dev_propose_question(title,'Contexto de prueba','Otros');
+ failed:=false;begin perform public.atlas_dev_propose_question(upper(replace(title,'é','e')),'Otro contexto','Otros');exception when others then failed:=true;end;if not failed then raise exception 'duplicate accepted';end if;
+ qs:=jsonb_build_array(jsonb_build_object('title',title,'kind','single','options',jsonb_build_array('Sí','No')));
+ failed:=false;begin perform public.atlas_dev_create_poll('Intento sin autorización','','Otros','single','["A","B"]',now()+interval '1 day');exception when others then failed:=true;end;if not failed then raise exception 'legacy creation bypass';end if;
+ failed:=false;begin perform public.atlas_dev_create_survey('Intento sin autorización','','Otros',qs,now()+interval '1 day');exception when others then failed:=true;end;if not failed then raise exception 'survey creation bypass';end if;
+ failed:=false;begin perform public.atlas_dev_publish_reviewed_survey('Intento sin autorización','','Otros',qs,now()+interval '1 day',array[proposal]);exception when others then failed:=true;end;if not failed then raise exception 'reviewed creation bypass';end if;
+ failed:=false;begin perform public.atlas_dev_review_proposal(proposal,'dismiss');exception when others then failed:=true;end;if not failed then raise exception 'review bypass';end if;
+ perform set_config('request.jwt.claims',jsonb_build_object('sub',admin_id,'role','authenticated')::text,true);
+ if not public.atlas_dev_poll_admin() then raise exception 'admin not recognized';end if;
+ perform public.atlas_dev_review_proposal(proposal,'dismiss');perform public.atlas_dev_review_proposal(proposal,'reopen');
+ poll:=public.atlas_dev_publish_reviewed_survey('Encuesta administrativa de prueba','','Otros',qs,now()+interval '1 day',array[proposal]);
+ if not exists(select 1 from public.atlas_dev_question_proposals where id=proposal and status='published' and poll_id=poll) then raise exception 'missing atomic proposal link';end if;
+ failed:=false;begin perform public.atlas_dev_publish_reviewed_survey('Reutilización de propuesta','','Otros',qs,now()+interval '1 day',array[proposal]);exception when others then failed:=true;end;if not failed then raise exception 'proposal reused';end if;
+ perform set_config('request.jwt.claims',jsonb_build_object('sub',member_id,'role','authenticated')::text,true);
+ failed:=false;begin perform public.atlas_dev_manage_poll(poll,'close');exception when others then failed:=true;end;if not failed then raise exception 'management bypass';end if;
+ perform public.atlas_dev_vote_survey(poll,'[{"choices":[0],"answer":""}]');
+ if (public.atlas_dev_survey_results(poll)->>'total')::int<>1 then raise exception 'member vote unavailable';end if;
+ reset role;
+ if has_table_privilege('authenticated','public.atlas_dev_question_proposals','INSERT') or has_table_privilege('authenticated','public.atlas_dev_question_proposals','UPDATE') then raise exception 'direct write bypass';end if;
+ if has_function_privilege('anon','public.atlas_dev_publish_reviewed_survey(text,text,text,jsonb,timestamptz,uuid[])','EXECUTE') then raise exception 'anon publish access';end if;
+end $$;
+rollback;
