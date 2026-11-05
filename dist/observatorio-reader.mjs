@@ -1,7 +1,5 @@
-import {createReadingCache} from './observatorio-reading-cache.mjs';
 import {articleLocation,discoveryMarkup} from './observatorio-discovery.mjs';
-export function createNewsReader({esc,date,addNews,newsEvidence,onDiscovery,getArticles}){
- let storage;try{storage=window.localStorage;}catch{}const readings=createReadingCache(storage);
+export function createNewsReader({esc,date,addNews,newsEvidence,onDiscovery,getArticles,readings}){
  const dialog=document.createElement('dialog');dialog.id='news-reader';dialog.setAttribute('aria-labelledby','reader-title');dialog.innerHTML='<button class="close" aria-label="Cerrar lectura">×</button><div id="reader-body"></div>';document.body.append(dialog);let controller,current,currentReading,sequence=[];
  dialog.querySelector('.close').onclick=()=>dialog.close();dialog.addEventListener('close',()=>controller?.abort());
  const safe=s=>{try{const u=new URL(s);return u.protocol==='https:'?u.href:'#';}catch{return '#';}};
@@ -15,11 +13,11 @@ export function createNewsReader({esc,date,addNews,newsEvidence,onDiscovery,getA
  body.querySelectorAll('[data-discover-tag]').forEach(b=>b.onclick=()=>{dialog.close();onDiscovery({tag:b.dataset.discoverTag});});body.querySelectorAll('[data-discover-place]').forEach(b=>b.onclick=()=>{const place=articleLocation(article);if(place){dialog.close();onDiscovery({place,radius:100});}});
  body.querySelector('#reader-save').onclick=()=>{dialog.close();addNews(newsEvidence({...current,reading:currentReading}));};if(!dialog.open)dialog.showModal();dialog.scrollTop=0;
  const activeController=controller;const timer=setTimeout(()=>activeController.abort(),55000);
- try{let data=article.reading?.status==='ready'?article.reading:readings.get(article.id);if(!data){const r=await fetch('/.netlify/functions/news-summary?id='+article.id+(article.searchQuery?'&q='+encodeURIComponent(article.searchQuery):''),{signal});if(!r.ok)throw Error(r.status===429?'rate':'request');data=await r.json();}if(signal.aborted)return;
+ try{const data=readings.get(article)||await readings.load(article);if(signal.aborted)return;
  const result=body.querySelector('#reader-result');
  if(data.source?.url)body.querySelector('#reader-source').href=safe(data.source.url);
  if(data.status==='ready'){
- currentReading=data;readings.set(article.id,data);
+ currentReading=data;
  const sources=data.sources||[{id:1,...data.source}];
  body.querySelector('.reader-sources').innerHTML='<h2>Fuentes</h2>'+sources.map(s=>`<p><a id="reader-source-${s.id}" href="${esc(safe(s.url))}" target="_blank" rel="noopener noreferrer">[${s.id}] ${esc(s.name)} · ${esc(date(s.publishedAt))} · ${esc(s.title||article.title)} ↗</a></p>`).join('')+(data.alternative?`<p class="muted">Cobertura del mismo hecho en otros medios. <a href="${esc(safe(article.url))}" target="_blank" rel="noopener noreferrer">Publicación que abriste ↗</a></p>`:'');
  const section=(title,items)=>items.length?`<section><h2>${title}</h2>${items.map(p=>`<p>${esc(p.text)} <a href="#reader-source-${p.source||1}" class="reader-citation" aria-label="Ver fuente ${p.source||1}">[${p.source||1}]</a></p>`).join('')}</section>`:'';
