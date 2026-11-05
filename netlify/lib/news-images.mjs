@@ -44,6 +44,18 @@ export async function sourceArticle(article){
  const home=await cachedPage(article.sourceUrl);if(!home)return null;
  let link=articleLink(home.text,article.title,home.url);
  if(!link){const feeds=[...home.text.matchAll(/<link\b[^>]*>/gi)].map(m=>attrs(m[0])).filter(a=>/rss\+xml/.test(a.type||''));const feedUrl=feeds.map(a=>safeImage(a.href,home.url)).find(u=>u&&new URL(u).hostname===new URL(home.url).hostname);if(feedUrl){const feed=await cachedPage(feedUrl);link=feed&&rssMatch(feed.text,article.title,feed.url)?.articleUrl;}}
+ // Follow an advertised public GET search form when the article has left the homepage.
+ if(!link){
+  for(const match of home.text.matchAll(/<form\b([^>]*)>([\s\S]*?)<\/form>/gi)){
+   const form=attrs(match[1]);if((form.method||'get').toLowerCase()!=='get')continue;
+   const fields=[...match[2].matchAll(/<input\b[^>]*>/gi)].map(x=>attrs(x[0]));
+   const field=fields.find(x=>x.type==='search'||x.name==='s');if(!field?.name)continue;
+   const action=safeImage(form.action||home.url,home.url);if(!action||new URL(action).hostname!==new URL(home.url).hostname)continue;
+   const search=new URL(action);search.searchParams.set(field.name,article.title);
+   const results=await cachedPage(search.href);if(results)link=articleLink(results.text,article.title,results.url);
+   break;
+  }
+ }
  if(!link||new URL(link).hostname.replace(/^www\./,'')!==new URL(home.url).hostname.replace(/^www\./,''))return null;
  const page=await cachedPage(link);
  if(!page||new URL(page.url).hostname.replace(/^www\./,'')!==new URL(home.url).hostname.replace(/^www\./,''))return null;
