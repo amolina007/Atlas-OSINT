@@ -3,7 +3,7 @@ import {publicText,sourceArticle} from './news-images.mjs';
 import {extractArticle} from './news-summary.mjs';
 export function coverageCandidates(original,rows){
  const date=Date.parse(original.publishedAt),seen=new Set([original.sourceUrl]);
- return rows.filter(a=>a.id!==original.id&&a.source!==original.source&&a.sourceUrl&&Math.abs(Date.parse(a.publishedAt)-date)<7*86400000).filter(a=>{if(seen.has(a.sourceUrl))return false;seen.add(a.sourceUrl);return true;}).slice(0,4);
+ return rows.filter(a=>a.id!==original.id&&a.source!==original.source&&a.sourceUrl&&Math.abs(Date.parse(a.publishedAt)-date)<7*86400000).filter(a=>{if(seen.has(a.sourceUrl))return false;seen.add(a.sourceUrl);return true;}).slice(0,12);
 }
 export async function findCoverage(article,{read=publicText,resolve=sourceArticle}={}){
  // Search is fixed to the public RSS service, never a URL supplied by the client.

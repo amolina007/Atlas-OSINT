@@ -18,3 +18,9 @@ test('search retrieves actual matching bodies; headlines alone never become evid
  deps.resolve=async()=>({url:'https://dos.example/a',text:'<h1>Festival solidario en Chillán</h1><article><p>'+('El festival reúne a artistas locales para apoyar una campaña solidaria durante dos jornadas en la plaza de la ciudad. '.repeat(8))+'</p></article>'});
  assert.equal((await findCoverage(original,deps)).length,1);
 });
+
+test('continues beyond the first four inaccessible publishers',async()=>{
+ const items=Array.from({length:7},(_,i)=>`<item><title>Festival solidario en Chillán - Medio${i}</title><source url="https://medio${i}.example">Medio${i}</source><link>https://news.google.com/rss/articles/item${i}</link><pubDate>Wed, 04 Nov 2026 12:00:00 GMT</pubDate></item>`).join('');
+ const docs=await findCoverage(original,{read:async()=>({text:`<rss>${items}</rss>`}),resolve:async a=>a.source!=='Medio6'?null:{url:'https://medio6.example/evento',text:'<h1>Festival solidario en Chillán</h1><article><p>'+('El festival reúne a artistas locales para apoyar una campaña solidaria durante dos jornadas en la plaza de la ciudad. '.repeat(8))+'</p></article>'}});
+ assert.equal(docs.length,1);assert.equal(docs[0].article.source,'Medio6');
+});
