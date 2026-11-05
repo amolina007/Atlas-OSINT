@@ -1,0 +1,30 @@
+begin;
+do $$
+declare u uuid:=gen_random_uuid(); u2 uuid:=gen_random_uuid(); p uuid; oldp uuid; r jsonb; failed boolean; qs jsonb:='[{"title":"Pregunta única de prueba","kind":"single","options":["Sí","No"]},{"title":"Pregunta múltiple de prueba","kind":"multiple","options":["A","B","C"]},{"title":"Pregunta escala de prueba","kind":"scale"},{"title":"Pregunta abierta de prueba","kind":"text"}]'; answers jsonb:='[{"choices":[0],"answer":""},{"choices":[0,2],"answer":""},{"choices":[4],"answer":""},{"choices":[],"answer":"Texto real de prueba"}]';
+begin
+ insert into auth.users(id,aud,role) values(u,'authenticated','authenticated'),(u2,'authenticated','authenticated');
+ perform set_config('request.jwt.claims',jsonb_build_object('sub',u,'role','authenticated')::text,true);
+ set local role authenticated;
+ p:=public.atlas_dev_create_survey('Prueba de cuatro preguntas','','Otros',qs,now()+interval '1 day');
+ failed:=false;begin perform public.atlas_dev_vote_survey(p,answers-3);exception when others then failed:=true;end;if not failed then raise exception 'accepted partial ballot';end if;
+ if exists(select 1 from public.atlas_dev_poll_votes where poll_id=p) then raise exception 'partial ballot left a row';end if;
+ failed:=false;begin perform public.atlas_dev_vote(p,array[0],'');exception when others then failed:=true;end;if not failed then raise exception 'old API bypass';end if;
+ failed:=false;begin perform public.atlas_dev_vote_survey(p,jsonb_set(answers,'{2,choices}','[7]'));exception when others then failed:=true;end;if not failed then raise exception 'accepted out of range';end if;
+ perform public.atlas_dev_vote_survey(p,answers);
+ failed:=false;begin perform public.atlas_dev_vote_survey(p,answers);exception when others then failed:=true;end;if not failed then raise exception 'accepted duplicate';end if;
+ r:=public.atlas_dev_survey_results(p);
+ if (r->>'total')::int<>1 or jsonb_array_length(r->'questions')<>4 or (r#>>'{questions,1,bars,2,count}')::int<>1 or (r#>>'{questions,2,bars,4,count}')::int<>1 or r#>>'{questions,3,texts,0}'<>'Texto real de prueba' then raise exception 'bad per-question totals: %',r;end if;
+ perform set_config('request.jwt.claims',jsonb_build_object('sub',u2,'role','authenticated')::text,true);
+ if exists(select 1 from public.atlas_dev_poll_votes where poll_id=p) then raise exception 'another account can read individual ballot';end if;
+ failed:=false;begin perform public.atlas_dev_manage_poll(p,'close');exception when others then failed:=true;end;if not failed then raise exception 'non-owner can close';end if;
+ perform public.atlas_dev_vote_survey(p,jsonb_set(answers,'{0,choices}','[1]'));
+ r:=public.atlas_dev_survey_results(p);
+ if (r->>'total')::int<>2 or (r#>>'{questions,0,bars,0,count}')::int<>1 or (r#>>'{questions,0,bars,1,count}')::int<>1 then raise exception 'bad two-account totals';end if;
+ oldp:=public.atlas_dev_create_poll('Legacy compatible survey','','Otros','single','["A","B"]',now()+interval '1 day');
+ perform public.atlas_dev_vote(oldp,array[1],'');
+ r:=public.atlas_dev_survey_results(oldp);if (r#>>'{questions,0,bars,1,count}')::int<>1 then raise exception 'legacy lost';end if;
+ reset role;
+ if has_function_privilege('anon','public.atlas_dev_vote_survey(uuid,jsonb)','EXECUTE') then raise exception 'anon execution';end if;
+ if has_table_privilege('authenticated','public.atlas_dev_poll_votes','INSERT') then raise exception 'direct insert allowed';end if;
+end $$;
+rollback;
