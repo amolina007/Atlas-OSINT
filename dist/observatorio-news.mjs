@@ -6,7 +6,7 @@ import { newsEvidence, locateHeadline } from "./observatorio-news-geo.mjs";
 export function initNews({view,esc,date,onNews,addNews,showNewsMap}) {
  const $=id=>document.getElementById(id);
  const enhancePhotos=createNewsPhotos();
- const openReader=createNewsReader({esc,date,addNews,newsEvidence,onDiscovery:discover});
+ const openReader=createNewsReader({esc,date,addNews,newsEvidence,onDiscovery:discover,getArticles:filtered});
  const db=window.supabase && window.ATLAS_SUPABASE ? window.supabase.createClient(window.ATLAS_SUPABASE.url,window.ATLAS_SUPABASE.publishableKey,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true,storageKey:'convergencia-aura-auth'}}):null;
  if(db) window.auraClient=db;
  const dev = /^dev--atlas-osint\.netlify\.app$/.test(location.hostname)||['dev.atlas.convergenciaaura.cl','localhost','127.0.0.1'].includes(location.hostname);

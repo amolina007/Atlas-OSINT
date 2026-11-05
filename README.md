@@ -204,3 +204,9 @@ La extracción de artículos incorpora Mozilla Readability/JSDOM sin ejecución 
 Las tarjetas fluyen en columnas de altura natural en PC y en una columna en móvil, en orden de arriba abajo por columna. Una tarjeta sin foto ni referencia geográfica no reserva un panel visual ni obliga a otra tarjeta a adoptar su altura.
 
 Validación: 42 pruebas unitarias y transacción SQL revertida con dos usuarios temporales para lectura privada, rechazo de suplantación, borrado ajeno y usuarios anónimos. Asesor de seguridad sin hallazgos en la nueva tabla.
+
+### Cobertura alternativa y navegación del lector (dev)
+- Cuando no se recupera el cuerpo original, se consulta Google News RSS con el titular y términos del hecho. Se recuperan hasta cuatro medios distintos, dentro de siete días de la publicación original; las páginas conservan los controles de identidad, acceso público y SSRF.
+- Un control semántico exige el mismo hecho (protagonistas, acción, lugar y fecha compatibles). Después, la síntesis y una auditoría separada exigen evidencia literal por párrafo. Las citas se asignan al medio real de cada párrafo. Compartir tema no basta ni se presenta como corroboración independiente.
+- Si no hay evidencia aceptada, el lector conserva titular, fuente y descripción editorial disponible, sin párrafos explicativos de relleno. Contexto solo aparece cuando hay antecedentes documentados.
+- Anterior/Siguiente recorren una instantánea del feed filtrado y ordenado; los extremos se desactivan. Las solicitudes anteriores se cancelan al cambiar y no pueden reemplazar la noticia actual.
