@@ -28,3 +28,9 @@ body{padding-bottom:calc(86px + env(safe-area-inset-bottom));--globo-abajo:calc(
 #news-reader .reader-navigation{display:grid;grid-template-columns:1fr 1.5fr 1fr;gap:8px;position:sticky;bottom:-35px;background:var(--bg);padding:14px 0;margin:24px 0 0;border-top:1px solid var(--line);z-index:2}.reader-navigation button{padding:10px 8px;font-size:12px}.reader-position{text-align:center;margin:0}#news-reader .reader-navigation .primary{background:var(--teal);color:#fff}@media(max-width:800px){#news-reader .reader-navigation{bottom:-22px}.reader-navigation button{font-size:11px;padding:9px 5px}}
 /* Keep loading and empty states together across the masonry columns. */
 #news-feed>.empty{column-span:all;break-inside:avoid;width:100%}
+
+/* Shared loading indicator for public search and article synthesis. */
+.loading-label{display:inline-flex;align-items:center;gap:10px;max-width:100%}
+.loading-spinner{display:inline-block;width:18px;height:18px;flex:0 0 18px;border:2px solid var(--line);border-top-color:var(--teal);border-right-color:var(--teal);border-radius:50%;animation:atlas-loading-spin .8s linear infinite}
+@keyframes atlas-loading-spin{to{transform:rotate(360deg)}}
+@media(prefers-reduced-motion:reduce){.loading-spinner{animation:none}}
