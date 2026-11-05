@@ -40,7 +40,7 @@ export function locateHeadline(title) {
 }
 export function newsEvidence(article) {
  const location=locateHeadline(article.title);
- return {id:'news:'+article.id,title:article.title,date:article.publishedAt,url:article.url,source:article.source,provider:'news',category:'Noticia',topics:article.topics||[],coordinates:location?.coordinates||null,location,detail:'Titular atribuido al medio, vía Google News RSS. Contenido y ubicación sin corroboración independiente.',capturedAt:article.capturedAt||new Date().toISOString()};
+ return {id:'news:'+article.id,title:article.title,date:article.publishedAt,url:article.url,source:article.source,provider:'news',category:'Noticia',searchQuery:typeof article.searchQuery==='string'?article.searchQuery.slice(0,160):null,reading:article.reading?.status==='ready'?article.reading:null,topics:article.topics||[],coordinates:location?.coordinates||null,location,detail:'Titular atribuido al medio, vía Google News RSS. Contenido y ubicación sin corroboración independiente.',capturedAt:article.capturedAt||new Date().toISOString()};
 }
 
 // Conservative card fallback: require an explicit geographic context, not just a club/person name.

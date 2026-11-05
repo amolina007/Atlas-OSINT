@@ -16,3 +16,11 @@ test('reader and photo lookup accept only an ID found in server search results',
  const deps={search:async q=>({articles:[{id:'known',searchQuery:q,title:'Real'}]}),feed:async()=>({articles:[{id:'feed'}]})};
  assert.equal((await articleFromRequest('known','Saturno',deps)).title,'Real');assert.equal(await articleFromRequest('forged','Saturno',deps),undefined);assert.equal((await articleFromRequest('feed',null,deps)).id,'feed');
 });
+
+import {newsEvidence} from '../dist/observatorio-news-geo.mjs';
+import {cleanResearch} from '../dist/observatorio-research.mjs';
+test('saved search evidence preserves query and the cited reading across research serialization',()=>{
+ const reading={status:'ready',what:[{text:'El concierto se realizará en Chillán.',paragraph:1,source:1}],context:[{text:'Forma parte de un programa cultural.',paragraph:2,source:1}],sources:[{id:1,name:'Medio',url:'https://example.com/concierto'}],generatedAt:'2026-11-04T20:00:00Z'};
+ const article={id:'a'.repeat(64),title:'Concierto en Chillán',url:'https://example.com/concierto',source:'Medio',publishedAt:'2026-11-04T19:00:00Z',topics:['busqueda'],searchQuery:'Chillán',reading};
+ const evidence=newsEvidence(article);const reloaded=cleanResearch(JSON.parse(JSON.stringify({title:'Prueba',events:[evidence]}))).events[0];assert.equal(reloaded.searchQuery,'Chillán');assert.deepEqual(reloaded.reading,reading);assert.equal(newsEvidence({...article,reading:{status:'brief'}}).reading,null);
+});
