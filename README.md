@@ -238,3 +238,14 @@ Tendencias permite crear entre 1 y 20 preguntas, combinar opción única, selecc
 
 ### Propuestas y administración de Tendencias (dev)
 Los miembros proponen preguntas en el banco compartido; solo el administrador de Convergencia (`es_admin_plataforma`, capitán activo) publica o administra encuestas. La autorización se verifica en la base de datos, también para las RPC antiguas. El administrador puede incorporar propuestas al editor, descartarlas o volver a revisarlas. La publicación enlaza y marca las propuestas en la misma transacción. Se bloquean duplicados normalizados (tildes, puntuación y mayúsculas) y se muestran coincidencias de texto para revisión; no se promete deduplicación semántica automática. Las encuestas existentes se conservan. `tests/trends-proposals-integration.sql` verifica permisos, deduplicación, revisión, publicación y voto de miembros en una transacción revertida.
+
+### Capa bélica: Ucrania (dev)
+El mapa carga bajo demanda `dist/data/ukraine-control.geojson`, una instantánea derivada de **VIINA 2.0, Yuri Zhukov y Natalie Ayers (2023)**, con control UA/RU/CONTESTED y categoría UNKNOWN para observaciones ausentes. Incluye fecha de corte, metadatos, atribución y descarga bajo **ODbL 1.0**. Los polígonos son celdas geográficas de localidades, disueltas por categoría y simplificadas: no deben interpretarse como una línea militar exacta ni como soberanía. No se calcula control ucraniano restando polígonos rusos. Se muestra aviso de antigüedad a partir de tres días.
+
+Actualizar el conjunto publicado (requiere Python y `shapely==2.0.7`):
+```
+python scripts/update-conflict-layer.py
+npm test
+```
+Revisar el corte y publicar el archivo en `dev`. No hay actualización automática ni garantía de tiempo real. El script descarga los archivos originales del año actual, escoge el último día disponible, rechaza días incompletos, mantiene las categorías y registra hashes de los originales. `--cache-dir` solo se usa para reprocesar descargas ya obtenidas. La licencia de esta base derivada es ODbL 1.0; los enlaces a originales y licencia están dentro de sus metadatos y en el mapa. Código de integración propio, independiente de la licencia de datos.
+Fuente: https://github.com/zhukovyuri/VIINA · Licencia: https://opendatacommons.org/licenses/odbl/1-0/

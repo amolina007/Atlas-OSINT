@@ -1,3 +1,4 @@
+import {initConflictLayer} from './observatorio-conflicts.mjs';
 import {initTrends} from './observatorio-trends.mjs';
 import { createResearchStore, cleanResearch } from './observatorio-research.mjs';
 import { initNews } from './observatorio-news.mjs';
@@ -14,6 +15,7 @@ function view(name) { document.querySelectorAll('.view').forEach(el => el.hidden
 document.querySelectorAll('[data-view]').forEach(b => b.onclick = () => view(b.dataset.view));
 window.addEventListener('hashchange', () => { const name = location.hash.slice(1); if (['feed','panorama','investigacion','fuentes','tendencias'].includes(name)) view(name); });
 if (window.L) { map = L.map('map', { worldCopyJump:true, minZoom:2 }).setView([-8,-48],3); L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom:18, attribution:'© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors' }).addTo(map).on('tileerror', () => { $('status').textContent = 'Algunas teselas del mapa no cargaron. Las señales siguen disponibles en la lista.'; }); markers = L.layerGroup().addTo(map); L.control.scale({imperial:false}).addTo(map); } else $('map').innerHTML = '<p class="empty">No se pudo cargar el mapa. Puedes explorar las señales en la lista y reintentar recargando.</p>';
+initConflictLayer({map,L:window.L,markers});
 if(window.L){feedMap=L.map('feed-map',{zoomControl:false,scrollWheelZoom:false,dragging:false,attributionControl:true}).setView([10,0],1);L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© OpenStreetMap'}).addTo(feedMap);feedMarkers=L.layerGroup().addTo(feedMap);}
 function renderResearchPreview(){
  $('research-preview').innerHTML=`<h3>${esc(research.title)}</h3>`+(research.events.length?research.events.slice(-3).reverse().map(e=>`<div class="saved-source"><span>▤</span><div><strong>${esc(e.title)}</strong><small>${esc(e.source)}</small></div></div>`).join(''):'<p class="muted">Tu próxima pregunta empieza con una fuente. Usa Investigar + en una noticia para guardarla aquí.</p>');
