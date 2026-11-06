@@ -10,3 +10,5 @@ https://dev--atlas-osint.netlify.app/ /observatorio.html 200!
 /aura-core/globo.js https://core.convergenciaaura.cl/js/globo.js 200
 /aura-core-dev/logo-core-96.png https://dev--convergencia-aura-core.netlify.app/icons/logo-core-96.png 200
 /aura-core/logo-core-96.png https://core.convergenciaaura.cl/icons/logo-core-96.png 200
+/aura-core-dev/aura-campana.js https://dev--convergencia-aura-core.netlify.app/js/aura-campana.js 200
+/aura-core-dev/aura-campana.css https://dev--convergencia-aura-core.netlify.app/css/aura-campana.css 200
