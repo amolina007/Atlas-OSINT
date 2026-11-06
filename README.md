@@ -249,3 +249,25 @@ npm test
 ```
 Revisar el corte y publicar el archivo en `dev`. No hay actualización automática ni garantía de tiempo real. El script descarga los archivos originales del año actual, escoge el último día disponible, rechaza días incompletos, mantiene las categorías y registra hashes de los originales. `--cache-dir` solo se usa para reprocesar descargas ya obtenidas. La licencia de esta base derivada es ODbL 1.0; los enlaces a originales y licencia están dentro de sus metadatos y en el mapa. Código de integración propio, independiente de la licencia de datos.
 Fuente: https://github.com/zhukovyuri/VIINA · Licencia: https://opendatacommons.org/licenses/odbl/1-0/
+
+### Explorador de mapa (dev)
+
+Tres modos separados: Conflictos, Clima y Noticias. El catálogo UCDP Candidate
+26.01.26.09 agrega todos los eventos de su CSV por país, tipo e ID de conflicto.
+No equivale a un listado de guerras actualmente activas. Se incluyen casos
+preliminares y actores sin identificar, distinguiendo violencia estatal,
+no estatal y contra civiles. Los puntos son promedios de coordenadas, no
+posiciones militares. Fecha del periodo, intervalos de eventos, revisión y
+atribución CC BY 4.0 se conservan en `dist/data/conflict-catalog.json`.
+
+Reproducir la instantánea (Python estándar):
+`python3 scripts/update-conflict-catalog.py --input /ruta/GEDEvent_v26_01_26_09.csv`
+Sin `--input`, descarga esa versión pública. Cambiar versión requiere revisar
+URL y metadatos del script; no hay actualización automática del catálogo.
+
+Clima muestra eventos EONET y sismos USGS diferenciados (no pronósticos ni
+mapas de precipitación). Noticias utiliza los registros filtrados del feed,
+con lugares aproximados y conserva en lista los que no tienen coordenadas.
+Cada modo expone fecha y cobertura; los fallos de conexión son explícitos.
+Cartografía OSM, relieve OpenTopoMap y mosaico Esri son fondos, no capas de
+hechos en tiempo real. El control territorial VIINA sigue limitado a Ucrania.

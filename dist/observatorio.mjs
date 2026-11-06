@@ -1,4 +1,4 @@
-import {initConflictLayer} from './observatorio-conflicts.mjs';
+import {initMapExplorer} from './observatorio-map.mjs';
 import {initTrends} from './observatorio-trends.mjs';
 import { createResearchStore, cleanResearch } from './observatorio-research.mjs';
 import { initNews } from './observatorio-news.mjs';
@@ -9,13 +9,14 @@ const link = (href, text) => `<a href="${esc(url(href))}" target="_blank" rel="n
 const date = s => new Date(s).toLocaleString('es-CL', { dateStyle:'medium', timeStyle:'short' });
 let research = cleanResearch({title:'Eventos naturales y territorio'}), researchSync, researchList={rows:[]}, pendingEvidence;
 let newsEvents = [], feedMap, feedMarkers;
+let mapExplorer, baseLayer;
 let events = [], sources = [], filter = 'all', selected, fetchedAt, map, markers;
 function save(){researchSync?.change(research);}
 function view(name) { document.querySelectorAll('.view').forEach(el => el.hidden = el.id !== name); document.querySelectorAll('[data-view]').forEach(b => { b.classList.toggle('active', b.dataset.view === name); b.setAttribute('aria-pressed', b.dataset.view === name); }); if(name==='feed'){renderResearchPreview();setTimeout(()=>feedMap?.invalidateSize(),0);} if (name === 'panorama') setTimeout(() => map?.invalidateSize(),0); if (name === 'investigacion') renderResearch(); if(!/(?:access_token|refresh_token|error_description|code)=/.test(location.hash + location.search)) location.hash = name; }
 document.querySelectorAll('[data-view]').forEach(b => b.onclick = () => view(b.dataset.view));
 window.addEventListener('hashchange', () => { const name = location.hash.slice(1); if (['feed','panorama','investigacion','fuentes','tendencias'].includes(name)) view(name); });
-if (window.L) { map = L.map('map', { worldCopyJump:true, minZoom:2 }).setView([-8,-48],3); L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom:18, attribution:'© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors' }).addTo(map).on('tileerror', () => { $('status').textContent = 'Algunas teselas del mapa no cargaron. Las señales siguen disponibles en la lista.'; }); markers = L.layerGroup().addTo(map); L.control.scale({imperial:false}).addTo(map); } else $('map').innerHTML = '<p class="empty">No se pudo cargar el mapa. Puedes explorar las señales en la lista y reintentar recargando.</p>';
-initConflictLayer({map,L:window.L,markers});
+if (window.L) { map = L.map('map', { worldCopyJump:true, minZoom:2 }).setView([-8,-48],3); baseLayer=L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom:18, attribution:'© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors' }).addTo(map).on('tileerror', () => { $('status').textContent = 'Algunas teselas del mapa no cargaron. Las señales siguen disponibles en la lista.'; }); markers = L.layerGroup().addTo(map); L.control.scale({imperial:false}).addTo(map); } else $('map').innerHTML = '<p class="empty">No se pudo cargar el mapa. Puedes explorar las señales en la lista y reintentar recargando.</p>';
+
 if(window.L){feedMap=L.map('feed-map',{zoomControl:false,scrollWheelZoom:false,dragging:false,attributionControl:true}).setView([10,0],1);L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© OpenStreetMap'}).addTo(feedMap);feedMarkers=L.layerGroup().addTo(feedMap);}
 function renderResearchPreview(){
  $('research-preview').innerHTML=`<h3>${esc(research.title)}</h3>`+(research.events.length?research.events.slice(-3).reverse().map(e=>`<div class="saved-source"><span>▤</span><div><strong>${esc(e.title)}</strong><small>${esc(e.source)}</small></div></div>`).join(''):'<p class="muted">Tu próxima pregunta empieza con una fuente. Usa Investigar + en una noticia para guardarla aquí.</p>');
@@ -27,6 +28,7 @@ function filtered() { const cutoff = Date.now()-Number($('period').value)*864000
 function eventCard(e, cls = 'event') { return `<button class="${cls}" data-event="${esc(e.id)}"><span class="tag">${esc(e.source)} · ${esc(e.category)}</span><strong>${esc(e.title)}</strong><small>${esc(date(e.date))}</small></button>`; }
 function bindEvents(root, fn = showDetail) { root.querySelectorAll('[data-event]').forEach(b => b.onclick = () => { const e = research.events.find(e => e.id === b.dataset.event) || [...events,...newsEvents].find(e => e.id === b.dataset.event); if (e) fn(e); }); }
 function render() {
+  if(mapExplorer){mapExplorer.update({events,newsEvents,sources,fetchedAt});return;}
   const rows = filtered(); $('count').textContent = `${rows.filter(e=>e.coordinates).length} señales en el mapa · ${rows.filter(e=>!e.coordinates).length} sin ubicación`; $('result-count').textContent = rows.length;
   $('events').innerHTML = rows.length ? rows.map(e => eventCard(e)).join('') : '<div class="empty">Sin señales para estos filtros.<br>Prueba otro periodo o búsqueda.</div>'; bindEvents($('events'));
   markers?.clearLayers(); for (const e of rows) { if (!map) break; if(!e.coordinates)continue; const marker = L.circleMarker([e.coordinates[1],e.coordinates[0]], { radius:6, color:'#ffffff', weight:1.5, fillColor:e.provider === 'news' ? '#7255ab':e.provider === 'usgs' ? '#c66e43':'#087c70', fillOpacity:.82 }).addTo(markers); const tip = document.createElement('span'); tip.textContent=e.title; marker.bindTooltip(tip).on('click', () => showDetail(e)); }
@@ -53,11 +55,13 @@ document.querySelectorAll('[data-filter]').forEach(b=>b.onclick=()=>{filter=b.da
 function addNews(e){pendingEvidence=e;$('pick-evidence-title').textContent=e.title;$('pick-research-status').textContent='';renderPicker();$('pick-research-dialog').showModal();}
 function renderPicker(){const rows=researchList.rows.filter(r=>!r.archived);$('pick-research-select').innerHTML=rows.map(r=>`<option value="${esc(r.id)}">${esc(r.title)}</option>`).join('')+'<option value="local">Cuaderno local · este navegador</option>'+(researchList.uid&&researchList.loaded?'<option value="new">＋ Crear nueva investigación</option>':'');$('pick-research-select').value=rows.some(r=>r.id===researchSync?.active)?researchSync.active:'local';$('pick-new-label').hidden=true;$('pick-new-title').required=false;$('pick-new-title').value='';}
 function showNewsMap(e){
- view('panorama');filter='news';
+ view('panorama');mapExplorer?.setMode('news');filter='news';
  document.querySelectorAll('[data-filter]').forEach(b=>{b.classList.toggle('active',b.dataset.filter==='news');b.setAttribute('aria-pressed',b.dataset.filter==='news')});
  render();if(e.coordinates)map?.setView([e.coordinates[1],e.coordinates[0]],4);showDetail(e);
 }
 const news = initNews({ view, esc, date, onNews:rows=>{newsEvents=rows;render();renderFeedMap(rows);renderResearchPreview();},addNews,showNewsMap });
+mapExplorer=initMapExplorer({map,L:window.L,markers,baseLayer,esc,date,openEvent:showDetail,addEvidence:addNews,readNews:e=>news.readEvidence(e)});
+render();
 const trends=initTrends({db:window.auraClient,esc,date,login:()=>$('feed-account').click()});
 researchSync=createResearchStore({db:window.auraClient,storage:localStorage,enabled:['dev.atlas.convergenciaaura.cl','dev--atlas-osint.netlify.app','localhost','127.0.0.1'].includes(location.hostname),onDocument:doc=>{research=doc;selected=null;renderResearch();renderResearchPreview();},onList:state=>{researchList=state;$('research-select').innerHTML='<option value="local">Cuaderno local · este navegador</option>'+state.rows.map(r=>`<option value="${esc(r.id)}">${esc(r.title)}${r.archived?' (archivada)':''}</option>`).join('');$('research-select').value=state.active;$('archive-research').hidden=state.active==='local';$('archive-research').textContent=state.rows.find(r=>r.id===state.active)?.archived?'Restaurar investigación':'Archivar';$('new-research').disabled=!state.uid||!state.loaded;$('import-research').disabled=!state.uid||!state.loaded;$('research-login').hidden=!!state.uid;$('research-conflict-copy').hidden=!state.conflict;$('research-preview-status').textContent=state.active==='local'?'Cuaderno local · no sincronizado.':'Privada · cuenta de Convergencia.';},onStatus:(text,kind)=>{for(const id of ['research-sync-status','save-status','new-research-status','pick-research-status']){$(id).textContent=text;$(id).classList.toggle('error',['error','conflict'].includes(kind));}}});
 researchSync.start();

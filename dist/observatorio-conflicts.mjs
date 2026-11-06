@@ -18,4 +18,5 @@ export function initConflictLayer({map,L,markers}){
  $('conflict-signals').onchange=e=>{if(!markers)return;if(e.target.checked)markers.addTo(map);else map.removeLayer(markers);};
  $('conflict-opacity').oninput=e=>{for(const g of groups.values())g.setStyle({fillOpacity:Number(e.target.value)/100});};
  panel.querySelectorAll('[data-control]').forEach(c=>c.onchange=paint);$('conflict-retry').onclick=load;
+ return {panel,setEnabled(enabled){$('conflict-enabled').checked=enabled;$('conflict-enabled').onchange();}};
 }
