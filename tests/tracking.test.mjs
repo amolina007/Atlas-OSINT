@@ -30,7 +30,7 @@ test('UI saves to the account, renders saved sources and does not announce succe
  dom.window.HTMLDialogElement.prototype.showModal=function(){this.open=true;};dom.window.HTMLDialogElement.prototype.close=function(){this.open=false;};
  const f=fixture();let destination;
  try{
- const tracking=initTracking({db:f.db,esc:s=>String(s??'').replace(/</g,'&lt;'),date:s=>s,view:v=>{destination=v;},readNews(){},showMap(){},search(){},login(){}});await flush();await flush();
+ const tracking=initTracking({auto:false,db:f.db,esc:s=>String(s??'').replace(/</g,'&lt;'),date:s=>s,view:v=>{destination=v;},readNews(){},showMap(){},search(){},login(){}});await flush();await flush();
  tracking.follow(event);assert.equal(document.querySelector('#story-follow-dialog').open,true);
  await document.querySelector('#story-follow-form').onsubmit({preventDefault(){}});
  assert.equal(f.rows.length,1);assert.equal(destination,'seguimiento');assert.match(document.querySelector('#tracking-detail').textContent,/Cronología y fuentes/);assert.equal(document.querySelector('#story-follow-dialog').open,false);

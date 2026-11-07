@@ -5,7 +5,7 @@ import { extractArticle,validateSummary,articlePreview,relatedArticles } from '.
 import {findCoverage,combineCoverage} from '../lib/news-coverage.mjs';
 import {getStore} from '@netlify/blobs';
 import {createSummaryCache} from '../lib/news-summary-cache.mjs';
-const cachedSummary=createSummaryCache({getStore:()=>getStore({name:'atlas-dev-public-summaries',consistency:'strong'}),build,onError:(operation,error)=>console.warn('Atlas summary storage failed',{operation,message:error.message})});
+export const cachedSummary=createSummaryCache({getStore:()=>getStore({name:'atlas-dev-public-summaries',consistency:'strong'}),build,onError:(operation,error)=>console.warn('Atlas summary storage failed',{operation,message:error.message})});
 export default async function(req){
  if(req.method!=='GET')return new Response('Method not allowed',{status:405});
  if(Netlify.env.get('CONTEXT')==='production')return new Response('Dev only',{status:404});
