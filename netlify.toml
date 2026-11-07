@@ -1,4 +1,5 @@
 [build]
+  command = "python3 scripts/refresh-map-layers.py"
   publish = "dist"
   functions = "netlify/functions"
 
