@@ -1,0 +1,2 @@
+import {warReports} from '../lib/war-reports.mjs';
+export default async req=>{if(req.method!=='GET')return new Response('Method not allowed',{status:405});try{return Response.json(await warReports(),{headers:{'Cache-Control':'public, max-age=120, stale-while-revalidate=300'}});}catch{return Response.json({error:'No se pudieron consultar los reportes.'},{status:502,headers:{'Cache-Control':'no-store'}});}};
