@@ -51,3 +51,5 @@ export function mapFallbackLocation(title){
  if(aliases.some(alias=>text.startsWith(alias+' '))&&/\b(tendra|sera sede|acoge|registra|sufre)\b/.test(text))return place;
  return aliases.some(alias=>new RegExp('(?:\\ben|\\bdesde|\\bhacia|\\bcerca de|\\bal norte de|\\bal sur de)\\s+(?:el |la )?'+alias.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'(?:\\b|$)').test(text))?place:null;
 }
+
+export function mentionedPlaces(text){const value=" "+normalized(text).replace(/[^a-z0-9]+/g," ")+" ";return places.filter(p=>p[2].some(a=>value.includes(" "+a.replace(/[^a-z0-9]+/g," ").trim()+" "))).map(p=>p[0]);}

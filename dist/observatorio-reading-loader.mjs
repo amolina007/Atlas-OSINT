@@ -1,13 +1,13 @@
 import {createReadingCache} from './observatorio-reading-cache.mjs';
-export function createReadingLoader({storage,fetcher=fetch,now=Date.now,onReady=()=>{}}={}){
+export function createReadingLoader({storage,fetcher=fetch,now=Date.now,onReady=()=>{},onSettled=()=>{}}={}){
  const cache=createReadingCache(storage),pending=new Map(),attempted=new Set();let queue=[],active=0,starts=[];
  function load(article,background=false){
   const saved=article.reading?.status==='ready'?article.reading:cache.get(article.id);if(saved)return Promise.resolve(saved);
   if(pending.has(article.id))return pending.get(article.id);
   const task=(async()=>{const r=await fetcher('/.netlify/functions/news-summary?id='+article.id+(article.searchQuery?'&q='+encodeURIComponent(article.searchQuery):''),{signal:AbortSignal.timeout(55000),priority:background?'low':'high'});if(!r.ok)throw Error(r.status===429?'rate':'request');const data=await r.json();cache.set(article.id,data);if(data.status==='ready')onReady(article.id);return data;})();
-  pending.set(article.id,task);task.finally(()=>pending.delete(article.id)).catch(()=>{});return task;
+  pending.set(article.id,task);task.finally(()=>{pending.delete(article.id);onSettled(article.id);}).catch(()=>{});return task;
  }
- return {get:article=>article.reading?.status==='ready'?article.reading:cache.get(article.id),load,
+ return {isPending:article=>!cache.get(article.id)&&(!attempted.has(article.id)||pending.has(article.id)),get:article=>article.reading?.status==='ready'?article.reading:cache.get(article.id),load,
   update(articles){queue=articles.filter(a=>!cache.get(a.id)&&!attempted.has(a.id)&&!pending.has(a.id));},
   prioritize(ids){const rank=new Map(ids.map((id,i)=>[id,i]));queue.sort((a,b)=>(rank.get(a.id)??999)-(rank.get(b.id)??999));},
   tick(){starts=starts.filter(t=>now()-t<60000);if(active>=2||starts.length>=4)return;const article=queue.shift();if(!article)return;

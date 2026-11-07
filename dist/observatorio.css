@@ -54,3 +54,58 @@ body{padding-bottom:calc(86px + env(safe-area-inset-bottom));--globo-abajo:calc(
 .war-tools{display:grid;gap:10px;margin:14px 0;padding:12px;border:1px solid var(--line,#d7dfdd);border-radius:12px;background:#f4f7f5}.war-tools label{display:grid;gap:5px;font-size:12px;font-weight:600}.war-tools select,.war-tools input{min-width:0;width:100%;min-height:40px;padding:7px;border:1px solid #b8c8c4;border-radius:7px;background:#fff;color:#173a37}
 .atlas-menu{position:relative;flex:0 0 auto}.atlas-menu summary{cursor:pointer;list-style:none;padding:10px;font-size:23px;color:#194c46}.atlas-menu nav{position:absolute;top:100%;left:0;min-width:220px;background:#fff;border:1px solid #ccd8d3;border-radius:12px;padding:10px;box-shadow:0 12px 35px #143c3426;z-index:1100}.atlas-menu nav button{display:block;width:100%;text-align:left;margin:5px 0}.letters-layout{display:grid;grid-template-columns:minmax(0,2fr) minmax(240px,1fr);gap:28px}.letters-tools{display:flex;align-items:end;gap:12px}.letters-tools label{flex:1}.letters-tools input{width:100%}.letter-card{padding:28px;background:#fffdf8;border:1px solid #dddcd4;border-radius:16px;margin:20px 0}.letter-card h2{font-family:Georgia,serif;font-size:30px}.letter-byline{font-size:13px;color:#526b64}.letter-text{white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.85;margin:22px 0}.letter-dialog{width:min(680px,92vw)}.letter-dialog form,.letter-dialog label,#war-review,#war-review label{display:grid;gap:8px}.letter-dialog form,#war-review{gap:16px}.letter-dialog textarea,#war-review textarea{width:100%;resize:vertical}.letters-layout aside{align-self:start}.letters-tools label{display:grid;gap:8px}.bottom-ribbon button[data-view="cartas"]{white-space:normal}
 @media(max-width:900px){.letters-layout{grid-template-columns:1fr}.letter-card{padding:20px}.letter-card h2{font-size:25px}.letters-tools{flex-wrap:wrap}.topbar{gap:6px}.atlas-menu summary{padding:6px;font-size:21px}.bottom-ribbon button[data-view="cartas"]{font-size:10px;line-height:1.1}}
+/* Tablet newsroom: use the full width for news, without a long empty sidebar. */
+@media (min-width:601px) and (max-width:1366px){
+ main:has(#feed:not([hidden])){padding:18px 20px}
+ body:has(#feed:not([hidden])) .topbar{height:68px;padding:10px 20px;gap:8px}
+ body:has(#feed:not([hidden])) .atlas-wordmark{font-size:25px;margin-right:8px}
+ body:has(#feed:not([hidden])) .atlas-wordmark small{font-size:7px;margin-top:4px}
+ body:has(#feed:not([hidden])) .core-brand{width:40px;height:40px}
+ body:has(#feed:not([hidden])) .core-brand img{width:30px;height:30px}
+ #feed .heading{margin-bottom:10px;gap:12px}
+ #feed .heading h1{font-size:34px;line-height:1.1;letter-spacing:-1px;margin:5px 0 7px}
+ #feed .heading p{font-size:13px;max-width:none}
+ #feed .feed-tabs{margin-top:8px}
+ #feed .feed-tabs button{padding:9px 16px;min-height:44px}
+ #feed .feed-controls{grid-template-columns:2fr 1.2fr 1fr 1fr;gap:10px;margin:10px 0}
+ #feed .feed-controls label{font-size:11px;grid-column:auto}
+ #feed .feed-controls input,#feed .feed-controls select{min-height:42px;padding:8px;margin-top:4px}
+ #feed #filter-toggle{display:block}
+ #feed .feed-controls:not(.expanded) label:not(:first-child){display:none}
+ #feed .feed-controls:not(.expanded){grid-template-columns:1fr}
+ #feed .feed-controls.expanded label{display:block}
+ #feed .topic-chips{flex-wrap:nowrap;overflow-x:auto;gap:6px;padding:0 0 8px;scrollbar-width:thin}
+ #feed .topic-chips button{flex:0 0 auto;min-height:40px;padding:7px 12px}
+ #feed #news-status{font-size:11px;margin:8px 0}
+ #feed #social-status{float:none;margin:4px 0 8px}
+ #feed .feed-layout{display:grid;grid-template-columns:minmax(0,1fr);gap:18px;align-items:start}
+ #feed #news-feed{display:block;columns:2;column-gap:14px}
+ #feed .news-card,#feed .news-card:first-child{display:inline-flex;width:100%;margin:0 0 14px;break-inside:avoid;min-height:0}
+ #feed .story-body{padding:16px;gap:0}
+ #feed .news-card h2,#feed .news-card:first-child h2{font-size:24px;line-height:1.18;margin:10px 0}
+ #feed .news-byline{font-size:10px;gap:4px}
+ #feed .story-art.has-photo,#feed .story-art.has-map,#feed .news-card:first-child .story-art.has-photo,#feed .news-card:first-child .story-art.has-map{height:180px;min-height:180px}
+ #feed .discovery-tags{margin:7px 0;gap:5px}
+ #feed .discovery-tags button{min-height:36px;padding:6px 9px}
+ #feed .news-actions{gap:4px;padding-top:8px;margin-top:6px}
+ #feed .news-actions button{font-size:12px;min-height:44px;padding:8px 6px}
+ #feed .news-actions [data-like],#feed .news-actions [data-comments],#feed .news-actions [data-share]{flex:1 1 27%}
+ #feed .news-actions [data-research],#feed .news-actions [data-news-map]{flex:1 1 44%;margin-top:0;min-width:0}
+ #feed .feed-about{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;border-left:0;border-top:1px solid var(--line);padding:16px 0 0;margin:0;position:static;width:100%}
+ #feed .context-section{padding:0;margin:0;border-bottom:0;min-width:0}
+ #feed .context-section h2{font-size:23px;margin-bottom:10px}
+ #feed #feed-map{height:150px}
+ #news-reader{max-width:calc(100vw - 32px);width:min(820px,calc(100vw - 32px));max-height:calc(100dvh - 32px);padding:24px}
+ #news-reader h1{font-size:29px;line-height:1.15;margin-top:8px}
+ #news-reader h2{font-size:22px;margin:20px 0 8px}
+ #news-reader p{font-size:16px;line-height:1.6}
+ #news-reader .reader-navigation{bottom:-24px;padding:10px 0;margin-top:18px}
+}
+@media(min-width:801px) and (max-width:1100px){
+ body:has(#feed:not([hidden])) .topbar #refresh{font-size:0;padding:8px}
+ body:has(#feed:not([hidden])) .topbar #refresh:before{content:'↻';font-size:23px}
+}
+@media(min-width:601px) and (max-width:900px){
+ #feed .feed-controls.expanded{grid-template-columns:repeat(2,minmax(0,1fr))}
+ #feed .news-card h2,#feed .news-card:first-child h2{font-size:22px}
+}

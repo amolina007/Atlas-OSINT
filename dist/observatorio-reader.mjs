@@ -2,6 +2,14 @@ import {articleLocation,discoveryMarkup} from './observatorio-discovery.mjs';
 export function createNewsReader({esc,date,addNews,newsEvidence,onDiscovery,getArticles,readings}){
  const dialog=document.createElement('dialog');dialog.id='news-reader';dialog.setAttribute('aria-labelledby','reader-title');dialog.innerHTML='<button class="close" aria-label="Cerrar lectura">×</button><div id="reader-body"></div>';document.body.append(dialog);let controller,current,currentReading,sequence=[];
  dialog.querySelector('.close').onclick=()=>dialog.close();dialog.addEventListener('close',()=>controller?.abort());
+ // Close only when the gesture starts and ends on the backdrop, not when
+ // selecting text or using controls inside the reading panel.
+ const onBackdrop=event=>{const r=dialog.getBoundingClientRect();return event.target===dialog&&(event.clientX<r.left||event.clientX>r.right||event.clientY<r.top||event.clientY>r.bottom);};
+ let backdropPress=false;
+ dialog.addEventListener('pointerdown',event=>{backdropPress=event.isPrimary&&event.button===0&&onBackdrop(event);});
+ dialog.addEventListener('pointercancel',()=>{backdropPress=false;});
+ dialog.addEventListener('click',event=>{const dismiss=backdropPress&&onBackdrop(event);backdropPress=false;if(dismiss)dialog.close();});
+ dialog.addEventListener('close',()=>{backdropPress=false;});
  const safe=s=>{try{const u=new URL(s);return u.protocol==='https:'?u.href:'#';}catch{return '#';}};
  async function open(article,keepSequence=false){
  if(!keepSequence)sequence=[...(getArticles?.()||[article])];
