@@ -13,7 +13,7 @@ export async function runStoryJob(rpc,process=processStoryUpdate){
  }catch{await rpc('finish',{p_success:false});return {claimed:true,complete:false};}
 }
 export default async function(req){
- if(Netlify.env.get('CONTEXT')!=='branch-deploy'||Netlify.env.get('BRANCH')!=='dev'||req.method!=='POST')return;
+ if(Netlify.env.get('CONTEXT')==='production'||new URL(req.url).hostname!=='dev.atlas.convergenciaaura.cl'||req.method!=='POST')return;
  const text=await req.text();if(text.length>200)return;
  let token;try{({token}=JSON.parse(text));}catch{return;}
  if(typeof token!=='string'||!/^[a-f0-9]{64}$/.test(token))return;
