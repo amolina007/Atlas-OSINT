@@ -29,3 +29,12 @@ test('world grid shifts as one rectangle without dropping edge cells',()=>{
  assert.equal(weatherWorldShift(crossing,crossGrid),360);
  assert.equal(weatherGridFits(crossing,crossGrid),true);
 });
+
+import {alignWeatherHour} from '../dist/observatorio-weather.mjs';
+test('cached and fresh forecast hour boundaries never select an absent timestamp',()=>{
+ const times=Array.from({length:48},(_,i)=>1000+i*3600),fresh=Array.from({length:48},(_,i)=>4600+i*3600),rows=[{hourly:{time:fresh}}];
+ assert.equal(alignWeatherHour(times,rows,0,24),1);
+ assert.equal(alignWeatherHour(times,rows,5,24),5);
+ assert.equal(alignWeatherHour(times,rows,47,24),24);
+ assert.equal(alignWeatherHour(times,[{hourly:{time:[99999999]}}],0,24),0);
+});
