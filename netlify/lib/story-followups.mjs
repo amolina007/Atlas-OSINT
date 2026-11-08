@@ -11,7 +11,7 @@ export function eligibleCandidates(doc,articles,now=Date.now()){
  return articles.filter(a=>Date.parse(a.publishedAt)>=origin&&Date.parse(a.publishedAt)<=now+300000&&!duplicateStoryEvent(doc.events,{...a,date:a.publishedAt})).slice(0,35);
 }
 export function acceptedUpdate(doc,article,reading,decision,now=Date.now()){
- if(!hasCompleteReading(reading)||decision?.related!==true||!Array.isArray(decision.newFacts)||duplicateStoryEvent(doc.events,article))return null;
+ if(!hasCompleteReading(reading)||decision?.related!==true||decision?.changeType!=='advance'||!Array.isArray(decision.newFacts)||duplicateStoryEvent(doc.events,article))return null;
  const old=new Set(doc.events.flatMap(e=>(e.reading?.what||[]).map(p=>normalizeStoryText(p.text))));
  const changes=[...new Set(decision.newFacts)].filter(i=>Number.isInteger(i)&&i>=0&&i<reading.what.length).map(i=>reading.what[i]).filter(p=>!old.has(normalizeStoryText(p.text)));
  if(!changes.length)return null;

@@ -14,19 +14,20 @@ test('deduplication recognizes ids, canonical links and normalized titles',()=>{
  assert.equal(JSON.stringify(publicStory(doc)).includes('Private notes'),false);
 });
 test('only new, related, sourced facts are saved; invalid model indices cannot become claims',()=>{
- const good=acceptedUpdate(doc,article,reading,{related:true,newFacts:[0,99,0]},time);
+ const good=acceptedUpdate(doc,article,reading,{related:true,changeType:'advance',newFacts:[0,99,0]},time);
+ assert.equal(acceptedUpdate(doc,article,reading,{related:true,changeType:'coverage',newFacts:[0]},time),null);
  assert.equal(good.changes.length,1);assert.equal(good.changes[0].text,reading.what[0].text);
  assert.equal(acceptedUpdate(doc,article,reading,{related:false,newFacts:[0]},time),null);
- assert.equal(acceptedUpdate(doc,article,{...reading,context:[]},{related:true,newFacts:[0]},time),null);
- assert.equal(acceptedUpdate(doc,article,reading,{related:true,newFacts:[-1,'0',99]},time),null);
- assert.equal(acceptedUpdate({...doc,events:[{...origin,reading}]},article,reading,{related:true,newFacts:[0]},time),null);
+ assert.equal(acceptedUpdate(doc,article,{...reading,context:[]},{related:true,changeType:'advance',newFacts:[0]},time),null);
+ assert.equal(acceptedUpdate(doc,article,reading,{related:true,changeType:'advance',newFacts:[-1,'0',99]},time),null);
+ assert.equal(acceptedUpdate({...doc,events:[{...origin,reading}]},article,reading,{related:true,changeType:'advance',newFacts:[0]},time),null);
  assert.equal(storyChanges({...doc,events:[origin,good]}).length,1);
  assert.equal(storyChanges({...doc,events:[good]},'2026-11-07T15:00:00Z').length,0);
  assert.equal(eligibleCandidates(doc,[{...article,publishedAt:'2026-10-01T00:00:00Z'}],time).length,0);
 });
 test('CAS merge preserves concurrent reading state, prevents duplicates and honors pause',async()=>{
  let row={id:'story',version:1,body:structuredClone(doc),archived:false},writes=0;
- const event=acceptedUpdate(doc,article,reading,{related:true,newFacts:[0]},time);
+ const event=acceptedUpdate(doc,article,reading,{related:true,changeType:'advance',newFacts:[0]},time);
  const read=async()=>structuredClone(row);
  const write=async(old,body)=>{writes++;if(writes===1){row.version++;row.body.tracking.lastSeen='2026-11-07T13:00:00Z';return false;}if(old.version!==row.version)return false;row={...row,body,version:row.version+1};return true;};
  assert.equal((await persistFollowup(read,write,{event})).added,1);assert.equal(row.body.tracking.lastSeen,'2026-11-07T13:00:00Z');
