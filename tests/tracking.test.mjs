@@ -33,8 +33,10 @@ test('UI saves to the account, renders saved sources and does not announce succe
  const tracking=initTracking({auto:false,db:f.db,esc:s=>String(s??'').replace(/</g,'&lt;'),date:s=>s,view:v=>{destination=v;},readNews(){},showMap(){},search(){},login(){}});await flush();await flush();
  tracking.follow(event);assert.equal(document.querySelector('#story-follow-dialog').open,true);
  await document.querySelector('#story-follow-form').onsubmit({preventDefault(){}});
- assert.equal(f.rows.length,1);assert.equal(destination,'seguimiento');assert.match(document.querySelector('#tracking-detail').textContent,/Cronología y fuentes/);assert.equal(document.querySelector('#story-follow-dialog').open,false);
+ assert.equal(f.rows.length,1);assert.equal(destination,'seguimiento');assert.match(document.querySelector('#tracking-detail').textContent,/Línea de tiempo de eventos/);assert.equal(document.querySelector('#story-follow-dialog').open,false);
  tracking.follow(event);await flush();assert.equal(f.rows.length,1);await flush();
+ tracking.follow({...event,id:'news:advance',title:'Avance posterior',url:'https://example.org/advance',date:'2026-11-08T10:00:00Z'});document.querySelector('#story-target').value=f.rows[0].id;await document.querySelector('#story-follow-form').onsubmit({preventDefault(){}});
+ assert.equal(document.querySelectorAll('.story-timeline li').length,2);assert.equal(document.querySelector('.story-timeline h4').textContent,'Avance posterior');document.querySelector('#timeline-order').click();assert.equal(document.querySelector('.story-timeline h4').textContent,event.title);assert.ok(document.querySelector('time[datetime]'));assert.equal(document.querySelector('#news-source'),null);
  f.fail();tracking.follow({...event,id:'news:two'});await document.querySelector('#story-follow-form').onsubmit({preventDefault(){}});assert.equal(document.querySelector('#story-follow-dialog').open,true);assert.match(document.querySelector('#story-save-status').textContent,/No se pudo/);
  await f.login(null);assert.equal(document.querySelectorAll('.story-card').length,0);assert.equal(document.querySelector('#story-follow-dialog').open,false);assert.equal(document.querySelectorAll('.bottom-ribbon button').length,5);assert.equal(document.querySelector('[data-view="investigacion"]'),null);
  }finally{Object.assign(globalThis,previous);dom.window.close();}
