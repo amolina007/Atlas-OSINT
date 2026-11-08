@@ -31,3 +31,17 @@ test('conflict scopes filter real catalog countries and do not classify foreign 
  assert.equal(matchesConflictScope({title:'Combates en Burkina Faso'},'africa'),true);
  assert.equal(matchesConflictScope({title:'Ataque sin lugar conocido'},'africa'),false);
 });
+
+import {matchesSpecificConflict} from '../dist/observatorio-conflict-scopes.mjs';
+test('specific conflicts distinguish Gaza, Sudan and DR Congo from nearby countries',async()=>{
+ const {incidents}=JSON.parse(await readFile(new URL('../dist/data/conflict-catalog.json',import.meta.url)));
+ for(const key of ['gaza','sudan','congo'])assert.ok(incidents.some(e=>matchesSpecificConflict(e,key)),key);
+ assert.equal(matchesSpecificConflict({country:'Israel',place:'Tel Aviv',title:'Gaza militants'},'gaza'),false);
+ assert.equal(matchesSpecificConflict({country:'Israel',place:'Gaza city'},'gaza'),true);
+ assert.equal(matchesSpecificConflict({country:'South Sudan',title:'Sudan'},'sudan'),false);
+ assert.equal(matchesSpecificConflict({title:'Combates en Sudán del Sur'},'sudan'),false);
+ assert.equal(matchesSpecificConflict({title:'Ataques en Darfur'},'sudan'),true);
+ assert.equal(matchesSpecificConflict({country:'Congo'},'congo'),false);
+ assert.equal(matchesSpecificConflict({title:'Ataques en República del Congo, Brazzaville'},'congo'),false);
+ assert.equal(matchesSpecificConflict({title:'Enfrentamientos en Kivu, RD del Congo'},'congo'),true);
+});

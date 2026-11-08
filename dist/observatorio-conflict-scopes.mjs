@@ -19,3 +19,20 @@ export function matchesConflictScope(row,scope='all'){
  const text=' '+norm([row.title,place].join(' ')).replace(/[^a-z0-9]+/g,' ')+' ';
  return names.some(name=>text.includes(' '+name.replace(/[^a-z0-9]+/g,' ')+' '));
 }
+
+export const specificConflicts={
+ gaza:{parent:'middleEast',label:'Gaza',bounds:[[31.20,34.20],[31.62,34.60]],names:['Gaza','Rafah','Khan Younis','Khan Yunis','Jan Yunis','Deir al Balah','Jabalia','Yabalia','Beit Lahia'],description:'Gaza: registros identificados por localidad; no se incluyen automáticamente todos los eventos de Israel o Palestina.'},
+ lebanon:{parent:'middleEast',label:'Líbano',bounds:[[33.0,35.0],[34.8,36.7]],countries:['Lebanon'],names:['Libano','Lebanon','Beirut'],description:'Eventos y noticias identificados con Líbano.'},
+ syria:{parent:'middleEast',label:'Siria',bounds:[[32.2,35.5],[37.5,42.5]],countries:['Syria'],names:['Siria','Syria','Damasco','Alepo'],description:'Eventos y noticias identificados con Siria.'},
+ yemen:{parent:'middleEast',label:'Yemen',bounds:[[12,42],[19,55]],countries:['Yemen (North Yemen)','Yemen'],names:['Yemen','Sana','Sanaa','Hodeida'],description:'Eventos y noticias identificados con Yemen.'},
+ sudan:{parent:'africa',label:'Sudán',bounds:[[8.5,21],[22.5,39]],countries:['Sudan'],names:['Sudan','Darfur','Jartum','Khartoum','El Fasher','Al Fashir'],description:'Guerra en Sudán. Sudán del Sur es un país distinto y no se incluye en este filtro.'},
+ congo:{parent:'africa',label:'RD del Congo',bounds:[[-14,12],[6,32]],countries:['DR Congo (Zaire)','Democratic Republic of Congo','Democratic Republic of the Congo'],names:['RD del Congo','RD Congo','RDC','Republica Democratica del Congo','Democratic Republic of Congo','Democratic Republic of the Congo','Kivu','Goma','Bukavu','M23'],description:'República Democrática del Congo. No incluye automáticamente la República del Congo (Brazzaville).'}
+};
+function hasName(text,names){const t=' '+norm(text).replace(/[^a-z0-9]+/g,' ')+' ';return names.some(n=>t.includes(' '+norm(n).replace(/[^a-z0-9]+/g,' ')+' '));}
+export function matchesSpecificConflict(row,key='all'){
+ if(key==='all')return true;const c=specificConflicts[key];if(!c)return false;
+ if(row.country){if(c.countries)return c.countries.includes(row.country);return ['Israel','Palestine'].includes(row.country)&&hasName(row.place,c.names);}
+ let text=[row.title,row.location?.label].filter(Boolean).join(' ');
+ if(key==='sudan')text=norm(text).replace(/sudan del sur|south sudan/g,'');
+ return hasName(text,c.names);
+}
