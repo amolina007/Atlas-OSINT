@@ -1,0 +1,180 @@
+{
+  "gaza": {
+    "title": "October 2023 Gaza−Israel conflict.svg",
+    "date": "2026-04-28",
+    "source": "Ecrusized, Veggies y colaboradores · Wikimedia Commons",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:October_2023_Gaza−Israel_conflict.svg",
+    "downloadUrl": "https://upload.wikimedia.org/wikipedia/commons/3/3d/October_2023_Gaza%E2%88%92Israel_conflict.svg?utm_source=commons.wikimedia.org&utm_campaign=index&utm_content=original",
+    "sourceSha256": "a31b60e9edd85641335f20ec1be239b0505bdaaa3d8f1101ca6123a1b2d58e95",
+    "license": "CC BY-SA 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0/",
+    "simplifyDegrees": 0.0001,
+    "areas": [
+      {
+        "status": "GAZA_PALESTINIAN",
+        "elements": [
+          "path2837"
+        ]
+      },
+      {
+        "status": "GAZA_ISRAEL",
+        "elements": [
+          "path13-9"
+        ]
+      }
+    ],
+    "transform": [
+      [
+        0.00017881357814927577,
+        1.0874543045001978e-05
+      ],
+      [
+        3.3346097949013637e-06,
+        -0.00014130370682211948
+      ],
+      [
+        34.164152957067536,
+        31.647391196980376
+      ]
+    ],
+    "coverage": "Franja de Gaza; interpretación cartográfica comunitaria. Corte histórico, no situación en tiempo real.",
+    "accuracy": "Georreferenciación aproximada: error de ajuste de 0,6 km en cuatro extremos del límite municipal UNICEF. No usar para navegación ni límites locales exactos.",
+    "sourceRevision": "2026-05-15; último cambio territorial descrito: 2026-04-28"
+  },
+  "sudan": {
+    "title": "War in Sudan (2023).svg",
+    "date": "2026-10-03",
+    "source": "ElijahPepe, BorysMapping y colaboradores · Wikimedia Commons",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:War_in_Sudan_(2023).svg",
+    "downloadUrl": "https://upload.wikimedia.org/wikipedia/commons/5/52/War_in_Sudan_%282023%29.svg?utm_source=commons.wikimedia.org&utm_campaign=index&utm_content=original",
+    "sourceSha256": "0bbe0b48bcd35001417aeada4bae7805d00870b3eab7999d353e169903eb180e",
+    "license": "CC BY-SA 4.0; base NordNordWest CC BY-SA 3.0 DE",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0/",
+    "simplifyDegrees": 0.001,
+    "areas": [
+      {
+        "status": "SAF",
+        "elements": [
+          "path3"
+        ]
+      },
+      {
+        "status": "SPLMN",
+        "elements": [
+          "path432"
+        ]
+      },
+      {
+        "status": "UNKNOWN",
+        "elements": [
+          "path1877"
+        ],
+        "meaning": "Color no identificado en la leyenda publicada; no se atribuye bando"
+      },
+      {
+        "status": "RSF",
+        "elements": [
+          "path1",
+          "path4"
+        ]
+      },
+      {
+        "status": "RSF_SPLMN",
+        "elements": [
+          "path2017"
+        ]
+      },
+      {
+        "status": "SLMAW",
+        "elements": [
+          "path1908"
+        ]
+      }
+    ],
+    "transform": [
+      [
+        0.010583360900468632,
+        0
+      ],
+      [
+        0,
+        -0.010275089665673408
+      ],
+      [
+        21.5,
+        23.3
+      ]
+    ],
+    "coverage": "Sudán; clasificación comunitaria de SAF, RSF y otros grupos. No incluye Sudán del Sur.",
+    "accuracy": "Mapa nacional generalizado; límites aproximados. Proyección equirectangular y extensión publicadas por NordNordWest (21,5–39° E; 8,4–23,3° N).",
+    "sourceRevision": "2026-10-03",
+    "baseSourceUrl": "https://commons.wikimedia.org/wiki/File:Sudan_adm_location_map.svg",
+    "baseLicenseUrl": "https://creativecommons.org/licenses/by-sa/3.0/de/"
+  },
+  "congo": {
+    "title": "Zone-de-controle-M23.svg",
+    "date": "2025-04-03",
+    "source": "Vertcarmin · Wikimedia Commons",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:Zone-de-controle-M23.svg",
+    "downloadUrl": "https://upload.wikimedia.org/wikipedia/commons/9/93/Zone-de-controle-M23.svg?utm_source=commons.wikimedia.org&utm_campaign=index&utm_content=original",
+    "sourceSha256": "75a7f81da62654c7ceeb408d9ac45b12b212ea0a7d65ec05877a281cc6635190",
+    "license": "CC0 1.0",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+    "simplifyDegrees": 0.001,
+    "areas": [
+      {
+        "status": "FARDC",
+        "elements": [
+          9,
+          10
+        ]
+      },
+      {
+        "status": "M23",
+        "elements": [
+          23,
+          24,
+          25
+        ]
+      },
+      {
+        "status": "UGANDA_PRESENCE",
+        "elements": [
+          22
+        ],
+        "meaning": "Presencia de fuerzas ugandesas; no implica control exclusivo"
+      },
+      {
+        "status": "BURUNDI_PRESENCE",
+        "elements": [
+          20
+        ],
+        "meaning": "Presencia de fuerzas de Burundi; no implica control exclusivo"
+      },
+      {
+        "status": "WAZALENDO_PRESENCE",
+        "elements": [
+          21
+        ],
+        "meaning": "Presencia de milicias Wazalendo; no implica control exclusivo"
+      }
+    ],
+    "transform": [
+      [
+        0.000845674331004747,
+        -1.4193719073237684e-05
+      ],
+      [
+        3.648047401674731e-06,
+        -0.00078123738645415
+      ],
+      [
+        26.316045169031923,
+        0.758681783935713
+      ]
+    ],
+    "coverage": "Norte y Sur de Kivu dentro del encuadre original. Instantánea histórica del 3 de abril de 2025; no representa el control actual.",
+    "accuracy": "Georreferenciación por Goma, Bukavu, Beni, Butembo y Uvira (GeoNames/Open-Meteo); error de ajuste máximo 1 km. Control y presencia se muestran como categorías distintas.",
+    "sourceRevision": "2025-05-16; fecha territorial indicada por el autor: 2025-04-03"
+  }
+}
