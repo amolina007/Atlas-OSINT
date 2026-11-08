@@ -71,3 +71,28 @@ reviewed snapshots.**
   classification; excluded as a control source.
 - War Mapper's public Sudan feature services were from 2023; not represented as
   current data. Linked reference maps remain secondary context only.
+
+## Revisión de vigencia — 8 de noviembre de 2026
+
+La descarga y la revisión no cambian el corte de observación. Atlas considera
+recientes únicamente cortes de hasta siete días (criterio editorial, no garantía
+de exactitud). Las demás geometrías se conservan como archivo y requieren activar
+«Ver capa histórica»; ese consentimiento se reinicia al cambiar de conflicto.
+Una actualización fallida no permite presentar el archivo como actual.
+
+La búsqueda de nuevas geometrías revisó:
+- MONUSCO, S/2026/208, mapa de presencia estimada al 1 de marzo de 2026:
+  https://monusco.unmissions.org/sites/default/files/2026-04/Report%20of%20the%20Secretary%20general%20S%202026%20208-n2605066.pdf
+  No es una delimitación actual de control exclusivo.
+- Critical Threats, Congo War Security Review, corte 28 de octubre de 2026:
+  https://www.criticalthreats.org/briefs/congo-war-security-review
+  Informe reciente; no se obtuvieron polígonos reutilizables verificados. No se
+  transfirió la fecha del informe a los límites del archivo de abril de 2025.
+- https://github.com/forensic-architecture/gaza-public-data : los archivos públicos
+  de Spatial Control llevan corte 250118; no justifican actualizar a 2026.
+- https://adulisreview.org/map/ : reportes y áreas generalizadas; no se adoptaron
+  divisiones administrativas o afirmaciones de localidades como líneas de frente.
+
+No se encontraron en esta revisión nuevos polígonos de control que cumplieran
+simultáneamente vigencia, procedencia y reutilización verificables para Congo,
+Gaza o Sudán. Se conserva su corte original, sin afirmar que estén actualizados.

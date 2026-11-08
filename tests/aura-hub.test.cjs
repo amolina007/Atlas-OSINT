@@ -13,10 +13,10 @@ for (const [host, expected] of [
 ]) test(`panel de ${host} usa el proxy correcto`, () => {
   let appended;
   runInNewContext(loader, {
-    window: { location: { hostname: host } },
+    window: { location: { hostname: host } }, location: {hostname:host},
     document: { querySelector: () => null,
-      createElement: () => ({ setAttribute() {} }),
-      head: { append: script => { appended = script; } } },
+      createElement: () => ({ dataset:{}, setAttribute() {} }),
+      head: { append: script => { if(script.src.endsWith('/aura-hub.js')) appended = script; } } },
   });
   assert.equal(appended.src, expected);
   const redirects = readFileSync(resolve(__dirname, '../dist/_redirects'), 'utf8');

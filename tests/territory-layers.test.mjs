@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {JSDOM} from 'jsdom';
-import {validateControl,initConflictLayer,controlClasses} from '../dist/observatorio-conflicts.mjs';
+import {validateControl,initConflictLayer,controlClasses,isRecentControl} from '../dist/observatorio-conflicts.mjs';
 const snapshot=k=>JSON.parse(readFileSync(`dist/data/${k}-control.geojson`,'utf8'));
 test('reviewed areas carry source dates, licenses and actual polygons for each conflict',()=>{
  for(const key of ['gaza','sudan','congo']){
@@ -23,11 +23,13 @@ test('changing conflicts ignores late responses and preserves last valid snapsho
   const control=initConflictLayer({map,L});control.setConflict('gaza');control.setConflict('sudan');
   pending[1].resolve({ok:true,json:async()=>snapshot('sudan')});await tick();
   pending[0].resolve({ok:true,json:async()=>snapshot('gaza')});await tick();
-  assert.match(document.querySelector('#conflict-status').textContent,/Sudán/);assert.equal(shown.size,6);assert.ok([...shown].every(g=>g.fc.features[0].properties.sourceUrl.includes('Sudan')));
+  assert.match(document.querySelector('#conflict-status').textContent,/Sudán/);assert.equal(shown.size,0);document.querySelector('#conflict-history').checked=true;document.querySelector('#conflict-history').onchange();assert.equal(shown.size,6);assert.ok([...shown].every(g=>g.fc.features[0].properties.sourceUrl.includes('Sudan')));
   assert.ok(popups.every(p=>p.querySelector('a').href.startsWith('https://commons.wikimedia.org/')));
   const reload=document.querySelector('#conflict-retry').onclick();pending[2].resolve({ok:false});await reload;assert.equal(shown.size,6);assert.match(document.querySelector('#conflict-status').textContent,/Conservamos el corte 2026-10-03/);
-  control.setConflict('congo');assert.equal(shown.size,0);pending[3].resolve({ok:true,json:async()=>snapshot('congo')});await tick();assert.equal(shown.size,5);assert.match(document.querySelector('#conflict-status').textContent,/2025-04-03/);
+  control.setConflict('congo');assert.equal(shown.size,0);pending[3].resolve({ok:true,json:async()=>snapshot('congo')});await tick();assert.equal(shown.size,0);assert.equal(document.querySelector('#conflict-history').checked,false);document.querySelector('#conflict-history').checked=true;document.querySelector('#conflict-history').onchange();assert.equal(shown.size,5);assert.match(document.querySelector('#conflict-status').textContent,/2025-04-03/);
   control.setEnabled(false);assert.equal(shown.size,0);control.setEnabled(true);assert.equal(shown.size,5);
   control.setConflict(null);assert.equal(shown.size,0);assert.equal(control.panel.hidden,true);assert.equal(document.querySelector('#territory-stamp').hidden,true);
  }finally{Object.assign(globalThis,original);dom.window.close();}
 });
+
+test('recency depends on the observation date, never reviewedAt',()=>{const d=snapshot('congo');d.metadata.reviewedAt='2026-11-08';assert.equal(isRecentControl(d,Date.parse('2026-11-08')),false);d.metadata.date='2026-11-07';assert.equal(isRecentControl(d,Date.parse('2026-11-08')),true);assert.equal(isRecentControl(d,Date.parse('2026-11-16')),false);});
