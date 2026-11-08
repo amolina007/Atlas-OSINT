@@ -45,7 +45,20 @@ export function filterStoredBriefing(briefing,articles){
 }
 function filterStoredCandidates(briefing,articles){
  const byId=new Map(articles.map(a=>[a.id,a]));
- return {...briefing,groups:briefing.groups.map(g=>({...g,articleIds:g.articleIds.filter(id=>id===g.what.articleId||sameEventHeadline(byId.get(g.what.articleId)?.title,byId.get(id)?.title))})).filter(g=>g.articleIds.includes(g.why.articleId))};
+ return {...briefing,groups:briefing.groups.map(g=>{
+  const articleIds=g.articleIds.filter(id=>id===g.what.articleId||sameEventHeadline(byId.get(g.what.articleId)?.title,byId.get(id)?.title));
+  if(!articleIds.includes(g.why.articleId))return null;
+  let before=g.before,change=g.change;
+  // A proposed comparison is never published without the independent source audit.
+  if(!change){
+   for(const id of articleIds){const a=byId.get(id),p=a.reading?.what?.[0],source=a.reading?.sources?.find(s=>(s.id||1)===(p?.source||1));
+    if(id!==g.what.articleId&&p&&source?.url&&Date.parse(source.publishedAt)<Date.parse(g.what.publishedAt)){
+     before={text:p.text,url:source.url,source:source.name||a.source,articleId:id,publishedAt:source.publishedAt};change=g.what;break;
+    }
+   }
+  }
+  return {...g,articleIds,before,change};
+ }).filter(Boolean)};
 }
 export async function buildBriefing(articles){
  const ready=articles.filter(a=>hasCompleteReading(a.reading)).slice(0,72);if(!ready.length)return {groups:[]};

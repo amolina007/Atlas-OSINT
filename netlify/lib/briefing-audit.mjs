@@ -34,7 +34,7 @@ export async function auditBriefing(briefing,articles,{judge,fetchPage=publicTex
     if(!what||!why)return null;
     const before=g.before&&verifiedClaim(g.before,decision.checks?.before,docs,checkedAt),change=g.change&&verifiedClaim(g.change,decision.checks?.change,docs,checkedAt);
     const advance=decision.advance===true&&before&&change&&before.url!==change.url&&Date.parse(change.publishedAt)>Date.parse(before.publishedAt);
-    return {...g,what,why,before:advance?before:null,change:advance?change:null,auditVersion:AUDIT_VERSION};
+    return {...g,what,why,before:advance?before:null,change:advance?change:null,auditVersion:AUDIT_VERSION,changeReview:g.change?{status:advance?'verified':'no_verified_advance',checkedAt}:null};
    }catch{return null;}
   }));groups.push(...batch.filter(Boolean));
  }
