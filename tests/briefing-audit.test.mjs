@@ -1,5 +1,5 @@
 import test from 'node:test';import assert from 'node:assert/strict';
-import {verifiedClaim,auditBriefing,AUDIT_VERSION} from '../netlify/lib/briefing-audit.mjs';
+import {verifiedClaim,auditBriefing,AUDIT_VERSION,standaloneContext} from '../netlify/lib/briefing-audit.mjs';
 const doc={url:'https://example.org/one',publishedAt:'2026-11-08T10:00:00Z',paragraphs:[{id:1,text:'Este párrafo de prueba explica el anuncio y los antecedentes documentados para comprenderlo.'}]};
 const claim={text:'Síntesis',url:doc.url,articleId:'a',publishedAt:'2026-11-08T13:00:00Z'};
 test('proof requires both semantic approval and an existing paragraph in the cited original',()=>{
@@ -22,9 +22,17 @@ test('source fetch failure cannot fabricate proof',async()=>{const result=await 
 test('a verified advance requires distinct originals and actual source date order',async()=>{
  const second={...article,id:'b',reading:{sources:[{id:1,title:'Anuncio',url:'https://example.org/two',publishedAt:'2026-11-08T12:00:00Z'}],context:[]}};
  const change={...claim,text:'Nuevo estado',url:'https://example.org/two',articleId:'b'};
- const judge=async()=>({checks:Object.fromEntries(['what','why0','before','change'].map(k=>[k,{supported:true,paragraph:1}])),whyKey:'why0',advance:true});
+ const judge=async input=>input.mode==='novelty'?{alreadyReported:false,explicitTransition:true}:({checks:Object.fromEntries(['what','why0','before','change'].map(k=>[k,{supported:true,paragraph:1}])),whyKey:'why0',advance:true});
  const result=await auditBriefing({groups:[{...group,articleIds:['a','b'],change}]},[article,second],{fetchPage:async()=>({text:html}),judge});
  assert.equal(result.groups[0].change.articleId,'b');assert.equal(result.groups[0].changeReview.status,'verified');
  second.reading.sources[0].publishedAt='2026-11-08T09:00:00Z';
  const reversed=await auditBriefing({groups:[{...group,articleIds:['a','b'],change}]},[article,second],{fetchPage:async()=>({text:html}),judge});assert.equal(reversed.groups[0].change,null);
+});
+
+test('a context cannot start with an unanchored relative date',()=>{assert.equal(standaloneContext('Cuatro años después, presentó la película.'),false);assert.equal(standaloneContext('En 2018 la película recibió un premio.'),true);});
+test('novelty veto rejects a paraphrase even when the first review approves an advance',async()=>{
+ const second={...article,id:'b',reading:{sources:[{id:1,title:'Anuncio',url:'https://example.org/two',publishedAt:'2026-11-08T12:00:00Z'}],context:[]}};
+ const judge=async input=>input.mode==='novelty'?{alreadyReported:true,explicitTransition:false}:{checks:Object.fromEntries(['what','why0','before','change'].map(k=>[k,{supported:true,paragraph:1}])),whyKey:'why0',advance:true};
+ const result=await auditBriefing({groups:[{...group,articleIds:['a','b'],change:{...claim,url:'https://example.org/two',articleId:'b'}}]},[article,second],{fetchPage:async()=>({text:html}),judge});
+ assert.equal(result.groups[0].change,null);assert.equal(result.groups[0].changeReview.alreadyReported,true);
 });

@@ -57,7 +57,9 @@ El trabajo horario de noticias prepara también `briefing` en el mismo almacén 
 
 El modelo propone grupos del mismo suceso y elige índices de párrafos existentes. La validación publica exclusivamente texto y enlaces de síntesis guardadas, descarta referencias ajenas al grupo y exige dos publicaciones cronológicamente distintas para mostrar Antes/Ahora. La clasificación semántica sigue siendo automática y puede equivocarse; no se presenta el número de medios como prueba de confirmación independiente. El resto del feed conserva noticias sin agrupar; los filtros se aplican antes de agrupar y la paginación añade 24 tarjetas.
 
-### Respaldo de explicaciones (auditoría v2)
+### Respaldo de explicaciones (auditoría v3)
 La selección editorial vuelve a leer las URLs citadas y comprueba que cada afirmación completa esté implicada por un párrafo del original. Conserva un fragmento de hasta 20 palabras, el identificador del párrafo, fecha de la fuente y fecha de revisión para «Ver respaldo en la fuente». La auditoría es automática, no una certificación humana ni una prueba de independencia entre medios. Los grupos anteriores sin auditoría se omiten de Lo esencial hasta regenerarse; las noticias completas siguen disponibles en el feed. Si una nueva revisión falla, se conserva la última selección auditada.
 
 «Qué cambió» requiere una segunda decisión explícita de avance, dos URLs distintas, evidencia válida en ambos originales y orden temporal según las fechas de las fuentes, no según el titular recuperado. Una paráfrasis, antecedente adicional o fecha de publicación posterior no basta. Al eliminar miembros de un grupo ya no se rellena «Por qué importa» con el primer contexto sin revisar.
+
+La auditoría v3 incorpora un veto separado de novedad contra TODO el original anterior: si ya contiene el hecho, no se publica como cambio aunque una primera revisión lo haya aprobado. Rechaza contextos que empiezan con referencias temporales sin ancla.
