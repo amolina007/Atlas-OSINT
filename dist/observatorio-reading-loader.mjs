@@ -8,7 +8,7 @@ export function createReadingLoader({storage,fetcher=fetch,now=Date.now,onReady=
   pending.set(article.id,task);task.finally(()=>{pending.delete(article.id);onSettled(article.id);}).catch(()=>{});return task;
  }
  return {isPending:article=>!cache.get(article.id)&&(!attempted.has(article.id)||pending.has(article.id)),get:article=>article.reading?.status==='ready'?article.reading:cache.get(article.id),load,
-  update(articles){queue=articles.filter(a=>!cache.get(a.id)&&!attempted.has(a.id)&&!pending.has(a.id));},
+  update(articles){queue=articles.filter(a=>a.reading?.status!=='ready'&&!cache.get(a.id)&&!attempted.has(a.id)&&!pending.has(a.id));},
   prioritize(ids){const rank=new Map(ids.map((id,i)=>[id,i]));queue.sort((a,b)=>(rank.get(a.id)??999)-(rank.get(b.id)??999));},
   tick(){starts=starts.filter(t=>now()-t<60000);if(active>=2||starts.length>=4)return;const article=queue.shift();if(!article)return;
    if(cache.get(article.id)||pending.has(article.id)||attempted.has(article.id))return;
