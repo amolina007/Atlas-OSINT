@@ -28,6 +28,23 @@ export function validateBriefing(plan,articles,now=Date.now()){
  }
  return {updatedAt:new Date(now).toISOString(),groups};
 }
+export function filterStoredBriefing(briefing,articles){
+ if(!briefing?.groups)return null;
+ const byId=new Map(articles.map(a=>[a.id,a]));
+ return {...briefing,groups:briefing.groups.flatMap(g=>{
+  const anchor=byId.get(g.what?.articleId);if(!anchor)return [];
+  const articleIds=g.articleIds.filter(id=>byId.has(id)&&(id===anchor.id||sameEventHeadline(anchor.title,byId.get(id).title)));
+  if(!articleIds.length)return [];
+  let why=g.why;
+  if(!articleIds.includes(why?.articleId)){
+   const p=anchor.reading?.context?.[0],source=anchor.reading?.sources?.find(s=>(s.id||1)===(p?.source||1));
+   if(!p||!source)return [];
+   why={text:p.text,url:source.url,source:source.name||anchor.source,articleId:anchor.id,publishedAt:anchor.publishedAt};
+  }
+  const changed=articleIds.includes(g.change?.articleId)&&articleIds.includes(g.before?.articleId);
+  return [{...g,articleIds,why,change:changed?g.change:null,before:changed?g.before:null}];
+ })};
+}
 export async function buildBriefing(articles){
  const ready=articles.filter(a=>hasCompleteReading(a.reading)).slice(0,72);if(!ready.length)return {groups:[]};
  const client=new OpenAI({timeout:45000,maxRetries:0});
