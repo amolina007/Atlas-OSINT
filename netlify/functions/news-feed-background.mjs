@@ -1,6 +1,7 @@
 import {getStore} from '@netlify/blobs';
 import {headlines} from '../lib/headlines.mjs';
 import {cachedSummary} from './news-summary.mjs';
+import {buildBriefing} from '../lib/news-briefing.mjs';
 import {prepareNews} from '../lib/prepared-news.mjs';
 export default async function(req){
  if(Netlify.env.get('CONTEXT')==='production'||new URL(req.url).hostname!=='dev.atlas.convergenciaaura.cl'||req.method!=='POST')return;
@@ -10,7 +11,9 @@ export default async function(req){
  if(!await rpc('claim'))return;
  try{
   const store=getStore({name:'atlas-dev-prepared-news',consistency:'strong'}),previous=await store.get('current',{type:'json'}),data=await headlines();
+  if(previous?.articles?.length)try{await store.setJSON('briefing',await buildBriefing(previous.articles));}catch{console.warn('Briefing retained');}
   const result=await prepareNews({articles:data.articles,previous:previous?.articles||[],summarize:cachedSummary,publish:snapshot=>store.setJSON('current',snapshot)});
+  try{const latest=await store.get('current',{type:'json'});await store.setJSON('briefing',await buildBriefing(latest.articles));}catch{console.warn('Briefing retained');}
   await rpc('finish',result.count>=24);console.info('Atlas prepared feed',result);
  }catch{await rpc('finish',false);console.warn('Atlas prepared feed failed');}
 }
