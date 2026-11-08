@@ -11,3 +11,15 @@ export function bufferedWeatherBounds(view){
  const cy=(view.south+view.north)/2,cx=(view.west+view.east)/2,dy=(view.north-view.south)*.9,dx=Math.min(180,(view.east-view.west)*.9);
  return {south:Math.max(-85,cy-dy),north:Math.min(85,cy+dy),west:cx-dx,east:cx+dx};
 }
+
+// Coverage alone is insufficient: zooming in also needs a finer sampling grid.
+export function weatherGridFits(view,grid){
+ if(!grid?.bounds||uncoveredWeatherBounds(view,grid.bounds).length)return false;
+ return grid.step<=(view.north-view.south)*.4&&(grid.longitudeStep||grid.step)<=(view.east-view.west)*.4;
+}
+// Shift the entire grid together. Shifting individual cells can tear a wide grid
+// at the antimeridian even though its geographic bounds cover the viewport.
+export function weatherWorldShift(view,grid){
+ const center=grid.bounds?(grid.bounds.west+grid.bounds.east)/2:grid.center.longitude;
+ return 360*Math.round(((view.west+view.east)/2-center)/360);
+}

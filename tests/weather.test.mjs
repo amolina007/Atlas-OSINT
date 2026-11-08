@@ -10,3 +10,22 @@ test('viewport cells tile wide, tall and dateline-crossing maps without gaps',()
 
 import {uncoveredWeatherBounds,bufferedWeatherBounds} from '../dist/observatorio-weather-coverage.mjs';
 test('buffer covers ordinary pans and gaps are explicit for larger pans',()=>{const view={south:-30,north:-24,west:-114,east:-104},buffer=bufferedWeatherBounds(view);assert.equal(uncoveredWeatherBounds(view,buffer).length,0);assert.equal(uncoveredWeatherBounds({...view,west:-111,east:-101},buffer).length,0);const moved={...view,west:-105,east:-95},gaps=uncoveredWeatherBounds(moved,buffer);assert.ok(gaps.length);assert.equal(gaps[0].east,-95);assert.equal(uncoveredWeatherBounds(view,null).length,1);assert.equal(uncoveredWeatherBounds({south:0,north:10,west:175,east:185},{south:0,north:10,west:-185,east:-175}).length,0);});
+
+import {weatherGridFits,weatherWorldShift} from '../dist/observatorio-weather-coverage.mjs';
+test('zooming in refreshes coarse grids, minor pans reuse a fitting grid',()=>{
+ const view={south:-35,north:-30,west:-74,east:-66},b=bufferedWeatherBounds(view),g=weatherViewportGrid(b.south,b.north,b.west,b.east);
+ assert.equal(weatherGridFits(view,g),true);
+ assert.equal(weatherGridFits({...view,west:-73,east:-65},g),true);
+ assert.equal(weatherGridFits({south:-34,north:-31.5,west:-72,east:-68},g),false);
+ assert.equal(weatherGridFits({...view,west:-40,east:-32},g),false);
+});
+test('world grid shifts as one rectangle without dropping edge cells',()=>{
+ const view={south:-50,north:60,west:40,east:260},g=weatherViewportGrid(-80,80,-180,180),shift=weatherWorldShift(view,g);
+ // Original per-cell shifting moved the western column to the east and tore
+ // the edge of a cell whose midpoint was farther than 180 degrees away.
+ const shifted=g.points.map(p=>p.bounds.map(([lat,lon])=>[lat,lon+shift]));
+ for(let row=0;row<7;row++)for(let col=0;col<6;col++)assert.ok(Math.abs(shifted[row*7+col][1][1]-shifted[row*7+col+1][0][1])<1e-8);
+ const crossing={south:-20,north:20,west:170,east:190},crossGrid=weatherViewportGrid(-30,30,-200,-160);
+ assert.equal(weatherWorldShift(crossing,crossGrid),360);
+ assert.equal(weatherGridFits(crossing,crossGrid),true);
+});
