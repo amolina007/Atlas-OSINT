@@ -19,8 +19,8 @@ export async function auditBriefing(briefing,articles,{judge,fetchPage=publicTex
   })());
   return cache.get(claim.url);
  }
- const groups=[];
- for(let start=0;start<briefing.groups.length;start+=3){
+ const groups=[],started=Date.now();
+ for(let start=0;start<briefing.groups.length&&Date.now()-started<60000;start+=3){
   const batch=await Promise.all(briefing.groups.slice(start,start+3).map(async g=>{
    try{
     const anchor=byId.get(g.what.articleId),candidates=[g.why];

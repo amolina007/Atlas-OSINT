@@ -12,7 +12,7 @@ export default async function(req){
  try{
   const store=getStore({name:'atlas-dev-prepared-news',consistency:'strong'}),previous=await store.get('current',{type:'json'}),data=await headlines();
   if(previous?.articles?.length)try{await store.setJSON('briefing',await buildBriefing(previous.articles));}catch(error){console.warn('Briefing retained',error.name,error.status||'');}
-  const result=await prepareNews({articles:data.articles,previous:previous?.articles||[],summarize:cachedSummary,publish:snapshot=>store.setJSON('current',snapshot)});
+  const result=await prepareNews({budget:7*60000,articles:data.articles,previous:previous?.articles||[],summarize:cachedSummary,publish:snapshot=>store.setJSON('current',snapshot)});
   try{const latest=await store.get('current',{type:'json'});await store.setJSON('briefing',await buildBriefing(latest.articles));}catch(error){console.warn('Briefing retained',error.name,error.status||'');}
   await rpc('finish',result.count>=24);console.info('Atlas prepared feed',result);
  }catch{await rpc('finish',false);console.warn('Atlas prepared feed failed');}

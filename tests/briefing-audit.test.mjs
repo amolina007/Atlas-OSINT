@@ -19,3 +19,12 @@ test('later wording alone never produces a change and unsupported relevance remo
  const rejected=await auditBriefing({groups:[group]},[article],{fetchPage,judge:async()=>({checks:{what:{supported:true,paragraph:1}},whyKey:null})});assert.equal(rejected.groups.length,0);
 });
 test('source fetch failure cannot fabricate proof',async()=>{const result=await auditBriefing({groups:[group]},[article],{fetchPage:async()=>{throw Error('offline');},judge:()=>{throw Error('must not judge unavailable text');}});assert.equal(result.groups.length,0);});
+test('a verified advance requires distinct originals and actual source date order',async()=>{
+ const second={...article,id:'b',reading:{sources:[{id:1,title:'Anuncio',url:'https://example.org/two',publishedAt:'2026-11-08T12:00:00Z'}],context:[]}};
+ const change={...claim,text:'Nuevo estado',url:'https://example.org/two',articleId:'b'};
+ const judge=async()=>({checks:Object.fromEntries(['what','why0','before','change'].map(k=>[k,{supported:true,paragraph:1}])),whyKey:'why0',advance:true});
+ const result=await auditBriefing({groups:[{...group,articleIds:['a','b'],change}]},[article,second],{fetchPage:async()=>({text:html}),judge});
+ assert.equal(result.groups[0].change.articleId,'b');assert.equal(result.groups[0].changeReview.status,'verified');
+ second.reading.sources[0].publishedAt='2026-11-08T09:00:00Z';
+ const reversed=await auditBriefing({groups:[{...group,articleIds:['a','b'],change}]},[article,second],{fetchPage:async()=>({text:html}),judge});assert.equal(reversed.groups[0].change,null);
+});
