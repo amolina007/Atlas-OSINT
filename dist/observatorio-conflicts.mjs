@@ -30,7 +30,7 @@ export function initConflictLayer({map,L,markers}){
   }catch{if(id!==requestId||current!==key)return;$('conflict-status').textContent=data?`No se pudo actualizar. Conservamos el corte ${data.metadata.date}.`:'No se pudo cargar esta capa. Reintenta.';$('conflict-retry').hidden=false;}finally{clearTimeout(timeout);}
  }
  function setEnabled(enabled){$('conflict-enabled').checked=enabled;$('conflict-options').hidden=!enabled;if(enabled){if(data)paint();else load();}else{paint();if(markers&&!map.hasLayer(markers))markers.addTo(map);}}
- $('conflict-enabled').onchange=()=>setEnabled($('conflict-enabled').checked);$('conflict-focus').onclick=()=>{map.invalidateSize();map.fitBounds(territoryLayers[key].bounds,{padding:[15,15]});};
+ $('conflict-enabled').onchange=()=>setEnabled($('conflict-enabled').checked);$('conflict-focus').onclick=()=>{map.stop();map.invalidateSize();map.fitBounds(territoryLayers[key].bounds,{animate:false,padding:[15,15]});};
  $('conflict-opacity').oninput=e=>{for(const [c,g] of groups)g.setStyle({fillOpacity:Number(e.target.value)/100*(c.endsWith('_PRESENCE')?.5:1)});};
  $('conflict-signals').onchange=e=>{if(markers){if(e.target.checked)markers.addTo(map);else map.removeLayer(markers);}};$('conflict-retry').onclick=load;
  setInterval(()=>{if(!document.hidden&&$('conflict-enabled').checked)load()},300000);
