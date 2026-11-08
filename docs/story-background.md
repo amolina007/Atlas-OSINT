@@ -51,3 +51,8 @@ La portada entrega 24 noticias completas y «Ver más noticias» amplía en bloq
 Si las fuentes no permiten reunir suficientes noticias válidas, no se inventan ni se
 publican resúmenes incompletos para rellenar cupos. El navegador puede seguir preparando
 resultados de búsquedas específicas con su presupuesto limitado habitual.
+
+## Lo esencial de hoy y coberturas (dev)
+El trabajo horario de noticias prepara también `briefing` en el mismo almacén privado de Blobs. El feed recibe el resultado ya calculado; no espera llamadas al modelo. Si la preparación falla se conserva la selección anterior. Solo se muestran en Lo esencial historias publicadas en las últimas 24 horas.
+
+El modelo propone grupos del mismo suceso y elige índices de párrafos existentes. La validación publica exclusivamente texto y enlaces de síntesis guardadas, descarta referencias ajenas al grupo y exige dos publicaciones cronológicamente distintas para mostrar Antes/Ahora. La clasificación semántica sigue siendo automática y puede equivocarse; no se presenta el número de medios como prueba de confirmación independiente. El resto del feed conserva noticias sin agrupar; los filtros se aplican antes de agrupar y la paginación añade 24 tarjetas.
