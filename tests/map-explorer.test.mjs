@@ -17,3 +17,17 @@ test('UCDP derived catalog accounts for every source event with valid aggregates
  for(const r of rows){assert.ok([1,2,3].includes(r.type));assert.ok(r.review<=r.count);assert.ok(r.start<=r.end);assert.ok(Math.abs(r.coordinates[0])<=180&&Math.abs(r.coordinates[1])<=90);assert.ok(r.actors.length);}
  assert.ok(rows.some(r=>r.country==='Ukraine'));assert.ok(rows.some(r=>r.country==='Sudan'));assert.ok(rows.some(r=>r.country==='Myanmar (Burma)'));
 });
+
+import {matchesConflictScope} from '../dist/observatorio-conflict-scopes.mjs';
+test('conflict scopes filter real catalog countries and do not classify foreign actors as locations',async()=>{
+ const catalog=JSON.parse(await readFile(new URL('../dist/data/conflict-catalog.json',import.meta.url)));
+ for(const scope of ['ukraine','middleEast','africa'])assert.ok(catalog.conflicts.filter(e=>matchesConflictScope(e,scope)).length>0,scope);
+ assert.equal(matchesConflictScope({country:'Sudan',title:'Ukraine actors'},'ukraine'),false);
+ assert.equal(matchesConflictScope({country:'Ukraine'},'ukraine'),true);
+ assert.equal(matchesConflictScope({country:'Lebanon'},'middleEast'),true);
+ assert.equal(matchesConflictScope({country:'DR Congo (Zaire)'},'africa'),true);
+ assert.equal(matchesConflictScope({title:'Ataque en Gaza',location:{label:'Gaza'}},'africa'),false);
+ assert.equal(matchesConflictScope({title:'Ataque en Gaza',location:{label:'Gaza'}},'middleEast'),true);
+ assert.equal(matchesConflictScope({title:'Combates en Burkina Faso'},'africa'),true);
+ assert.equal(matchesConflictScope({title:'Ataque sin lugar conocido'},'africa'),false);
+});
