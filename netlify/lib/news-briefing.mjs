@@ -1,3 +1,4 @@
+import {auditBriefing,AUDIT_PROMPT,AUDIT_VERSION} from './briefing-audit.mjs';
 import OpenAI from 'openai';
 import {createHash} from 'node:crypto';
 import {hasCompleteReading} from '../../dist/observatorio-reading-quality.mjs';
@@ -14,7 +15,7 @@ export function validateBriefing(plan,articles,now=Date.now()){
   if(!ref||!Number.isInteger(ref.article)||!Number.isInteger(ref.index)||!members.includes(ref.article))return null;
   const a=articles[ref.article],p=a?.reading?.[kind]?.[ref.index],sources=a?.reading?.sources||[a?.reading?.source].filter(Boolean),source=sources.find(s=>(s.id||1)===(p?.source||1));
   if(!p?.text||!source||!/^https:\/\//.test(source.url))return null;
-  return {text:p.text,url:source.url,source:source.name||a.source,articleId:a.id,publishedAt:a.publishedAt};
+  return {text:p.text,url:source.url,source:source.name||a.source,articleId:a.id,publishedAt:source.publishedAt||null};
  };
  for(const g of (plan?.groups||[]).slice(0,72)){
   const members=[...new Set(g.members||[])].filter(i=>Number.isInteger(i)&&articles[i]&&hasCompleteReading(articles[i].reading)&&!used.has(i));
@@ -30,20 +31,21 @@ export function validateBriefing(plan,articles,now=Date.now()){
 }
 export function filterStoredBriefing(briefing,articles){
  if(!briefing?.groups)return null;
+ if(briefing.auditVersion!==AUDIT_VERSION)return {...briefing,groups:[]};
  const byId=new Map(articles.map(a=>[a.id,a]));
  return {...briefing,groups:briefing.groups.flatMap(g=>{
-  const anchor=byId.get(g.what?.articleId);if(!anchor)return [];
+  const anchor=byId.get(g.what?.articleId);if(!anchor||g.auditVersion!==AUDIT_VERSION||!g.what?.evidence||!g.why?.evidence)return [];
   const articleIds=g.articleIds.filter(id=>byId.has(id)&&(id===anchor.id||sameEventHeadline(anchor.title,byId.get(id).title)));
   if(!articleIds.length)return [];
   let why=g.why;
-  if(!articleIds.includes(why?.articleId)){
-   const p=anchor.reading?.context?.[0],source=anchor.reading?.sources?.find(s=>(s.id||1)===(p?.source||1));
-   if(!p||!source)return [];
-   why={text:p.text,url:source.url,source:source.name||anchor.source,articleId:anchor.id,publishedAt:anchor.publishedAt};
-  }
+  if(!articleIds.includes(why?.articleId))return [];
   const changed=articleIds.includes(g.change?.articleId)&&articleIds.includes(g.before?.articleId);
   return [{...g,articleIds,why,change:changed?g.change:null,before:changed?g.before:null}];
  })};
+}
+function filterStoredCandidates(briefing,articles){
+ const byId=new Map(articles.map(a=>[a.id,a]));
+ return {...briefing,groups:briefing.groups.map(g=>({...g,articleIds:g.articleIds.filter(id=>id===g.what.articleId||sameEventHeadline(byId.get(g.what.articleId)?.title,byId.get(id)?.title))})).filter(g=>g.articleIds.includes(g.why.articleId))};
 }
 export async function buildBriefing(articles){
  const ready=articles.filter(a=>hasCompleteReading(a.reading)).slice(0,72);if(!ready.length)return {groups:[]};
@@ -58,5 +60,7 @@ export async function buildBriefing(articles){
   const checks=JSON.parse(check.choices[0].message.content).groups||[];
   for(const g of grouped){const verified=checks.find(c=>c.index===g.index);const original=plan.groups[g.index];original.members=g.members.filter(i=>i===g.what.article||(verified?.members?.includes(i)&&sameEventHeadline(ready[g.what.article]?.title,ready[i]?.title)));if(!original.members.includes(original.why?.article))original.why={article:g.what.article,index:0};}
  }
- const briefing=validateBriefing(plan,ready);if(!briefing.groups.length)throw Error('briefing_empty');return briefing;
+ const briefing=filterStoredCandidates(validateBriefing(plan,ready),ready);
+ const audited=await auditBriefing(briefing,ready,{judge:async data=>{const result=await client.chat.completions.create({model:'gpt-4.1-mini',temperature:0,max_tokens:1000,response_format:{type:'json_object'},messages:[{role:'system',content:AUDIT_PROMPT},{role:'user',content:JSON.stringify(data)}]});if(result.choices[0].finish_reason!=='stop')throw Error('audit_truncated');return JSON.parse(result.choices[0].message.content);}});
+ if(!audited.groups.length)throw Error('briefing_empty');return audited;
 }
