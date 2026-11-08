@@ -1,3 +1,4 @@
+import {initTerritorySources} from './observatorio-territory-sources.mjs';
 import {conflictScopes,matchesConflictScope,specificConflicts,matchesSpecificConflict} from './observatorio-conflict-scopes.mjs';
 import {initWeather} from './observatorio-weather.mjs';
 import {initWarReports} from './observatorio-war-reports.mjs';
@@ -23,6 +24,7 @@ export function initMapExplorer({map,L,markers,baseLayer,esc,date,openEvent,addE
  $('specific-conflict').onchange=()=>{specificConflict=$('specific-conflict').value;selected=null;limit=50;$('map-query').value='';$('map-category').value='all';if(specificConflict!=='all'&&warView==='groups'){warView='events';$('war-view').value=warView;setCategories();loadCatalog();}syncSpecific();$('map-context').innerHTML='<span class="eyebrow">CONTEXTO Y FUENTES</span><h2>'+ (specificConflicts[specificConflict]?.label||conflictScopes[conflictScope].label)+'</h2><p>Selecciona una noticia o un evento para ver su fecha y fuentes.</p>';focusScope();render();};
  function scopeMatches(e){return specificConflict==='all'?matchesConflictScope(e,conflictScope):matchesSpecificConflict(e,specificConflict);}
  function focusScope(){map.stop();map.invalidateSize();map.fitBounds((specificConflicts[specificConflict]||conflictScopes[conflictScope]).bounds,{padding:[15,15],maxZoom:conflictScope==='all'?2:6});}
+ const territorySources=initTerritorySources({esc,host:scopeTools});
  const warTools=document.createElement('div');warTools.className='war-tools';warTools.innerHTML='<label>Vista bélica<select id="war-view"><option value="reports">Ataques recientes · prensa</option><option value="events">Eventos documentados · UCDP</option><option value="groups">Conflictos agrupados</option></select></label><label>Desde<input id="war-from" type="date"></label><label>Hasta<input id="war-until" type="date"></label>';$('map-results').before(warTools);
  $('war-view').onchange=()=>{warView=$('war-view').value;selected=null;limit=50;$('map-category').value='all';setCategories();$('map-context').innerHTML='<span class="eyebrow">CONTEXTO Y FUENTES</span><h2>'+ (specificConflicts[specificConflict]?.label||conflictScopes[conflictScope].label)+'</h2><p>Selecciona una noticia o un evento para revisar su fecha y fuentes.</p>';focusScope();render();if(warView==='reports')reports.load();else loadCatalog()};for(const id of ['war-from','war-until'])$(id).onchange=()=>{limit=50;render()};
  scopeTools.querySelectorAll('[data-conflict-content]').forEach(b=>b.onclick=()=>{$('war-view').value=b.dataset.conflictContent;$('war-view').onchange();});
@@ -45,6 +47,7 @@ export function initMapExplorer({map,L,markers,baseLayer,esc,date,openEvent,addE
  }
  function rows(){if(mode==='conflicts'&&warView==='reports'){const q=fold($('map-query').value);return reports.rows.filter(e=>scopeMatches(e)&&fold(e.title+' '+e.source+' '+(e.location?.label||'')).includes(q)&&($('map-category').value==='all'||($('map-category').value==='confirmed'?!!e.verification:!e.verification)));}const result=selectMapRows(mode,{...state,conflicts:(warView==='events'?catalog?.incidents:catalog?.conflicts)||[]},$('map-query').value,$('map-category').value||'all',Number($('period').value)).filter(e=>mode!=='conflicts'||scopeMatches(e));return mode==='conflicts'?(warView==='events'?result.filter(e=>(!$('war-from').value||e.end>=$('war-from').value)&&(!$('war-until').value||e.start<=$('war-until').value)).sort((a,b)=>b.end.localeCompare(a.end)):result.sort((a,b)=>b.count-a.count)):result;}
  function render(){
+  territorySources.render({mode,scope:conflictScope,specific:specificConflict});
   if(mode==='climate'){dotLayer.clearLayers();weather.render();return;}
   for(const id of ['war-from','war-until'])$(id).closest('label').hidden=warView==='reports';
   scopeTools.querySelectorAll('[data-conflict-content]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.conflictContent===warView)));

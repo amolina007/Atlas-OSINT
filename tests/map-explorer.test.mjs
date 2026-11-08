@@ -45,3 +45,20 @@ test('specific conflicts distinguish Gaza, Sudan and DR Congo from nearby countr
  assert.equal(matchesSpecificConflict({title:'Ataques en República del Congo, Brazzaville'},'congo'),false);
  assert.equal(matchesSpecificConflict({title:'Enfrentamientos en Kivu, RD del Congo'},'congo'),true);
 });
+
+test('news filters reject cross-conflict context and ambiguous actor-only reports',()=>{
+ assert.equal(matchesSpecificConflict({title:'Ataque en Beirut en respuesta a la guerra de Gaza'},'gaza'),false);
+ assert.equal(matchesSpecificConflict({title:'Ataque en Ucrania mientras continúa la guerra en Gaza'},'gaza'),false);
+ assert.equal(matchesSpecificConflict({title:'Ataque en Gaza tras negociaciones en Ucrania'},'gaza'),true);
+ assert.equal(matchesSpecificConflict({title:'Ataques en Gaza y Sudán'},'gaza'),false);
+ assert.equal(matchesSpecificConflict({title:'Ataques en Gaza y Sudán'},'sudan'),false);
+ assert.equal(matchesSpecificConflict({title:'Ataque en Rafah, Egipto'},'gaza'),false);
+ assert.equal(matchesSpecificConflict({title:'El M23 condena un ataque en Doha'},'congo'),false);
+ assert.equal(matchesSpecificConflict({title:'Ataque del M23 en Goma'},'congo'),true);
+});
+import {territorySources} from '../dist/observatorio-territory-sources.mjs';
+test('territorial reference maps retain source dates and distinguish operations from control',()=>{
+ for(const s of Object.values(territorySources)){assert.ok(Date.parse(s.date)<=Date.now());assert.match(s.url,/^https:\/\//);assert.match(s.image,/^https:\/\//);assert.ok(s.note);}
+ assert.match(territorySources.congo.kind,/operación/);
+ assert.match(territorySources.gaza.kind,/Presencia/);
+});
