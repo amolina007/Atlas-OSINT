@@ -7,8 +7,8 @@ export function weatherGrid(lat,lon,span=4){
 }
 export function weatherViewportGrid(south,north,west,east){
  if(![south,north,west,east].every(Number.isFinite)||south< -85||north>85||north<=south||east<=west||east-west>360.001||Math.abs(west)>540||Math.abs(east)>540)throw Error('coordinates');
- const dy=(north-south)/5,dx=(east-west)/5,points=[];
- for(let y=0;y<5;y++)for(let x=0;x<5;x++){const bottom=south+y*dy,left=west+x*dx;points.push({latitude:bottom+dy/2,longitude:((left+dx/2+540)%360)-180,bounds:[[bottom,left],[bottom+dy,left+dx]]});}
+ const size=7,dy=(north-south)/size,dx=(east-west)/size,points=[];
+ for(let y=0;y<size;y++)for(let x=0;x<size;x++){const bottom=south+y*dy,left=west+x*dx;points.push({latitude:bottom+dy/2,longitude:((left+dx/2+540)%360)-180,bounds:[[bottom,left],[bottom+dy,left+dx]]});}
  return {points,step:dy,longitudeStep:dx,center:{latitude:(south+north)/2,longitude:(((west+east)/2+540)%360)-180},span:north-south,bounds:{south,north,west,east}};
 }
 export function parseAlerts(xml,now=Date.now()){
