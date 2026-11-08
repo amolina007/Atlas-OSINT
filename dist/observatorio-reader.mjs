@@ -1,3 +1,4 @@
+import {briefingMarkup} from './observatorio-briefing.mjs';
 import {articleLocation,discoveryMarkup} from './observatorio-discovery.mjs';
 export function createNewsReader({esc,date,addNews,newsEvidence,onDiscovery,getArticles,readings}){
  const dialog=document.createElement('dialog');dialog.id='news-reader';dialog.setAttribute('aria-labelledby','reader-title');dialog.innerHTML='<button class="close" aria-label="Cerrar lectura">×</button><div id="reader-body"></div>';document.body.append(dialog);let controller,current,currentReading,sequence=[];
@@ -29,7 +30,8 @@ export function createNewsReader({esc,date,addNews,newsEvidence,onDiscovery,getA
  const sources=data.sources||[{id:1,...data.source}];
  body.querySelector('.reader-sources').innerHTML='<h2>Fuentes</h2>'+sources.map(s=>`<p><a id="reader-source-${s.id}" href="${esc(safe(s.url))}" target="_blank" rel="noopener noreferrer">[${s.id}] ${esc(s.name)} · ${esc(date(s.publishedAt))} · ${esc(s.title||article.title)} ↗</a></p>`).join('')+(data.alternative?`<p class="muted">Cobertura del mismo hecho en otros medios. <a href="${esc(safe(article.url))}" target="_blank" rel="noopener noreferrer">Publicación que abriste ↗</a></p>`:'');
  const section=(title,items)=>items.length?`<section><h2>${title}</h2>${items.map(p=>`<p>${esc(p.text)} <a href="#reader-source-${p.source||1}" class="reader-citation" aria-label="Ver fuente ${p.source||1}">[${p.source||1}]</a></p>`).join('')}</section>`:'';
- result.innerHTML=(data.alternative?`<p class="muted">Cobertura de ${sources.map(s=>`${esc(s.name)} (${esc(date(s.publishedAt))})`).join(' · ')}.</p>`:'')+section('Qué pasó',data.what)+section('Contexto',data.context)+`<p class="muted">${esc(data.notice)} · ${esc(date(data.generatedAt))}</p>`;
+ result.innerHTML=(data.alternative?`<p class="muted">Cobertura de ${sources.map(s=>`${esc(s.name)} (${esc(date(s.publishedAt))})`).join(' · ')}.</p>`:'')+(article.coverage?briefingMarkup(article.coverage,esc,date):section('Qué pasó',data.what)+section('Contexto',data.context))+`<p class="muted">${esc(data.notice)} · ${esc(date(data.generatedAt))}</p>`;
+ result.querySelectorAll('[data-read]').forEach(b=>b.onclick=()=>open(article.coverage.members.find(a=>a.id===b.dataset.read)));
  }else result.innerHTML=data.preview?`<h2>En la publicación</h2><blockquote>${esc(data.preview)}</blockquote><p class="muted">${esc(article.source)}</p>`:'';
  }catch(e){if(!dialog.open||current!==article||controller!==activeController)return;body.querySelector('#reader-result').innerHTML=`<button id="reader-retry">Reintentar lectura</button>`;body.querySelector('#reader-retry').onclick=()=>open(article,true);}finally{clearTimeout(timer);}
  }
