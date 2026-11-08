@@ -36,3 +36,18 @@ versión protegen también frente a una revisión manual simultánea.
 Desactivar: `select cron.unschedule('atlas-dev-story-updates');`.
 La línea de tiempo usa fechas de **publicación**, expresamente identificadas, ya que no
 todas las fuentes ofrecen una fecha fiable del evento. No inventa fechas de hechos.
+
+## Portada preparada
+
+`atlas-dev-prepared-news` programa cada hora (minuto 7 UTC) una reserva de hasta 72
+noticias públicas con síntesis y contexto completos. `atlas_private.feed_job` autoriza
+una sola ejecución con una capacidad efímera; no contiene ni permite consultar cuentas.
+La RPC `atlas_dev_feed_job` únicamente reclama/cierra ese trabajo validando su capacidad.
+Los avisos de SECURITY DEFINER y RLS sin políticas tienen el mismo propósito que arriba.
+
+Se preparan tres candidatas simultáneamente, con un presupuesto de once minutos por
+lote; se guarda el avance y se conserva la reserva válida anterior si falla una fuente.
+La portada entrega 24 noticias completas y «Ver más noticias» amplía en bloques de 24.
+Si las fuentes no permiten reunir suficientes noticias válidas, no se inventan ni se
+publican resúmenes incompletos para rellenar cupos. El navegador puede seguir preparando
+resultados de búsquedas específicas con su presupuesto limitado habitual.
