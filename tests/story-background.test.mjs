@@ -14,3 +14,12 @@ test('failed source does not mark a review successful and closes the capability'
  assert.equal((await runStoryJob(rpc,async()=>Response.json({}, {status:502}))).complete,false);
  assert.deepEqual(calls.at(-1),['finish',{p_success:false}]);
 });
+test('worker accepts the fixed dev hostname without build-only branch variables',async()=>{
+ const {default:handler}=await import('../netlify/functions/story-background.mjs');
+ const previousFetch=globalThis.fetch,previousNetlify=globalThis.Netlify;let calls=0;
+ globalThis.Netlify={env:{get:()=>undefined}};
+ globalThis.fetch=async()=>{calls++;return Response.json(null);};
+ try{await handler(new Request('https://dev.atlas.convergenciaaura.cl/.netlify/functions/story-background',{method:'POST',body:JSON.stringify({token:'a'.repeat(64)})}));assert.equal(calls,1);
+ await handler(new Request('https://atlas.convergenciaaura.cl/.netlify/functions/story-background',{method:'POST',body:JSON.stringify({token:'a'.repeat(64)})}));assert.equal(calls,1);
+ }finally{globalThis.fetch=previousFetch;globalThis.Netlify=previousNetlify;}
+});
