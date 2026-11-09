@@ -9,7 +9,6 @@ async function cached(key,ttl,build){
 }
 async function upstream(url,json=true){const r=await fetch(url,{signal:AbortSignal.timeout(15000),headers:{'User-Agent':'AtlasWeather/1.0'}});if(!r.ok)throw Error('provider_'+r.status);return json?r.json():r.text();}
 export default async function(req){
- if(Netlify.env.get('CONTEXT')==='production')return new Response('Dev only',{status:404});
  if(req.method!=='GET')return new Response('Method not allowed',{status:405});
  const p=new URL(req.url).searchParams,mode=p.get('mode')||'forecast';let key,build,ttl=900000;
  try{

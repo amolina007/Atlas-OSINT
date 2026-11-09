@@ -5,7 +5,7 @@ import {readyNews} from '../lib/prepared-news.mjs';
 export default async function(req) {
  if(req.method!=='GET')return new Response('Method not allowed',{status:405});
  const data=structuredClone(await headlines());
- if(Netlify.env.get('CONTEXT')!=='production')try{
+ try{
   const snapshot=await getStore({name:'atlas-dev-prepared-news',consistency:'strong'}).get('current',{type:'json'});
   const ready=readyNews(snapshot?.articles||[]),merged=new Map(data.articles.map(a=>[a.id,a]));
   for(const a of ready)merged.set(a.id,{...merged.get(a.id),...a});

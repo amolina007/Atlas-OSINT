@@ -8,7 +8,6 @@ import {createSummaryCache} from '../lib/news-summary-cache.mjs';
 export const cachedSummary=createSummaryCache({getStore:()=>getStore({name:'atlas-dev-public-summaries',consistency:'strong'}),build,onError:(operation,error)=>console.warn('Atlas summary storage failed',{operation,message:error.message})});
 export default async function(req){
  if(req.method!=='GET')return new Response('Method not allowed',{status:405});
- if(Netlify.env.get('CONTEXT')==='production')return new Response('Dev only',{status:404});
  const id=new URL(req.url).searchParams.get('id');if(!/^[a-f0-9]{64}$/.test(id||''))return new Response('Invalid article',{status:400});
  const {data,cache}=await cachedSummary(id,new URL(req.url).searchParams.get('q'));
  return Response.json(data,{headers:{'Cache-Control':data.status==='ready'?'public, max-age=86400':'no-store','X-Atlas-Summary-Cache':cache,'X-Content-Type-Options':'nosniff'}});

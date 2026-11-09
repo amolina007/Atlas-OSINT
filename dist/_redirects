@@ -1,4 +1,5 @@
 /atlas-anterior /index.html 200!
+/ /observatorio.html 200!
 https://dev.atlas.convergenciaaura.cl/ /observatorio.html 200!
 https://dev--atlas-osint.netlify.app/ /observatorio.html 200!
 /aura-core-dev/aura-hub.js https://dev--convergencia-aura-core.netlify.app/js/aura-hub.js 200

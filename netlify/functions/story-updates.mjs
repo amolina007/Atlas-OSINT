@@ -4,7 +4,6 @@ const API='https://utilbunuziotzumuiayu.supabase.co';
 const KEY='sb_publishable_yF7fkqR5YlWrwnGfyRP2gA_i2k5YiZh';
 const reply=(data,status=200)=>Response.json(data,{status,headers:{'Cache-Control':'no-store','X-Content-Type-Options':'nosniff'}});
 export default async function(req){
- if(Netlify.env.get('CONTEXT')==='production')return reply({},404);
  if(req.method!=='POST')return reply({},405);
  const auth=req.headers.get('authorization');if(!/^Bearer [A-Za-z0-9._-]+$/.test(auth||''))return reply({},401);
  const raw=await req.text();if(raw.length>2000)return reply({},413);

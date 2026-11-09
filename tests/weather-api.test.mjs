@@ -5,6 +5,6 @@ test('weather API preserves dated data on provider failure and validates request
  try{assert.equal((await handler(new Request('https://dev.atlas.convergenciaaura.cl/.netlify/functions/weather?lat=bad&lon=2'))).status,400);assert.equal(calls,0);
  const req=()=>new Request('https://dev.atlas.convergenciaaura.cl/.netlify/functions/weather?lat=1&lon=2&span=0.7');const first=await (await handler(req())).json();assert.equal(first.rows.length,25);assert.equal(first.stale,false);
  fail=true;Date.now=()=>oldNow()+16*60000;const fallback=await (await handler(req())).json();assert.equal(fallback.stale,true);assert.equal(fallback.retrievedAt,first.retrievedAt);assert.deepEqual(fallback.rows,first.rows);
- globalThis.Netlify.env.get=()=> 'production';assert.equal((await handler(req())).status,404);
+ globalThis.Netlify.env.get=()=> 'production';assert.equal((await handler(new Request('https://atlas.convergenciaaura.cl/.netlify/functions/weather?lat=1&lon=2&span=0.7'))).status,200);
  }finally{globalThis.fetch=oldFetch;globalThis.Netlify=oldNetlify;Date.now=oldNow;}
 });

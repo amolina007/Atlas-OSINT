@@ -5,7 +5,7 @@ Each source is independently validated before the atomic Netlify deploy.
 """
 import datetime,json,os,pathlib,subprocess,sys,tempfile,urllib.request
 ROOT=pathlib.Path(__file__).resolve().parents[1]
-BASE='https://dev.atlas.convergenciaaura.cl/data/'
+BASE='https://atlas.convergenciaaura.cl/data/' if os.environ.get('BRANCH')=='main' else 'https://dev.atlas.convergenciaaura.cl/data/'
 LAYERS={'conflict-catalog.json':'periodEnd','ukraine-control.geojson':'date'}
 def validate(data,name):
  m=data['metadata'];key=LAYERS[name];day=datetime.date.fromisoformat(m[key])
@@ -32,8 +32,8 @@ def refresh(previous,loader,name,now):
  return result
 
 def main():
- if os.environ.get('BRANCH')!='dev':
-  print('Map refresh: skipped outside dev');return
+ if os.environ.get('BRANCH') not in ('dev','main'):
+  print('Map refresh: skipped outside dev/main');return
  now=datetime.datetime.now(datetime.timezone.utc).isoformat()
  # Obtain every checkpoint before doing any work. An unreachable site aborts this build.
  old={}
