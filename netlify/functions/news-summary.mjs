@@ -1,4 +1,4 @@
-import OpenAI from 'openai';
+import {createAtlasAI} from '../lib/atlas-ai.mjs';
 import { articleFromRequest } from '../lib/news-search.mjs';
 import { sourceArticle } from '../lib/news-images.mjs';
 import { extractArticle,validateSummary,articlePreview,relatedArticles } from '../lib/news-summary.mjs';
@@ -17,7 +17,7 @@ async function build(id,query){
  try{
  const article=await articleFromRequest(id,query);if(!article)return {status:'unavailable',reason:'Esta noticia ya no está disponible en el feed. Abre el enlace original.'};
  source={name:article.source,url:article.url,publishedAt:article.publishedAt};
- const client=new OpenAI({timeout:14000,maxRetries:0});
+ const client=createAtlasAI({timeout:14000,maxRetries:0});
  const page=await sourceArticle(article).catch(()=>null);
  if(page){source.url=page.url;preview=articlePreview(page.text,article.title);}
  const original=page&&extractArticle(page.text,article.title);

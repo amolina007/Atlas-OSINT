@@ -1,3 +1,4 @@
+import {createHash} from 'node:crypto';
 import {getStore} from '@netlify/blobs';
 import {headlines} from '../lib/headlines.mjs';
 import {cachedSummary} from './news-summary.mjs';
@@ -11,9 +12,8 @@ export default async function(req){
  if(!await rpc('claim'))return;
  try{
   const store=getStore({name:'atlas-dev-prepared-news',consistency:'strong'}),previous=await store.get('current',{type:'json'}),data=await headlines();
-  if(previous?.articles?.length)try{await store.setJSON('briefing',await buildBriefing(previous.articles));}catch(error){console.warn('Briefing retained',error.name,error.status||'');}
   const result=await prepareNews({budget:7*60000,articles:data.articles,previous:previous?.articles||[],summarize:cachedSummary,publish:snapshot=>store.setJSON('current',snapshot)});
-  try{const latest=await store.get('current',{type:'json'});await store.setJSON('briefing',await buildBriefing(latest.articles));}catch(error){console.warn('Briefing retained',error.name,error.status||'');}
+  try{const latest=await store.get('current',{type:'json'});const fingerprint=createHash('sha256').update(JSON.stringify(latest.articles.map(a=>({id:a.id,reading:a.reading})))).digest('hex');const old=await store.get('briefing',{type:'json'});if(old?.inputFingerprint!==fingerprint)await store.setJSON('briefing',{...await buildBriefing(latest.articles),inputFingerprint:fingerprint});}catch(error){console.warn('Briefing retained',error.name,error.status||'');}
   await rpc('finish',result.count>=24);console.info('Atlas prepared feed',result);
  }catch{await rpc('finish',false);console.warn('Atlas prepared feed failed');}
 }

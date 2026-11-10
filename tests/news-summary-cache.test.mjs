@@ -25,3 +25,10 @@ test('local cache persists citations and original generation date after reload, 
 test('broken or unavailable local storage leaves reader usable',()=>{
  const cache=createReadingCache({getItem:()=>'{broken',setItem:()=>{throw Error('quota');}});cache.set('id',data);assert.deepEqual(cache.get('id'),data);assert.equal(createReadingCache().get('missing'),null);
 });
+test('failed summaries wait across server instances then retry after expiry',async()=>{
+ const rows=new Map();let builds=0,time=0;
+ const deps={now:()=>time,retryMs:100,getStore:()=>({get:async k=>rows.get(k),setJSON:async(k,v)=>rows.set(k,v)}),build:async()=>{builds++;return {status:'brief'};}};
+ await createSummaryCache(deps)('id');
+ assert.equal((await createSummaryCache(deps)('id')).cache,'cooldown');assert.equal(builds,1);
+ time=101;await createSummaryCache(deps)('id');assert.equal(builds,2);
+});
