@@ -1,3 +1,4 @@
+import {initEconomy} from './observatorio-economy.mjs';
 import {initForces} from './observatorio-forces.mjs';
 import {initMapExplorer} from './observatorio-map.mjs';
 import {initLetters} from './observatorio-letters.mjs';
@@ -9,13 +10,13 @@ const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt
 const url = s => { try { const u = new URL(s); return u.protocol === 'https:' ? u.href : '#'; } catch { return '#'; } };
 const link = (href, text) => `<a href="${esc(url(href))}" target="_blank" rel="noopener noreferrer">${esc(text)} ↗</a>`;
 const date = s => new Date(s).toLocaleString('es-CL', { dateStyle:'medium', timeStyle:'short' });
-let tracking;
+let tracking, economy;
 let newsEvents = [], feedMap, feedMarkers;
 let mapExplorer, baseLayer;
 let events = [], sources = [], filter = 'all', selected, fetchedAt, map, markers;
-function view(name) { if(name==='investigacion')name='seguimiento'; $('atlas-menu').open=false; document.querySelectorAll('.view').forEach(el => el.hidden = el.id !== name); document.querySelectorAll('[data-view]').forEach(b => { b.classList.toggle('active', b.dataset.view === name); b.setAttribute('aria-pressed', b.dataset.view === name); }); if(name==='feed'){renderResearchPreview();setTimeout(()=>feedMap?.invalidateSize(),0);} if (name === 'panorama') setTimeout(() => map?.invalidateSize(),0); if (name === 'seguimiento') tracking?.render(); if(!/(?:access_token|refresh_token|error_description|code)=/.test(location.hash + location.search)) location.hash = name; }
+function view(name) { if(name==='investigacion')name='seguimiento'; $('atlas-menu').open=false; document.querySelectorAll('.view').forEach(el => el.hidden = el.id !== name); document.querySelectorAll('[data-view]').forEach(b => { b.classList.toggle('active', b.dataset.view === name); b.setAttribute('aria-pressed', b.dataset.view === name); }); if(name==='economia')economy?.open(); if(name==='feed'){renderResearchPreview();setTimeout(()=>feedMap?.invalidateSize(),0);} if (name === 'panorama') setTimeout(() => map?.invalidateSize(),0); if (name === 'seguimiento') tracking?.render(); if(!/(?:access_token|refresh_token|error_description|code)=/.test(location.hash + location.search)) location.hash = name; }
 document.querySelectorAll('[data-view]').forEach(b => b.onclick = () => view(b.dataset.view));
-window.addEventListener('hashchange', () => { const name = location.hash.slice(1); if (['feed','panorama','investigacion','seguimiento','fuentes','cartas','tendencias','fuerzas'].includes(name)) view(name); });
+window.addEventListener('hashchange', () => { const name = location.hash.slice(1); if (['feed','panorama','investigacion','seguimiento','fuentes','cartas','tendencias','fuerzas','economia'].includes(name)) view(name); });
 if (window.L) { map = L.map('map', { worldCopyJump:true, minZoom:0 }).setView([-8,-48],3); baseLayer=L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom:18, attribution:'© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors' }).addTo(map).on('tileerror', () => { $('status').textContent = 'Algunas teselas del mapa no cargaron. Las señales siguen disponibles en la lista.'; }); markers = L.layerGroup().addTo(map); L.control.scale({imperial:false}).addTo(map); } else $('map').innerHTML = '<p class="empty">No se pudo cargar el mapa. Puedes explorar las señales en la lista y reintentar recargando.</p>';
 
 if(window.L){feedMap=L.map('feed-map',{zoomControl:false,scrollWheelZoom:false,dragging:false,attributionControl:true}).setView([10,0],1);L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© OpenStreetMap'}).addTo(feedMap);feedMarkers=L.layerGroup().addTo(feedMap);}
@@ -50,9 +51,10 @@ function showNewsMap(e){
 }
 const news = initNews({ view, esc, date, onNews:rows=>{newsEvents=rows;render();renderFeedMap(rows);renderResearchPreview();},addNews,showNewsMap });
 initForces({esc,search:q=>news.search(q)});
+economy=initEconomy({db:window.auraClient,esc,login:()=>$('feed-account').click(),search:q=>news.search(q)});
 mapExplorer=initMapExplorer({map,L:window.L,markers,baseLayer,esc,date,openEvent:showDetail,addEvidence:addNews,readNews:e=>news.readEvidence(e)});
 render();
 const letters=initLetters({db:window.auraClient,esc,date,login:()=>$('feed-account').click()});
 const trends=initTrends({db:window.auraClient,esc,date,login:()=>$('feed-account').click()});
 tracking=initTracking({db:window.auraClient,esc,date,view,readNews:e=>news.readEvidence(e),showMap:showNewsMap,search:q=>news.search(q),login:()=>$('feed-account').click()});
-$('refresh').onclick=()=>Promise.allSettled([refresh(),news.refresh()]); view(['feed','panorama','investigacion','seguimiento','fuentes','cartas','tendencias','fuerzas'].includes(location.hash.slice(1))?location.hash.slice(1):'feed'); refresh();
+$('refresh').onclick=()=>Promise.allSettled([refresh(),news.refresh()]); view(['feed','panorama','investigacion','seguimiento','fuentes','cartas','tendencias','fuerzas','economia'].includes(location.hash.slice(1))?location.hash.slice(1):'feed'); refresh();

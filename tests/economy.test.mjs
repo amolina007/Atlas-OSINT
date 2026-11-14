@@ -1,0 +1,11 @@
+import test from 'node:test';import assert from 'node:assert/strict';
+import {normalizeEconomy,retainedSeries} from '../netlify/lib/economy.mjs';
+import {rangeRows,numberLabel} from '../dist/observatorio-economy-data.mjs';
+const now=new Date('2026-11-14T15:00:00Z');
+const base={indicador:'ipc',mes:'2026-10',variacionMensual:0,acumulados:{hasta:'2026-10',ultimos12Meses:4.5},fuente:{nombre:'INE',url:'https://www.ine.gob.cl/'},serie:[{mes:'2026-09',variacionMensual:-.2},{mes:'2026-10',variacionMensual:0},{mes:'2026-11',variacionMensual:null}]};
+test('IPC preserves monthly vs annual measures, zero and negative observations',()=>{const d=normalizeEconomy('ipc',base,now);assert.equal(d.value,0);assert.equal(d.annual,4.5);assert.equal(d.date,'2026-10');assert.deepEqual(d.series.map(r=>r.value),[-.2,0]);assert.equal(numberLabel(null,'ipc'),'Sin dato');});
+test('invalid values and nonofficial source links cannot replace retained records',()=>{assert.throws(()=>normalizeEconomy('ipc',{...base,variacionMensual:null},now));assert.throws(()=>normalizeEconomy('ipc',{...base,fuente:{url:'https://example.org'}},now));});
+test('UF future published values are not shown as current observations',()=>{const d=normalizeEconomy('uf',{indicador:'uf',fecha:'2026-11-14',valor:40000,fuente:{nombre:'SII',url:'https://www.sii.cl/'},serie:[{fecha:'2026-11-14',valor:40000},{fecha:'2026-11-15',valor:41000}]},now);assert.equal(d.series.length,1);});
+test('TPM carries preceding decision across windows without fictional decision records',()=>{const series=[{date:'2025-12-17',value:4.5}];const rows=rangeRows(series,1,'2026-11-13',true);assert.equal(rows.length,2);assert.ok(rows.every(r=>r.carried&&r.value===4.5));});
+test('failed refresh retains original retrieval timestamp and reports stale',async()=>{const old={value:0,retrievedAt:'2026-11-12T00:00:00Z'};const d=await retainedSeries({old,now:now.getTime(),load:async()=>{throw Error();}});assert.equal(d.value,0);assert.equal(d.retrievedAt,old.retrievedAt);assert.equal(d.stale,true);});
+test('hourly cache avoids upstream work and uncached failure is explicit',async()=>{const old={retrievedAt:now.toISOString()};assert.equal((await retainedSeries({old,now:now.getTime(),load:()=>assert.fail()})).stale,false);await assert.rejects(retainedSeries({load:async()=>{throw Error('offline');}}));});
