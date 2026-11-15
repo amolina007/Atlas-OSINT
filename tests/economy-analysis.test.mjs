@@ -1,0 +1,6 @@
+import test from 'node:test';import assert from 'node:assert/strict';
+import {technicalMetrics,analysisHtml} from '../dist/observatorio-economy-analysis.mjs';
+const series=Array.from({length:50},(_,i)=>({date:new Date(Date.UTC(2026,0,i+1)).toISOString().slice(0,10),value:i+1}));
+test('technical indicators use observation windows and exclude carried points',()=>{const m=technicalMetrics([...series,{date:'2026-03-01',value:1000,carried:true}]);assert.equal(m.sma20,40.5);assert.equal(m.sma50,25.5);assert.equal(m.rsi,100);assert.equal(m.count,50);assert.equal(m.max,50);});
+test('RSI handles falling, flat and insufficient histories',()=>{assert.equal(technicalMetrics(series.map(r=>({...r,value:-r.value}))).rsi,0);assert.equal(technicalMetrics(series.map(r=>({...r,value:3}))).rsi,50);assert.equal(technicalMetrics(series.slice(0,14)).rsi,null);assert.equal(technicalMetrics([]).sma20,null);});
+test('macro analysis avoids trading metrics and distinguishes monthly IPC',()=>{const d={value:.5,date:'2026-10',annual:4.5,series:[{date:'2026-10',value:.5}],source:{name:'INE',url:'https://www.ine.gob.cl/'}};const html=analysisHtml('ipc',d,d.series,String);assert.match(html,/doce meses: 4,5%/);assert.match(html,/Una observación/);assert.doesNotMatch(html,/RSI simple ·/);});
