@@ -188,3 +188,6 @@ body a[aria-label="Abrir el feed mixto de Convergencia Aura"]{display:none!impor
   #feed .community-quick-actions button{width:100%;text-align:left}
   #feed #feed-account{grid-column:2;grid-row:2/5;align-self:center;min-height:84px;white-space:normal;line-height:1.25}
 }
+
+/* Keep the desktop rail in normal page flow so every right-side action stays reachable. */
+@media(min-width:900px){#feed .feed-about{position:static;max-height:none;overflow:visible}}
