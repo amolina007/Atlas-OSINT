@@ -6,6 +6,26 @@ import {initLetters} from './observatorio-letters.mjs';
 import {initTrends} from './observatorio-trends.mjs';
 import {initTracking} from './observatorio-tracking.mjs';
 import { initNews } from './observatorio-news.mjs';
+// Atlas has its own community feed. Remove only Core's cross-site feed shortcut,
+// including when Core renders its controls inside an open shadow root.
+const coreFeedSelector = 'a[aria-label="Abrir el feed mixto de Convergencia Aura"],a[href^="https://dev.core.convergenciaaura.cl/feed.html"],a[href^="https://core.convergenciaaura.cl/feed.html"]';
+const observedCoreRoots = new WeakSet();
+const coreFeedObserver = new MutationObserver(records => {
+  for (const record of records) for (const node of record.addedNodes) suppressCoreFeed(node);
+});
+function suppressCoreFeed(root) {
+  if (!root || !root.querySelectorAll) return;
+  if (root.matches?.(coreFeedSelector)) root.remove();
+  root.querySelectorAll(coreFeedSelector).forEach(node => node.remove());
+  for (const element of root.querySelectorAll('*')) {
+    if (!element.shadowRoot || observedCoreRoots.has(element.shadowRoot)) continue;
+    observedCoreRoots.add(element.shadowRoot);
+    coreFeedObserver.observe(element.shadowRoot, {childList:true,subtree:true});
+    suppressCoreFeed(element.shadowRoot);
+  }
+}
+coreFeedObserver.observe(document.documentElement, {childList:true,subtree:true});
+suppressCoreFeed(document);
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const url = s => { try { const u = new URL(s); return u.protocol === 'https:' ? u.href : '#'; } catch { return '#'; } };
