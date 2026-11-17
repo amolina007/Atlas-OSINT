@@ -191,3 +191,6 @@ body a[aria-label="Abrir el feed mixto de Convergencia Aura"]{display:none!impor
 
 /* Keep the desktop rail in normal page flow so every right-side action stays reachable. */
 @media(min-width:900px){#feed .feed-about{position:static;max-height:none;overflow:visible}}
+
+/* Let the desktop feed grid use the full content width, including the right rail. */
+@media(min-width:900px){#feed .feed-layout{width:100%}}
