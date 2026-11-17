@@ -3,7 +3,9 @@ import {conflictScopes,matchesConflictScope,specificConflicts,matchesSpecificCon
 import {initWeather} from './observatorio-weather.mjs';
 import {initWarReports} from './observatorio-war-reports.mjs';
 import {initConflictLayer,territoryLayers} from './observatorio-conflicts.mjs';
-import {initMapThemes} from './observatorio-map-themes.mjs';
+// Version this newer static module so a stale edge response cannot prevent
+// the application entry point from running.
+import {initMapThemes} from './observatorio-map-themes.mjs?v=20261117-1';
 export const violenceTypes={'1':'Con participación estatal','2':'Entre grupos no estatales','3':'Violencia contra civiles'};
 const countries={'Ukraine':'Ucrania','Russia (Soviet Union)':'Rusia','Sudan':'Sudán','South Sudan':'Sudán del Sur','Myanmar (Burma)':'Myanmar','Yemen (North Yemen)':'Yemen','DR Congo (Zaire)':'RD del Congo','Central African Republic':'República Centroafricana','Afghanistan':'Afganistán','Algeria':'Argelia','Brazil':'Brasil','Cameroon':'Camerún','Ethiopia':'Etiopía','Haiti':'Haití','Iran':'Irán','Iraq':'Irak','Ivory Coast':'Costa de Marfil','Lebanon':'Líbano','Libya':'Libia','Mexico':'México','Moldova':'Moldavia','Morocco':'Marruecos','Niger':'Níger','Pakistan':'Pakistán','Peru':'Perú','Philippines':'Filipinas','Saudi Arabia':'Arabia Saudita','South Africa':'Sudáfrica','Spain':'España','Sweden':'Suecia','Syria':'Siria','Thailand':'Tailandia','Turkey':'Turquía','United States of America':'Estados Unidos','United Arab Emirates':'Emiratos Árabes Unidos'};
 const topicNames={politica:'Política',deportes:'Deportes',conflictos:'Guerras y conflictos',economia:'Economía',ciencia:'Ciencia y ambiente',tecnologia:'Tecnología',salud:'Salud y sociedad',cultura:'Cultura'};
