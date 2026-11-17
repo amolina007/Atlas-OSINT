@@ -14,18 +14,24 @@ const coreFeedObserver = new MutationObserver(records => {
   for (const record of records) for (const node of record.addedNodes) suppressCoreFeed(node);
 });
 function suppressCoreFeed(root) {
-  if (!root || !root.querySelectorAll) return;
-  if (root.matches?.(coreFeedSelector)) root.remove();
-  root.querySelectorAll(coreFeedSelector).forEach(node => node.remove());
+  if (!root || !root.querySelectorAll) return false;
+  let removed = false;
+  if (root.matches?.(coreFeedSelector)) { root.remove(); removed = true; }
+  root.querySelectorAll(coreFeedSelector).forEach(node => { node.remove(); removed = true; });
   for (const element of root.querySelectorAll('*')) {
     if (!element.shadowRoot || observedCoreRoots.has(element.shadowRoot)) continue;
     observedCoreRoots.add(element.shadowRoot);
     coreFeedObserver.observe(element.shadowRoot, {childList:true,subtree:true});
-    suppressCoreFeed(element.shadowRoot);
+    if (suppressCoreFeed(element.shadowRoot)) removed = true;
   }
+  return removed;
 }
 coreFeedObserver.observe(document.documentElement, {childList:true,subtree:true});
 suppressCoreFeed(document);
+let coreFeedScanCount = 0;
+const coreFeedScanTimer = setInterval(() => {
+  if (suppressCoreFeed(document) || ++coreFeedScanCount >= 40) clearInterval(coreFeedScanTimer);
+}, 500);
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const url = s => { try { const u = new URL(s); return u.protocol === 'https:' ? u.href : '#'; } catch { return '#'; } };
