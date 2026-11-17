@@ -174,3 +174,6 @@ body{padding-bottom:calc(86px + env(safe-area-inset-bottom));--globo-abajo:calc(
 
 /* Participación útil en el carril derecho del Feed Atlas. */
 @media(min-width:900px){#feed .feed-about .community{padding:16px;background:linear-gradient(145deg,#f0f5ed,#fffdf8);border:1px solid #dce4d9;border-radius:14px}#feed .community h2{font-size:22px;line-height:1.18;margin:8px 0}#feed .community-quick-actions{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin:12px 0}#feed .community-quick-actions button{font-size:11px;line-height:1.25;padding:9px 7px;text-align:left}#feed #feed-account{width:100%}}@media(max-width:700px){#feed .community-quick-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:12px 0}#feed .community-quick-actions button{font-size:11px;padding:10px 8px}}
+
+/* Atlas usa su propio Feed; ocultar el acceso global que sale a Core. */
+body a[aria-label="Abrir el feed mixto de Convergencia Aura"]{display:none!important;visibility:hidden!important;pointer-events:none!important}
