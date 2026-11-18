@@ -78,11 +78,11 @@ function showNewsMap(e){
 }
 const news = initNews({ view, esc, date, onNews:rows=>{newsEvents=rows;newsArticles=rows;render();renderFeedMap(rows);renderResearchPreview();},addNews,showNewsMap });
 initForces({esc,search:q=>news.search(q)});
-economy=initEconomy({db:window.auraClient,esc,login:()=>$('feed-account').click(),search:q=>news.search(q)});
+economy=initEconomy({db:window.auraClient,esc,login:()=>$('account').click(),search:q=>news.search(q)});
 mapExplorer=initMapExplorer({map,L:window.L,markers,baseLayer,esc,date,openEvent:showDetail,addEvidence:addNews,readNews:e=>news.readEvidence(e)});
 render();
-const letters=initLetters({db:window.auraClient,esc,date,login:()=>$('feed-account').click()});
-const trends=initTrends({db:window.auraClient,esc,date,login:()=>$('feed-account').click()});
-tracking=initTracking({db:window.auraClient,esc,date,view,readNews:e=>news.readEvidence(e),showMap:showNewsMap,search:q=>news.search(q),login:()=>$('feed-account').click()});
+const letters=initLetters({db:window.auraClient,esc,date,login:()=>$('account').click()});
+const trends=initTrends({db:window.auraClient,esc,date,login:()=>$('account').click()});
+tracking=initTracking({db:window.auraClient,esc,date,view,readNews:e=>news.readEvidence(e),showMap:showNewsMap,search:q=>news.search(q),login:()=>$('account').click()});
 atlasFeed=initAtlasFeed({db:window.auraClient,esc,date,getArticles:()=>newsArticles,openNews:e=>{view('feed');news.readEvidence(e);},goHome:()=>view('feed'),goLetters:()=>view('cartas'),goPolls:()=>view('tendencias')});
 $('refresh').onclick=()=>Promise.allSettled([refresh(),news.refresh()]); view(['feed','panorama','investigacion','seguimiento','fuentes','cartas','tendencias','comunidad','perfil','atlas-feed','fuerzas','economia'].includes(location.hash.slice(1))?location.hash.slice(1):'feed'); refresh();

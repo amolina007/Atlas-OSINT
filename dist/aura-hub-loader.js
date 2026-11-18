@@ -3,7 +3,7 @@
   'use strict';
   if (window.AuraHub || document.querySelector('script[data-aura-hub-core]')) return;
   const host = window.location.hostname;
-  const dev = /^dev--[a-z0-9-]+\.netlify\.app$/.test(host) || /^dev(?:\.[a-z0-9-]+)?\.convergenciaaura\.cl$/.test(host) || ['localhost', '127.0.0.1', 'verde-dev-convergencia-aura.netlify.app', 'planvecinal-dev-convergencia-aura.netlify.app'].includes(host);
+  const dev = /^dev--[a-z0-9-]+\.netlify\.app$/.test(host) || /^[a-f0-9]{12,}--atlas-osint\.netlify\.app$/.test(host) || /^dev(?:\.[a-z0-9-]+)?\.convergenciaaura\.cl$/.test(host) || ['localhost', '127.0.0.1', 'verde-dev-convergencia-aura.netlify.app', 'planvecinal-dev-convergencia-aura.netlify.app'].includes(host);
   const script = document.createElement('script');
   script.src = dev ? '/aura-core-dev/aura-hub.js' : '/aura-core/aura-hub.js';
   script.defer = true;
@@ -13,7 +13,8 @@
 
 /* Site display identity: dev only; global Aura identity remains unchanged. */
 (() => {
-  const dev = /(^|[.-])dev([.-]|$)/i.test(location.hostname) || ['localhost','127.0.0.1'].includes(location.hostname);
+  const host=location.hostname;
+  const dev = /(^|[.-])dev([.-]|$)/i.test(host) || /^[a-f0-9]{12,}--atlas-osint\.netlify\.app$/i.test(host) || ['localhost','127.0.0.1'].includes(host);
   if (!dev || window.AuraSiteProfile || document.querySelector('script[data-site-profile-core]')) return;
-  const script=document.createElement('script');script.src='/aura-core-dev/aura-site-profile.js';script.dataset.site='atlas';script.dataset.siteProfileCore='';script.defer=true;document.head.append(script);
+  const script=document.createElement('script');script.src='/aura-core-dev/aura-site-profile.js?atlas-profile=20261118';script.dataset.site='atlas';script.dataset.siteProfileCore='';script.defer=true;document.head.append(script);
 })();

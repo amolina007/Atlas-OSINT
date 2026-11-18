@@ -173,7 +173,9 @@ body{padding-bottom:calc(86px + env(safe-area-inset-bottom));--globo-abajo:calc(
 .atlas-feed-tabs{display:flex;gap:8px;margin:16px 0;flex-wrap:wrap}.atlas-feed-tabs button[aria-pressed=true]{background:#123e35;color:white}.atlas-share-card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:20px 24px;margin:0 0 14px;max-width:860px}.atlas-share-card h2{font:24px Georgia,serif;margin:9px 0}.atlas-share-card p{line-height:1.65;overflow-wrap:anywhere}.atlas-share-quote{white-space:pre-wrap}.atlas-share-author{font-size:12px;color:var(--muted)}.atlas-share-card .text-link{border:0;background:transparent;color:var(--teal);padding:5px 0;font-weight:700}.bottom-ribbon button[data-view="atlas-feed"]{white-space:normal}@media(max-width:700px){.atlas-feed-tabs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}.atlas-feed-tabs button{min-height:42px}.atlas-share-card{padding:15px}.atlas-share-card h2{font-size:21px}.bottom-ribbon button[data-view="atlas-feed"]{font-size:11px}}
 
 /* Participación útil en el carril derecho del Feed Atlas. */
-@media(min-width:900px){#feed .feed-about .community{padding:16px;background:linear-gradient(145deg,#f0f5ed,#fffdf8);border:1px solid #dce4d9;border-radius:14px}#feed .community h2{font-size:22px;line-height:1.18;margin:8px 0}#feed .community-quick-actions{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin:12px 0}#feed .community-quick-actions button{font-size:11px;line-height:1.25;padding:9px 7px;text-align:left}#feed #feed-account{width:100%}}@media(max-width:700px){#feed .community-quick-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:12px 0}#feed .community-quick-actions button{font-size:11px;padding:10px 8px}}
+@media(min-width:900px){#feed .feed-about .community{padding:16px;background:linear-gradient(145deg,#f0f5ed,#fffdf8);border:1px solid #dce4d9;border-radius:14px}#feed .community h2{font-size:22px;line-height:1.18;margin:8px 0}#feed .community-quick-actions{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin:12px 0}#feed .community-quick-actions button{font-size:11px;line-height:1.25;padding:9px 7px;text-align:left}.topbar #account{display:flex;align-items:center;gap:8px}
+.topbar #account-avatar{width:28px;height:28px;flex:0 0 28px;border-radius:50%;object-fit:cover;vertical-align:middle}
+.topbar #account-avatar[hidden]{display:none}}@media(max-width:700px){#feed .community-quick-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:12px 0}#feed .community-quick-actions button{font-size:11px;padding:10px 8px}}
 
 /* Atlas usa su propio Feed; ocultar el acceso global que sale a Core. */
 body a[aria-label="Abrir el feed mixto de Convergencia Aura"]{display:none!important;visibility:hidden!important;pointer-events:none!important}
@@ -181,12 +183,11 @@ body a[aria-label="Abrir el feed mixto de Convergencia Aura"]{display:none!impor
 /* Use the wide desktop rail for participation actions without widening mobile cards. */
 @media(min-width:1200px){
   #feed .feed-layout{grid-template-columns:minmax(0,1fr) minmax(360px,410px);gap:28px}
-  #feed .community{min-height:236px;display:grid;grid-template-columns:minmax(0,1.35fr) minmax(126px,.65fr);align-content:start;column-gap:18px;row-gap:7px;padding:20px}
+  #feed .community{min-height:0;display:grid;grid-template-columns:minmax(0,1fr);align-content:start;row-gap:7px;padding:20px}
   #feed .community>.eyebrow,#feed .community>h2,#feed .community>p,#feed .community-quick-actions{grid-column:1}
   #feed .community h2{font-size:25px}
-  #feed .community-quick-actions{grid-template-columns:1fr;align-content:start;margin:3px 0 0}
+  #feed .community-quick-actions{grid-template-columns:1fr 1fr;align-content:start;margin:7px 0 0}
   #feed .community-quick-actions button{width:100%;text-align:left}
-  #feed #feed-account{grid-column:2;grid-row:2/5;align-self:center;min-height:84px;white-space:normal;line-height:1.25}
 }
 
 /* Keep the desktop rail in normal page flow so every right-side action stays reachable. */

@@ -14,7 +14,7 @@ export function initNews({view,esc,date,onNews,addNews,showNewsMap}) {
  const openReader=createNewsReader({esc,date,addNews,newsEvidence,onDiscovery:discover,getArticles:()=>groupedNews(filtered(),briefing),readings});
  const db=window.supabase && window.ATLAS_SUPABASE ? window.supabase.createClient(window.ATLAS_SUPABASE.url,window.ATLAS_SUPABASE.publishableKey,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true,storageKey:'convergencia-aura-auth'}}):null;
  if(db) window.auraClient=db;
- const dev = /^dev--atlas-osint\.netlify\.app$/.test(location.hostname)||['dev.atlas.convergenciaaura.cl','localhost','127.0.0.1'].includes(location.hostname);
+ const dev = /^dev--atlas-osint\.netlify\.app$/.test(location.hostname)||/^[a-f0-9]{12,}--atlas-osint\.netlify\.app$/i.test(location.hostname)||['dev.atlas.convergenciaaura.cl','localhost','127.0.0.1'].includes(location.hostname);
  let user=null,articles=[],topics=[],counts=new Map(),liked=new Set(),topic='all',limit=24,activeArticle=null,commentLimit=30,loadToken=0;
  let briefing=null;
  let feedLoading=true,selection=null,baseArticles=[],publicArticles=[],publicIds=new Set(),searchTimer,searchController,searchVersion=0,searchPending=false;
@@ -43,14 +43,14 @@ export function initNews({view,esc,date,onNews,addNews,showNewsMap}) {
  $('filter-toggle').onclick=()=>{const expanded=$('filter-toggle').getAttribute('aria-expanded')!=='true';$('filter-toggle').setAttribute('aria-expanded',expanded);$('feed-filters').classList.toggle('expanded',expanded);};
  const safe=s=>{try{const u=new URL(s);return u.protocol==='https:'?u.href:'#'}catch{return '#'}};
  const script=document.createElement('script');script.src=dev?'/aura-core-dev/aura-google.js':'/aura-core/aura-google.js';script.defer=true;document.head.append(script);
- const hub=document.createElement('script');hub.src='aura-hub-loader.js';hub.defer=true;document.head.append(hub);
+ const hub=document.createElement('script');hub.src='aura-hub-loader.js?v=20261118-profile-photo';hub.defer=true;document.head.append(hub);
  function openAccount(){ $('account-dialog').showModal(); }
  ['core-brand'].forEach(id=>{const b=$(id);b.addEventListener('aura-hub:login',openAccount);b.addEventListener('click',()=>{if(!window.AuraHub)openAccount();});});
  $('core-logo').src=dev?'/aura-core-dev/logo-core-96.png':'/aura-core/logo-core-96.png';
  const globe=document.createElement('script');globe.src=dev?'/aura-core-dev/globo.js':'/aura-core/globo.js';globe.dataset.margenMovil='100';globe.defer=true;document.head.append(globe);
- $('account').addEventListener('aura-hub:login',openAccount);$('account').onclick=()=>{if(!window.AuraHub)openAccount();};$('feed-account').onclick=openAccount;
+ $('account').addEventListener('aura-hub:login',openAccount);$('account').onclick=()=>{if(!window.AuraHub)openAccount();};
  $('close-account').onclick=()=> $('account-dialog').close();$('close-comments').onclick=()=>{$('comments-dialog').close();activeArticle=null;loadToken++;};$('close-share').onclick=()=>$('share-dialog').close();
- function authChanged(u){user=u&&!u.is_anonymous?u:null;follows.session(user); $('account').textContent=user?'Mi cuenta':'Ingresar';$('account-state').textContent=user?'Sesión de Convergencia activa.':'Ingresa con tu cuenta existente para participar.';$('password-form').hidden=!!user;$('logout').hidden=!user;$('account-dialog').querySelector('[data-aura-google]').hidden=!!user;syncSocial();if(activeArticle)loadComments();}
+ function authChanged(u){user=u&&!u.is_anonymous?u:null;follows.session(user); $('account-label').textContent=user?'Mi cuenta':'Ingresar';$('account').classList.toggle('signed-in',!!user);$('account').setAttribute('aria-label',user?'Mi cuenta':'Ingresar');$('account-state').textContent=user?'Sesión de Convergencia activa.':'Ingresa con tu cuenta existente para participar.';$('password-form').hidden=!!user;$('logout').hidden=!user;$('account-dialog').querySelector('[data-aura-google]').hidden=!!user;syncSocial();if(activeArticle)loadComments();}
  if(db){db.auth.getSession().then(({data,error})=>{if(error)$('login-status').textContent='No se pudo recuperar tu sesión.';authChanged(data?.session?.user)}); db.auth.onAuthStateChange((_event,session)=>{setTimeout(()=>authChanged(session?.user),0)});}
  $('password-form').onsubmit=async e=>{e.preventDefault();if(!db)return;$('login-status').textContent='Ingresando…';const b=e.target.querySelector('button');b.disabled=true;try{const {error}=await db.auth.signInWithPassword({email:$('login-email').value.trim(),password:$('login-password').value});$('login-status').textContent=error?'No se pudo ingresar. Revisa tus credenciales.':'Sesión iniciada.';if(!error){$('login-password').value='';$('account-dialog').close();}}catch{$('login-status').textContent='No se pudo conectar. Intenta nuevamente.'}finally{b.disabled=false}};
  $('logout').onclick=async()=>{const {error}=await db.auth.signOut({scope:'local'});$('login-status').textContent=error?'No se pudo cerrar la sesión.':'Sesión cerrada.';};
