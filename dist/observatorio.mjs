@@ -1,11 +1,11 @@
-import {initAtlasFeed} from './observatorio-atlas-feed.mjs';
+import {initAtlasFeed} from './observatorio-atlas-feed.mjs?v=20261118-social-feed';
 import {initEconomy} from './observatorio-economy.mjs';
 import {initForces} from './observatorio-forces.mjs';
 import {initMapExplorer} from './observatorio-map.mjs?v=20261117-4';
 import {initLetters} from './observatorio-letters.mjs';
 import {initTrends} from './observatorio-trends.mjs';
 import {initTracking} from './observatorio-tracking.mjs?v=20261118-auth-ready';
-import { initNews } from './observatorio-news.mjs';
+import { initNews } from './observatorio-news.mjs?v=20261118-social-feed';
 // Atlas has its own community feed. Remove only Core's cross-site feed shortcut,
 // including when Core renders its controls inside an open shadow root.
 const coreFeedSelector = 'a[aria-label="Abrir el feed mixto de Convergencia Aura"],a[href^="https://dev.core.convergenciaaura.cl/feed.html"],a[href^="https://core.convergenciaaura.cl/feed.html"]';
@@ -84,5 +84,5 @@ render();
 const letters=initLetters({db:window.auraClient,esc,date,login:()=>$('account').click()});
 const trends=initTrends({db:window.auraClient,esc,date,login:()=>$('account').click()});
 tracking=initTracking({db:window.auraClient,esc,date,view,readNews:e=>news.readEvidence(e),showMap:showNewsMap,search:q=>news.search(q),login:()=>$('account').click()});
-atlasFeed=initAtlasFeed({db:window.auraClient,esc,date,getArticles:()=>newsArticles,openNews:e=>{view('feed');news.readEvidence(e);},goHome:()=>view('feed'),goLetters:()=>view('cartas'),goPolls:()=>view('tendencias')});
+atlasFeed=initAtlasFeed({db:window.auraClient,esc,date,getArticles:()=>newsArticles,openNews:e=>{view('feed');news.readEvidence(e);},goHome:()=>view('feed'),goLetters:()=>view('cartas'),goPolls:()=>view('tendencias'),newsActions:{like:id=>news.likeById(id),comments:id=>news.openCommentsById(id),share:id=>news.shareById(id),search:q=>news.search(q)},followStory:id=>news.followById(id)});
 $('refresh').onclick=()=>Promise.allSettled([refresh(),news.refresh()]); view(['feed','panorama','investigacion','seguimiento','fuentes','cartas','tendencias','comunidad','perfil','atlas-feed','fuerzas','economia'].includes(location.hash.slice(1))?location.hash.slice(1):'feed'); refresh();
