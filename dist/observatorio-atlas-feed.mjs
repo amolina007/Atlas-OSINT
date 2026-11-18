@@ -2,7 +2,7 @@ import {articleTags,articleLocation} from './observatorio-discovery.mjs';
 
 export function initAtlasFeed({db,esc,date,getArticles,openNews,goHome,goLetters,goPolls,newsActions,followStory}){
  const root=document.getElementById('atlas-feed');
- let kind='all',limit=40,rows=[],loading=false,error='',query='',period='168',order='newest',counts=new Map(),liked=new Set();
+ let kind='all',limit=40,rows=[],loading=false,refreshQueued=false,error='',query='',period='168',order='newest',counts=new Map(),liked=new Set();
  const safe=esc;
  root.innerHTML=`<div class="heading atlas-feed-heading"><div><span class="eyebrow">COMUNIDAD / ATLAS</span><h1>Feed</h1><p>La conversación pública de Atlas: comentarios, cartas y preguntas. Las noticias y sus síntesis están en Inicio.</p></div><button id="atlas-feed-refresh">↻ Actualizar</button></div>
  <section class="atlas-feed-intro"><div><strong>Contexto antes que viralidad</strong><p>Cada aporte identifica a quien lo publica y enlaza el contenido relacionado cuando existe. Las opiniones de la comunidad no son noticias verificadas por Atlas.</p></div><div class="atlas-feed-compose"><button data-feed-letters>✉ Escribir una carta</button><button data-feed-polls>＋ Proponer una pregunta</button></div></section>
@@ -44,7 +44,7 @@ export function initAtlasFeed({db,esc,date,getArticles,openNews,goHome,goLetters
   root.querySelectorAll('[data-share-section]').forEach(b=>b.onclick=()=>{const href=new URL(location.href);href.hash=b.dataset.shareSection==='cartas'?'cartas':'tendencias';shareFallback(href.href,'Atlas · '+b.dataset.shareSection);});
  }
  async function refresh(){
-  if(loading)return;loading=true;error='';render();
+  if(loading){refreshQueued=true;return;}loading=true;error='';render();
   try{
    if(!db)throw Error();
    const [comments,letters,polls]=await Promise.all([
@@ -60,7 +60,7 @@ export function initAtlasFeed({db,esc,date,getArticles,openNews,goHome,goLetters
    if(ids.length){const [totals,mine]=await Promise.all([db.rpc('atlas_dev_news_counts',{article_ids:ids}),db.auth.getSession().then(({data})=>{const uid=data?.session?.user?.id;return uid?db.from('atlas_dev_news_likes').select('article_id').eq('user_id',uid).in('article_id',ids):{data:[],error:null};})]);if(!totals.error)counts=new Map(totals.data.map(x=>[x.article_id,x]));liked=new Set((mine?.data||[]).map(x=>x.article_id));}
    error='';
   }catch{error='load';}
-  finally{loading=false;render();}
+  finally{loading=false;render();if(refreshQueued){refreshQueued=false;refresh();}}
  }
  $('atlas-feed-refresh').onclick=refresh;$('atlas-feed-search').oninput=e=>{query=e.target.value;render();};$('atlas-feed-period').onchange=e=>{period=e.target.value;render();};$('atlas-feed-order').onchange=e=>{order=e.target.value;render();};$('atlas-feed-more').onclick=()=>{limit+=40;render();};
  db?.auth.onAuthStateChange(()=>{liked.clear();refresh();});
