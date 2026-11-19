@@ -1,11 +1,11 @@
-import {initAtlasFeed} from './observatorio-atlas-feed.mjs?v=20261118-social-feed2';
+import {initAtlasFeed} from './observatorio-atlas-feed.mjs?v=20261118-social-feed6';
 import {initEconomy} from './observatorio-economy.mjs';
 import {initForces} from './observatorio-forces.mjs';
 import {initMapExplorer} from './observatorio-map.mjs?v=20261117-4';
 import {initLetters} from './observatorio-letters.mjs';
 import {initTrends} from './observatorio-trends.mjs';
 import {initTracking} from './observatorio-tracking.mjs?v=20261118-auth-ready';
-import { initNews } from './observatorio-news.mjs?v=20261118-social-feed2';
+import { initNews } from './observatorio-news.mjs?v=20261118-social-feed6';
 // Atlas has its own community feed. Remove only Core's cross-site feed shortcut,
 // including when Core renders its controls inside an open shadow root.
 const coreFeedSelector = 'a[aria-label="Abrir el feed mixto de Convergencia Aura"],a[href^="https://dev.core.convergenciaaura.cl/feed.html"],a[href^="https://core.convergenciaaura.cl/feed.html"]';
