@@ -5,7 +5,7 @@ import {initMapExplorer} from './observatorio-map.mjs?v=20261117-4';
 import {initLetters} from './observatorio-letters.mjs';
 import {initTrends} from './observatorio-trends.mjs';
 import {initTracking} from './observatorio-tracking.mjs?v=20261118-auth-ready';
-import { initNews } from './observatorio-news.mjs?v=20261118-social-feed7';
+import { initNews } from './observatorio-news.mjs?v=20261118-social-feed8';
 // Atlas has its own community feed. Remove only Core's cross-site feed shortcut,
 // including when Core renders its controls inside an open shadow root.
 const coreFeedSelector = 'a[aria-label="Abrir el feed mixto de Convergencia Aura"],a[href^="https://dev.core.convergenciaaura.cl/feed.html"],a[href^="https://core.convergenciaaura.cl/feed.html"]';
