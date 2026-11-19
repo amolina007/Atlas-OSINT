@@ -53,6 +53,8 @@ export function initAtlasProfile({db,esc,date,getArticles,openNews,openAccount,o
   if(!db){root.innerHTML='<section class="profile-signin"><h2>Tu perfil no está disponible</h2><p>La conexión de Convergencia no está disponible ahora.</p></section>';loading=false;return;}
   renderLoading();
   try{
+   const {data:{session},error:sessionError}=await db.auth.getSession();if(token!==request)return;if(sessionError)throw sessionError;
+   if(!session?.user||session.user.is_anonymous){user=null;renderSignedOut();return;}
    const {data:{user:u},error:authError}=await db.auth.getUser();if(token!==request)return;if(authError)throw authError;user=u&&!u.is_anonymous?u:null;
    if(!user){renderSignedOut();return;}
    const uid=user.id;
