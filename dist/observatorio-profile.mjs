@@ -11,7 +11,7 @@ export function initAtlasProfile({db,esc,date,getArticles,openNews,openAccount,o
  function followLabel(f,articles){
   if(f.kind==='tag')return '#'+f.value;
   if(f.kind==='place')return '⌖ '+f.value;
-  const match=articles.flatMap(a=>a.topics||[]).includes(f.value);
+  const match=[...articles.values()].some(a=>Array.isArray(a.topics)&&a.topics.includes(f.value));
   return topicNames[f.value]|| (match?f.value.replace(/[-_]/g,' ').replace(/\b\w/g,x=>x.toUpperCase()):f.value);
  }
  function activityMarkup(item,articles){
