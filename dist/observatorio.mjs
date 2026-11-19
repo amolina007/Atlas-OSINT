@@ -4,7 +4,7 @@ import {initForces} from './observatorio-forces.mjs';
 import {initMapExplorer} from './observatorio-map.mjs?v=20261117-4';
 import {initLetters} from './observatorio-letters.mjs';
 import {initTrends} from './observatorio-trends.mjs';
-import {initAtlasProfile} from './observatorio-profile.mjs?v=20261119-profile-v1';
+import {initAtlasProfile} from './observatorio-profile.mjs?v=20261119-profile-v2';
 import {initTracking} from './observatorio-tracking.mjs?v=20261118-auth-ready';
 import { initNews } from './observatorio-news.mjs?v=20261118-social-feed8';
 // Atlas has its own community feed. Remove only Core's cross-site feed shortcut,
