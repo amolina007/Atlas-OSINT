@@ -1,4 +1,4 @@
-import {initAtlasFeed} from './observatorio-atlas-feed.mjs?v=20261118-social-feed6';
+import {initAtlasFeed} from './observatorio-atlas-feed.mjs?v=20261118-social-feed7';
 import {initEconomy} from './observatorio-economy.mjs';
 import {initForces} from './observatorio-forces.mjs';
 import {initMapExplorer} from './observatorio-map.mjs?v=20261117-4';
