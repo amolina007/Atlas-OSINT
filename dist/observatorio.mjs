@@ -1,3 +1,4 @@
+import {initEditions} from './observatorio-editions.mjs';
 import {initAtlasFeed} from './observatorio-atlas-feed.mjs?v=20261118-social-feed7';
 import {initEconomy} from './observatorio-economy.mjs';
 import {initForces} from './observatorio-forces.mjs';
@@ -82,6 +83,7 @@ initForces({esc,search:q=>news.search(q)});
 economy=initEconomy({db:window.auraClient,esc,login:()=>$('account').click(),search:q=>news.search(q)});
 mapExplorer=initMapExplorer({map,L:window.L,markers,baseLayer,esc,date,openEvent:showDetail,addEvidence:addNews,readNews:e=>news.readEvidence(e)});
 render();
+initEditions({db:window.auraClient,esc,date,getArticles:()=>newsArticles,openNews:a=>news.readEvidence(a)});
 const letters=initLetters({db:window.auraClient,esc,date,login:()=>$('account').click()});
 const trends=initTrends({db:window.auraClient,esc,date,login:()=>$('account').click()});
 tracking=initTracking({db:window.auraClient,esc,date,view,readNews:e=>news.readEvidence(e),showMap:showNewsMap,search:q=>news.search(q),login:()=>$('account').click()});

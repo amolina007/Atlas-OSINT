@@ -1,0 +1,7 @@
+create table public.atlas_dev_edition_preferences(user_id uuid primary key default auth.uid() references auth.users(id) on delete cascade,times jsonb not null default '["07:30","13:00","21:00"]',interests text not null default '',use_interactions boolean not null default true,alerts boolean not null default false,check(jsonb_typeof(times)='array' and jsonb_array_length(times)=3),check(length(interests)<=500));
+create table public.atlas_dev_editions(user_id uuid not null default auth.uid() references auth.users(id) on delete cascade,edition_key text not null,body jsonb not null,rating integer check(rating between 1 and 5),feedback text check(length(feedback)<=1500),created_at timestamptz not null default now(),primary key(user_id,edition_key),check(octet_length(body::text)<150000));
+alter table public.atlas_dev_edition_preferences enable row level security;alter table public.atlas_dev_editions enable row level security;
+revoke all on public.atlas_dev_edition_preferences,public.atlas_dev_editions from public,anon;
+grant select,insert,update,delete on public.atlas_dev_edition_preferences,public.atlas_dev_editions to authenticated;
+create policy own_editions on public.atlas_dev_editions for all to authenticated using(user_id=(select auth.uid())) with check(user_id=(select auth.uid()));
+create policy own_edition_preferences on public.atlas_dev_edition_preferences for all to authenticated using(user_id=(select auth.uid())) with check(user_id=(select auth.uid()));
