@@ -1,3 +1,4 @@
+import {initHome} from './observatorio-home.mjs';
 import {initAIUsage} from './observatorio-ai-usage.mjs';
 import {initEditions} from './observatorio-editions.mjs';
 import {initAtlasFeed} from './observatorio-atlas-feed.mjs?v=20261118-social-feed7';
@@ -40,7 +41,7 @@ const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt
 const url = s => { try { const u = new URL(s); return u.protocol === 'https:' ? u.href : '#'; } catch { return '#'; } };
 const link = (href, text) => `<a href="${esc(url(href))}" target="_blank" rel="noopener noreferrer">${esc(text)} ↗</a>`;
 const date = s => new Date(s).toLocaleString('es-CL', { dateStyle:'medium', timeStyle:'short' });
-let tracking, economy, profile;
+let tracking, economy, profile,home;
 let newsEvents = [], newsArticles=[], feedMap, feedMarkers, atlasFeed;
 let mapExplorer, baseLayer;
 let events = [], sources = [], filter = 'all', selected, fetchedAt, map, markers;
@@ -79,13 +80,14 @@ function showNewsMap(e){
  document.querySelectorAll('[data-filter]').forEach(b=>{b.classList.toggle('active',b.dataset.filter==='news');b.setAttribute('aria-pressed',b.dataset.filter==='news')});
  render();if(e.coordinates)map?.setView([e.coordinates[1],e.coordinates[0]],4);showDetail(e);
 }
-const news = initNews({ view, esc, date, onNews:rows=>{newsEvents=rows;newsArticles=rows;render();renderFeedMap(rows);renderResearchPreview();if(!$('perfil').hidden)profile?.refresh();},onRefresh:()=>atlasFeed?.refresh(),addNews,showNewsMap });
+const news = initNews({ view, esc, date, onNews:rows=>{newsEvents=rows;newsArticles=rows;home?.update();render();renderFeedMap(rows);renderResearchPreview();if(!$('perfil').hidden)profile?.refresh();},onRefresh:()=>atlasFeed?.refresh(),addNews,showNewsMap });
 initForces({esc,search:q=>news.search(q)});
 economy=initEconomy({db:window.auraClient,esc,login:()=>$('account').click(),search:q=>news.search(q)});
 mapExplorer=initMapExplorer({map,L:window.L,markers,baseLayer,esc,date,openEvent:showDetail,addEvidence:addNews,readNews:e=>news.readEvidence(e)});
 render();
 initEditions({db:window.auraClient,esc,date,getArticles:()=>newsArticles,openNews:a=>news.readEvidence(a)});
 initAIUsage({db:window.auraClient,esc});
+home=initHome({db:window.auraClient,esc,date,getArticles:()=>newsArticles,openNews:a=>news.readEvidence(a)});
 const letters=initLetters({db:window.auraClient,esc,date,login:()=>$('account').click()});
 const trends=initTrends({db:window.auraClient,esc,date,login:()=>$('account').click()});
 tracking=initTracking({db:window.auraClient,esc,date,view,readNews:e=>news.readEvidence(e),showMap:showNewsMap,search:q=>news.search(q),login:()=>$('account').click()});
